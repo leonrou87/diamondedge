@@ -1851,7 +1851,7 @@ export default function Home() {
           body: JSON.stringify({ code }),
         });
         const j = await r.json().catch(() => ({}));
-        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); return { ok: true }; }
+        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); track("upgrade", "code"); return { ok: true }; }
         return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
       } catch { return { ok: false, reason: "network" }; }
     }
@@ -1870,7 +1870,7 @@ export default function Home() {
           body: JSON.stringify({ mock: true }),
         });
         const j = await r.json().catch(() => ({}));
-        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); return { ok: true }; }
+        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); track("upgrade", "mock"); return { ok: true }; }
         return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
       } catch { return { ok: false, reason: "network" }; }
     }
@@ -1901,6 +1901,55 @@ export default function Home() {
       serverPremium = true; setPremium(true);
       await entitlementRefresh();
     }
+    /* ═══════════ FIRST-PARTY ANALYTICS BEACON (2026-08-10) — EGRESS-FRUGAL BY CONTRACT ═══════════
+       This platform fought an egress crisis, so the analytics layer is TWO requests per
+       session, total: one tiny POST at session start, and one batched sendBeacon at
+       tab-hide/close carrying everything since. NEVER per-click streaming, NEVER a third
+       party — rows land in our own de_events table (RLS-deny to the public anon key) and
+       are read only by the owner's console at /admin/kp-desk. Event vocabulary is tiny:
+       session · tab · game · unlock · upgrade · signout. Every call here is fire-and-forget
+       and failure-silent: analytics must never cost the reader anything. */
+    const anSid = (() => { try { return crypto.randomUUID().replace(/-/g, "").slice(0, 16); } catch { return "s" + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); } })();
+    let anQ: any[] = [];
+    let anStarted = false;
+    const track = (t: string, m?: any) => { try { if (anQ.length < 200) anQ.push(m != null ? { t, m: String(m).slice(0, 80) } : { t }); } catch {} };
+    function anFlush(useBeacon: boolean) {
+      if (!anQ.length) return;
+      const body = JSON.stringify({ sid: anSid, ev: anQ.slice(0, 60) });
+      anQ = [];
+      try {
+        if (useBeacon && navigator.sendBeacon) { navigator.sendBeacon("/api/events", body); return; }
+        fetch("/api/events", { method: "POST", body, keepalive: true }).catch(() => {});
+      } catch {}
+    }
+    function anStart() {
+      if (anStarted) return; anStarted = true;
+      track("session");
+      // The one session-start POST, delayed a beat so the first tab/game events of the
+      // session ride in the same request instead of buying their own.
+      setTimeout(() => anFlush(false), 2500);
+      window.addEventListener("pagehide", () => anFlush(true));
+      document.addEventListener("visibilitychange", () => { if (document.hidden) anFlush(true); });
+    }
+    /* ═══ SUPPORT UNREAD STATE ═══ One number: admin replies this reader hasn't opened.
+       Filled at boot by the /api/register response (no extra request), cleared when the
+       support thread is opened. Drawn as a small dot on the Account dock tab. */
+    let supportUnread = 0;
+    function supportBootSync() {
+      // Signed-in readers re-register on app open: an idempotent upsert that refreshes
+      // the uid cookie + last_seen, whose response carries the unread reply count — the
+      // "once on app open" check, without buying a second request for it.
+      if (!isSignedIn()) return;
+      const a = getAccount() || {};
+      try {
+        fetch("/api/register", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: a.email, name: a.name, provider: a.provider, sid: anSid }),
+        }).then((r) => r.json()).then((j) => {
+          if (j && typeof j.n === "number" && j.n > 0) { supportUnread = j.n; renderDock(); }
+        }).catch(() => {});
+      } catch {}
+    }
     // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
     // The signed-in user is one localStorage record `de_account`:
     //   { provider:"google"|"apple"|"facebook"|"x"|"email", name, email, since }
@@ -1921,9 +1970,24 @@ export default function Home() {
       const em = email || `${provider === "email" ? "you" : provider}@diamondedge.app`;
       const acct = { provider, name: nm, email: em, since: todayISO() };
       setAccount(acct);
+      /* SERVER MIRROR (2026-08-10): the sign-in becomes a de_users row + a signed HttpOnly
+         uid cookie, so the owner's console can see users and the support thread knows who
+         is talking. Fire-and-forget: if the data layer is down or unconfigured, sign-in
+         works exactly as it always did. */
+      try {
+        fetch("/api/register", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: acct.email, name: acct.name, provider, sid: anSid }),
+        }).then((r) => r.json()).then((j) => {
+          if (j && typeof j.n === "number" && j.n > 0) { supportUnread = j.n; renderDock(); }
+        }).catch(() => {});
+      } catch {}
       return acct;
     }
     async function signOut() {
+      /* The sign-out reaches the beacon too: the event batch flushes NOW (it carries the
+         signout row and, server-side, bumps last_seen), and the unread dot clears. */
+      try { track("signout"); anFlush(true); supportUnread = 0; renderDock(); } catch {}
       setAccount(null);
       /* THE SERVER SESSION IS THE ENTITLEMENT NOW, so signing out has to reach
          it. Clearing localStorage alone would leave the HttpOnly cookie in
@@ -1958,9 +2022,13 @@ export default function Home() {
     const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
     // Every locked surface routes here: signed-out → the sign-in gateway; free member → Premium.
     function openUnlock() {
+      track("unlock"); // the funnel's third step: this reader met the paywall
       // ONE PAYWALL. This used to open the Upgrade view while Account's own CTA opened the
       // subscribe mode — two screens selling the same thing, reached by different buttons.
       accountMode = isSignedIn() ? "subscribe" : "signin";
+      // the paywall is a full page with a back that returns the reader where they were —
+      // one history entry, popped by the chevron or the hardware back alike
+      pushAcctEntry();
       switchTab("account");
     }
     /* ═════════════ THE PAYWALL, IN ONE PLACE ═════════════
@@ -4322,7 +4390,7 @@ export default function Home() {
           </div>`;
         }
       }
-      detail = detailWithGameReturn({ _record: true });
+      detail = detailWithGameReturn({ _record: true, _layer: "analyst" });
       // THE PATTERNS THEY STAR IN — pattern highlights naming this analyst.
       const myPats = patternHighlights().filter((it: any) => it.keys.indexOf(k) >= 0).slice(0, 3);
       const patsHtml = myPats.length
@@ -4395,6 +4463,7 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
+      pushLayerEntry("analyst");
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
       // goDeskResults() switches the tab itself; calling switchTab first as well started a
@@ -6403,11 +6472,102 @@ export default function Home() {
       }
       return teamForm(g, which);
     }
+    /* ═════════ THE TEAM PAGE (mandate 2026-08-10: tapping a team opens its stats) ═════════
+       Built ONLY from what is already served for this game: the crest, teams_v4's season
+       record and streak (teamRecordFor), the L10 form and scoring averages the game's own
+       pregame_intel carries, and rest/head-to-head where the intel has them. Nothing is
+       fetched, nothing is invented — a field the feed does not carry is simply absent. */
+    function openTeamPage(g: any, side: "away" | "home") {
+      if (!g) return;
+      const abbr = side === "home" ? (g.home_abbr || mlbAbbr(g.home_name || g.home)) : (g.away_abbr || mlbAbbr(g.away_name || g.away));
+      const name = (side === "home" ? (g.home_name || g.home) : (g.away_name || g.away)) || abbr || "Team";
+      const rec = teamRecordFor(g, side) || ({} as any);
+      const pi = g.pregame_intel || {};
+      const f = (pi.form || {})[side] || null;
+      const r = (pi.rest || {})[side] || null;
+      const rows: string[] = [];
+      if (rec.rec) rows.push(`<div class="tp-big"><b>${esc(rec.rec)}</b><i>${rec.recIsL15 ? "last 15" : "season"}</i></div>`);
+      if (rec.streak) rows.push(`<div class="tp-big ${rec.hot ? "hot" : ""}"><b>${esc(rec.streak)}</b><i>streak</i></div>`);
+      if (f && f.last10_record) rows.push(`<div class="tp-big"><b>${esc(f.last10_record)}</b><i>last 10</i></div>`);
+      const blocks: string[] = [];
+      if (rows.length) blocks.push(`<div class="dsec"><div class="dsec-h">The season</div><div class="dsec-b tp-heroRow">${rows.join("")}</div></div>`);
+      if (f && (f.runs_for_avg != null || f.runs_against_avg != null)) {
+        blocks.push(`<div class="dsec"><div class="dsec-h">Run production, last 10</div><div class="dsec-b tp-heroRow">
+          ${f.runs_for_avg != null ? `<div class="tp-big"><b>${num(f.runs_for_avg, 1)}</b><i>runs for / gm</i></div>` : ""}
+          ${f.runs_against_avg != null ? `<div class="tp-big"><b>${num(f.runs_against_avg, 1)}</b><i>runs against / gm</i></div>` : ""}
+        </div></div>`);
+      }
+      if (r && (r.days_off != null || r.last_game_date)) {
+        blocks.push(`<div class="dsec"><div class="dsec-h">Rest</div><div class="dsec-b"><p class="tp-line">${r.days_off != null ? `<b>${r.days_off}</b> day${r.days_off === 1 ? "" : "s"} off` : ""}${r.last_game_date ? `${r.days_off != null ? " · " : ""}last played ${esc(r.last_game_date)}` : ""}</p></div></div>`);
+      }
+      // the probable / starting arm on this side rides along when the feed has him —
+      // his name is the same playerLink tap every other surface uses
+      const sp = ((pi.pitchers || {}) as any)[side];
+      const fd = pitcherFeedFor(g, side);
+      const spName = (sp && sp.name) || (fd && fd.name);
+      if (spName) {
+        const spId = fd && fd.id != null ? fd.id : null;
+        const era = sp && sp.era != null ? sp.era : fd && fd.era != null ? fd.era : null;
+        blocks.push(`<div class="dsec"><div class="dsec-h">On the mound</div><div class="dsec-b"><p class="tp-line">${spId != null ? playerAvatar(spId, spName, "md") + " " : ""}${playerLink(spId, spName)}${era != null ? ` · <b>${num(era, 2)} ERA</b>` : ""}${fd && fd.wl ? ` · ${esc(fd.wl)}` : ""}${fd && fd.whip != null ? ` · ${num(fd.whip, 2)} WHIP` : ""}</p></div></div>`);
+      }
+      if (!blocks.length) blocks.push(`<div class="dsec"><div class="dsec-b"><p class="tp-line">No team stats served for this game yet — check back closer to first pitch.</p></div></div>`);
+      detail = detailWithGameReturn({ _team: true, _layer: "team" });
+      const html = `
+        <div class="gamepage teampage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(name)}">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx pp-name">${esc(name)}</span>
+            <div class="hspacer"></div>
+          </div>
+          <div class="gp-body" id="gp-body">
+            <div class="bgame-hero tp-hero">
+              <span class="tp-crest">${gCrest(g, side, "tp-crestimg")}</span>
+              <div class="bgh-mu"><b>${esc(name)}</b></div>
+              <div class="bgh-fin">${esc(abbr || "")}${rec.rec ? ` · ${esc(rec.rec)}` : ""}${rec.streak ? ` · ${esc(rec.streak)}` : ""}</div>
+            </div>
+            ${blocks.join("")}
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
+      pushLayerEntry("team");
+      bindClick("gp-back", () => closeDetail());
+      bindSwipeBack($("gamepage"));
+    }
+    // one delegated tap for every team target — the hero's two sides emit [data-team]
+    document.addEventListener("click", (e: any) => {
+      const el = e.target && e.target.closest && e.target.closest("[data-team][data-tgid]");
+      if (!el) return;
+      e.stopPropagation(); e.preventDefault();
+      const g = detail && detail.game_id != null && String(detail.game_id) === String(el.dataset.tgid)
+        ? detail : gameAnywhere(el.dataset.tgid);
+      if (!g) return;
+      openTeamPage(g, el.dataset.team === "home" ? "home" : "away");
+    }, true);
+    /* ═══════════ EVERY LAYERED PAGE IS A HISTORY ENTRY (Leon, 2026-08-10) ═══════════
+       "Make sure ALL clicks on the entire website go to a new full page with back button
+       or X to go back — vs these popups." The pitcher sheet proved the contract: a layered
+       page pushes ONE history entry on open, and the in-app chevron, the edge swipe and
+       the hardware/browser back button all leave through the same door (history.back() →
+       popstate → syncFromUrl). `layerPushed` counts the entries we own so a chevron tap
+       can tell "walk history" from "nothing to pop — tear down directly" (pushState can
+       throw in exotic embeds; the direct path is the fallback, never the norm).
+       Every layered `detail` carries `_layer: "<name>"` — that flag is what closeDetail
+       and syncFromUrl key on, so adding a new page is: set the flag, push the entry. */
+    let layerPushed = 0;
+    function pushLayerEntry(name: string) {
+      try { history.pushState({ layer: name }, "", location.href); layerPushed++; return true; } catch { return false; }
+    }
+    // THE ONE BACK GLYPH. Chevron-back, top-left, on every layered page — the convention
+    // the game page set; converting bottom-sheets to pages made "dismiss-down" X wrong.
+    const backChevron = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>`;
     // The pitcher sheet: header (name/team/hand + season line) + the recent-starts table.
-    let pitcherPushed = false;   // this sheet pushed its own history entry (see below)
     function openPitcherSheet(P: any) {
       if (!P) return;
-      detail = detailWithGameReturn({ _pitcher: true });
+      detail = detailWithGameReturn({ _pitcher: true, _layer: "pitcher" });
       const starts = (P.starts || []).slice(0, 8);
       const rows = starts.map((s: any) => `<tr>
         <td>${esc((s.date || "").slice(5))}</td><td>${s.at === "H" ? "vs" : "@"} ${esc(s.opp || "")}</td>
@@ -6415,7 +6575,7 @@ export default function Home() {
         <td class="res ${s.res === "W" ? "won" : s.res === "L" ? "lost" : ""}">${esc(s.res || "ND")}</td></tr>`).join("");
       const html = `
         <div class="gamepage pitcherpage" id="gamepage" role="dialog" aria-modal="true" aria-label="${esc(P.name)} — recent starts">
-          <div class="gp-bar"><button id="gp-back" class="gp-back" aria-label="Back">←</button><span class="gp-t">${esc(P.name)}</span></div>
+          <div class="gp-bar"><button id="gp-back" class="gp-back" aria-label="Back">${backChevron}</button><span class="gp-t">${esc(P.name)}</span></div>
           <div class="gp-scroll">
             <div class="bgame-hero">
               <div class="bgh-mu"><b>${esc(P.name)}</b></div>
@@ -6433,15 +6593,15 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p = $("gamepage"); if (p) p.classList.add("in"); });
-      /* THE PITCHER SHEET IS A HISTORY ENTRY. Without one, the NATIVE back gesture (the
-         OS edge swipe Safari owns before the app sees a single pointer event) performed a
-         real history.back() past the game page's ?g= entry — pitcher stats closed all the
-         way to the board instead of to the game the reader was inside. With its own entry,
-         the native gesture pops back to the ?g= URL and popstate → syncFromUrl restores
-         the game page (on the tab the reader left). The in-app back arrow and edge swipe
-         run history.back() too, so every way out of this sheet is the same way out. */
-      pitcherPushed = false;
-      try { history.pushState({ layer: "pitcher" }, "", location.href); pitcherPushed = true; } catch {}
+      /* THE PITCHER SHEET IS A HISTORY ENTRY — the pattern every layered page now follows.
+         Without one, the NATIVE back gesture (the OS edge swipe Safari owns before the app
+         sees a single pointer event) performed a real history.back() past the game page's
+         ?g= entry — pitcher stats closed all the way to the board instead of to the game
+         the reader was inside. With its own entry, the native gesture pops back to the
+         ?g= URL and popstate → syncFromUrl restores the game page (on the tab the reader
+         left). The in-app back chevron and edge swipe run history.back() too, so every
+         way out of this sheet is the same way out. */
+      pushLayerEntry("pitcher");
       bindClick("gp-back", () => closeDetail());
       bindSwipeBack($("gamepage"));
     }
@@ -6675,7 +6835,25 @@ export default function Home() {
        "beta" (the old Totals board) has no door left at all and is not rendered. */
     let tab = "games";              // "today" | "games" | "desk" | "research" | "account"
     const TABS = ["today", "games", "desk", "research", "account"];
-    let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe"
+    let accountMode = "menu";       // account-view sub-state: "menu" | "signin" | "subscribe" | "manage"
+    /* ACCOUNT SUB-MODES ARE HISTORY ENTRIES TOO (mandate: hardware back must work on every
+       full-page surface). Entering sign-in / subscribe / manage pushes one entry; the
+       chevron and the hardware back both pop it, and popstate walks the mode back one
+       step. A stale entry (the reader left via the dock) degrades to one silent pop. */
+    let acctPushed = 0;
+    function pushAcctEntry() { try { history.pushState({ layer: "account" }, "", location.href); acctPushed++; } catch {} }
+    function acctModeBack() {
+      if (accountMode === "support" || accountMode === "manage") { accountMode = "menu"; renderAccount(); return; }
+      if (accountMode === "subscribe") { accountMode = isSignedIn() ? "menu" : "signin"; renderAccount(); return; }
+      if (accountMode === "signin") { accountMode = "menu"; if (isSignedIn()) renderAccount(); else switchTab("today"); return; }
+      renderAccount();
+    }
+    // The one exit every account sub-page chevron calls: walk history when we own an
+    // entry (so hardware back and the chevron are the same door), else step back directly.
+    function acctExit() {
+      if (acctPushed > 0) { history.back(); return; }
+      acctModeBack();
+    }
     let league = "mlb";             // selected league
     let curDate = todayISO();       // selected date (ISO)
     // The games the slate ACTUALLY rendered this pass — including synthesized future tiles that
@@ -10640,7 +10818,7 @@ export default function Home() {
         <div class="datebar lead">
           <div class="datestrip" id="datestrip">${dateStripHtml()}</div>
           <div class="datetools">
-            <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button><input type="date" id="date-input" aria-label="Pick a date" value="${curDate}" min="${minDate}" max="${maxDate > shiftDate(todayISO(), 5) ? maxDate : shiftDate(todayISO(), 5)}"></span>
+            <span class="calwrap"><button class="dtool cal" id="cal-btn" title="Pick a date" aria-label="Pick a date"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15.5" rx="3.5"/><path d="M3.5 9.6h17M8 3v3.4M16 3v3.4"/><circle cx="12" cy="14.8" r="1.4" fill="currentColor" stroke="none"/></svg></button></span>
           </div>
         </div>
         <div class="subhead compact subtle">
@@ -10924,15 +11102,12 @@ export default function Home() {
         renderSlate();
       }));
       bindStrip();
-      const di = $("date-input");
-      if (di) di.onchange = () => { if (!di.value) return; curDate = di.value; selectDate(); };
-      // The real <input type=date> sits ON TOP of the calendar button (opacity 0), so a tap
-      // opens the native picker everywhere; showPicker() is the enhancement, not the only path.
+      /* THE NATIVE DATE INPUT IS RETIRED (Leon, 2026-08-10: "make the calendar picker way
+         more thematically on-brand"). The stock OS popup is replaced by the DiamondEdge
+         calendar page — full page, chevron back, days-with-games marked, W-L on graded
+         past days, the selected day in gold. One tap, one destination. */
       const cal = $("cal-btn");
-      if (cal && di) {
-        di.onclick = (e: any) => { e.stopPropagation(); try { di.showPicker(); } catch {} };
-        cal.onclick = () => { try { di.showPicker(); } catch { try { di.focus(); di.click(); } catch {} } };
-      }
+      if (cal) cal.onclick = () => openCalendarPage();
       /* The history / date-range scan was DELETED in the production simplification pass.
          Its entry point (#hist-btn) had been dropped from the date-tools markup in the
          "Frontend mega-round" redesign, so nothing could set histOpen = true and the whole
@@ -10961,7 +11136,6 @@ export default function Home() {
     function refreshStrip() {
       const strip = $("datestrip");
       if (strip) { strip.innerHTML = dateStripHtml(); bindStrip(); }
-      const di = $("date-input"); if (di) di.value = curDate;
     }
     async function selectDate() {
       refreshStrip();
@@ -10983,6 +11157,112 @@ export default function Home() {
         positionInk();
       }
       renderSlate();
+    }
+
+    /* ═════════════ THE CALENDAR, AS A DIAMONDEDGE PAGE (Leon, 2026-08-10) ═════════════
+       "Make the calendar picker way more thematically on-brand vs what we have."
+       The stock OS date popup is replaced by a full page on the shared chassis: display
+       type, gold diamond marks on days that have games on the served index, the selected
+       day carrying the gold capsule, and W-L on past days STRICTLY from the served graded
+       record (dayRecordMap — never invented, public like the record itself). Built as one
+       innerHTML string with a single delegated click, same as every renderer here. */
+    function openCalendarPage() {
+      detail = detailWithGameReturn({ _cal: true, _layer: "cal" });
+      const today = todayISO();
+      const rmap = (() => { try { return dayRecordMap(); } catch { return {} as any; } })();
+      const gameDays: any = {};
+      (((indexData && (indexData.dates || indexData.keyed_dates)) || []) as any[]).forEach((d: any) => {
+        const k = String(d || "").slice(0, 10);
+        if (k) gameDays[k] = 1;
+      });
+      // browsing runs newest month first — the reader is nearly always reaching for a
+      // recent night, and the future cap (today+5) sits at the top of the first grid
+      const hardMax = maxDate > shiftDate(today, 5) ? maxDate : shiftDate(today, 5);
+      const months: string[] = [];
+      {
+        let y = Number(hardMax.slice(0, 4)), mo = Number(hardMax.slice(5, 7));
+        const m0 = minDate.slice(0, 7);
+        for (let i = 0; i < 240; i++) {
+          const key = `${y}-${String(mo).padStart(2, "0")}`;
+          months.push(key);
+          if (key === m0) break;
+          mo--; if (mo < 1) { mo = 12; y--; }
+        }
+      }
+      const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+      const monthHtml = (mk: string) => {
+        const Y = Number(mk.slice(0, 4)), M = Number(mk.slice(5, 7));
+        const first = new Date(Y, M - 1, 1);
+        const lead = first.getDay();
+        const days = new Date(Y, M, 0).getDate();
+        let cells = "";
+        let any = false;
+        for (let i = 0; i < lead; i++) cells += `<span class="cp-cell blank" aria-hidden="true"></span>`;
+        for (let d = 1; d <= days; d++) {
+          const iso = `${mk}-${String(d).padStart(2, "0")}`;
+          const inRange = iso >= minDate && iso <= hardMax;
+          const r = rmap[iso];
+          const hasRec = !!(r && r.w + r.l + r.p > 0);
+          if (inRange) any = true;
+          // ONE VERDICT ON A DAY — units first, decided record standing in (same rule as
+          // the Desk calendar; see dayTone's note). A push-only day tones flat.
+          const tone = !hasRec ? "" : r.units != null ? (r.units > 1e-9 ? "up" : r.units < -1e-9 ? "down" : "flat") : (r.w > r.l ? "up" : r.l > r.w ? "down" : "flat");
+          const cls = ["cp-cell", inRange ? "" : "off", iso === curDate ? "on" : "", iso === today ? "is-today" : "", iso > today ? "future" : ""].filter(Boolean).join(" ");
+          const said = [new Date(iso + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
+            hasRec ? `record ${r.w} and ${r.l}` : gameDays[iso] ? "games on the board" : ""].filter(Boolean).join(" — ");
+          cells += `<button type="button" class="${cls}" data-cd="${iso}"${inRange ? "" : " disabled"} aria-label="${esc(said)}"${iso === curDate ? ` aria-current="date"` : ""}>
+            <b>${d}</b>
+            ${hasRec ? `<i class="cp-wl ${tone}">${r.w}–${r.l}</i>` : gameDays[iso] && iso <= hardMax ? `<i class="cp-dot" aria-hidden="true">◆</i>` : `<i class="cp-nil" aria-hidden="true"></i>`}
+          </button>`;
+        }
+        if (!any) return "";
+        const label = first.toLocaleDateString("en-US", { month: "long", year: "numeric" });
+        return `<section class="cp-month" data-cm="${mk}">
+          <header class="cp-mh"><span class="cp-dia" aria-hidden="true">◆</span><h3>${esc(label)}</h3></header>
+          <div class="cp-dows" aria-hidden="true">${DOW.map((x) => `<span>${x}</span>`).join("")}</div>
+          <div class="cp-grid">${cells}</div>
+        </section>`;
+      };
+      const html = `
+        <div class="gamepage calpage" id="gamepage" role="dialog" aria-modal="true" aria-label="Pick a date">
+          <div class="gp-head">
+            <button class="gp-back" id="gp-back" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx">Pick a date</span>
+            <div class="hspacer"></div>
+            <button class="cp-today" id="cp-today">Today</button>
+          </div>
+          <div class="gp-body" id="gp-body">
+            <div class="cp-legend">
+              <span><i class="cp-dot">◆</i> games on the board</span>
+              <span><i class="cp-wl up">W–L</i> the graded record, that night</span>
+            </div>
+            ${months.map(monthHtml).join("")}
+          </div>
+        </div>`;
+      let layer = $("sheet-layer");
+      if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
+      layer.innerHTML = html;
+      document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => {
+        const pg = $("gamepage"); if (pg) pg.classList.add("in");
+        // land on the month being viewed — instant, no animation to fight the page entry
+        const mEl = layer!.querySelector(`.cp-month[data-cm="${curDate.slice(0, 7)}"]`) as any;
+        const body = $("gp-body");
+        if (mEl && body) body.scrollTop = Math.max(0, mEl.offsetTop - 6);
+      });
+      pushLayerEntry("cal");
+      bindClick("gp-back", () => closeDetail());
+      bindClick("cp-today", () => { const was = curDate; curDate = todayISO(); closeDetail(); if (was !== curDate) selectDate(); });
+      const body = $("gp-body");
+      if (body) body.onclick = (e: any) => {
+        const el = e.target && e.target.closest && e.target.closest("[data-cd]");
+        if (!el || el.disabled) return;
+        const was = curDate;
+        curDate = el.dataset.cd;
+        closeDetail();                       // walks this page's own history entry
+        if (was !== curDate) selectDate();   // the board loads the chosen day beneath
+      };
+      bindSwipeBack($("gamepage"));
     }
 
     function bindCards() {
@@ -11551,10 +11831,13 @@ export default function Home() {
     // A name, rendered as the one tappable thing it is everywhere it appears. `data-player`
     // is read by ONE delegated listener; there is no per-surface click wiring and no second
     // player renderer. A name with no id is plain text — never a dead tap target.
-    function playerLink(pid: any, label: string, cls = "") {
+    function playerLink(pid: any, label: string, cls = "", face = false) {
       const txt = esc(label);
       if (pid == null || label == null || label === "") return txt;
-      return `<button type="button" class="plink ${cls}" data-player="${esc(String(pid))}">${txt}</button>`;
+      // `face` rides the little circular headshot INSIDE the tap target (Leon, 2026-08-10:
+      // "a little icon/image for names") — same playerAvatar, same silhouette-safe fallback,
+      // same lazy-load budget. A name with no id never reaches here and stays plain prose.
+      return `<button type="button" class="plink ${cls}" data-player="${esc(String(pid))}">${face ? playerAvatar(pid, label, "xs") : ""}${txt}</button>`;
     }
     /* ONE ACCESSOR. Every block of the card, and every surface that links into it, reads
        this — so there is exactly one place that knows where a player's facts live. */
@@ -11760,15 +12043,19 @@ export default function Home() {
       if (old) old.remove();
       const l = document.createElement("div");
       l.id = "pcard-layer";
-      l.innerHTML = `<div class="pcard-bg" id="pcard-bg"></div>
-        <div class="pcard" role="dialog" aria-modal="true" aria-label="${esc(d.name)}">
-          <div class="pcard-grab"><span></span></div>
-          <button type="button" class="pcard-x" id="pcard-x" aria-label="Close">✕</button>
+      /* A FULL PAGE, NOT A BOTTOM CARD (mandate 2026-08-10). Same anatomy as every layered
+         page — chevron back top-left in a gp-head bar, the stats scrolling beneath — but it
+         KEEPS its own appended layer above the game page, because the page underneath
+         staying mounted (scroll, live poll and all) is the whole design. */
+      l.innerHTML = `<div class="pcard ppage" role="dialog" aria-modal="true" aria-label="${esc(d.name)}">
+          <div class="gp-head">
+            <button type="button" class="gp-back" id="pcard-x" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx pp-name">${esc(d.name)}</span>
+            <div class="hspacer"></div>
+          </div>
           <div class="pcard-body">${safeHtml("player card", () => playerCardHtml(d, g), "")}</div>
         </div>`;
       document.body.appendChild(l);
-      const bg = document.getElementById("pcard-bg");
-      if (bg) bg.addEventListener("click", () => closePlayerCard());
       const x = document.getElementById("pcard-x");
       if (x) x.addEventListener("click", () => closePlayerCard());
       /* AND IT SWIPES BACK LIKE EVERY OTHER LAYER. It is the one surface a reader can open
@@ -12287,7 +12574,7 @@ export default function Home() {
       // …and each man is a tap into his own card — the same `playerLink` the box score
       // rows use, so there is one player renderer reached from every surface he appears on
       const who = (n: string, id: any, role: string, cls = "") =>
-        `<span class="bd-mu-u${cls}"><span class="bd-mu-n">${playerLink(id, shortName(n))}</span><em>${role}</em></span>`;
+        `<span class="bd-mu-u${cls}"><span class="bd-mu-n">${playerLink(id, shortName(n), "", true)}</span><em>${role}</em></span>`;
       const mu = s.pitcher || s.batter
         ? `<div class="bd-mu">${s.pitcher ? who(s.pitcher, s.pitcherId, "pitching") : ""}${s.pitcher && s.batter ? `<span class="bd-mu-to" aria-hidden="true">to</span>` : ""}${s.batter ? who(s.batter, s.batterId, "batting", " bat") : ""}</div>`
         : "";
@@ -12988,6 +13275,7 @@ export default function Home() {
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
+      if (g && g.game_id != null && !g._recipe) track("game", g.game_id); // batched beacon row
       const _gs0 = g && !g._recipe ? gameState(g) : { kind: "pre" };
       const _gsk = _gs0.kind;
       /* THE DEFAULT TAB FOLLOWS THE GAME (Leon, 2026-08-08): "when you click on a game, let's
@@ -13192,7 +13480,8 @@ export default function Home() {
         for (const s of spans) {
           if (s.start < at) continue;          // never emit overlapping links
           out += mdBold(txt.slice(at, s.start));
-          out += playerLink(s.id, txt.slice(s.start, s.end));
+          // the id-carrying span gets the face + the tap; a name with no id never gets here
+          out += playerLink(s.id, txt.slice(s.start, s.end), "", true);
           at = s.end;
         }
         return out + mdBold(txt.slice(at));
@@ -13351,9 +13640,11 @@ export default function Home() {
       const gameHero =`<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
         <div class="gp-mu">
-          <div class="gp-team away"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span>${heroForm("away")}</div>
+          ${/* each side is a tap into the team's own stats page (mandate 2026-08-10) —
+                crest + abbr are the target; the form line stays plain text */""}
+          <div class="gp-team away"><button type="button" class="gp-tlink" data-team="away" data-tgid="${esc(String(g.game_id))}" aria-label="${esc(g.away_name || g.away || g.away_abbr || "Away team")} — team page"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span></button>${heroForm("away")}</div>
           <div class="gp-center">${heroScore}</div>
-          <div class="gp-team home"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span>${heroForm("home")}</div>
+          <div class="gp-team home"><button type="button" class="gp-tlink" data-team="home" data-tgid="${esc(String(g.game_id))}" aria-label="${esc(g.home_name || g.home || g.home_abbr || "Home team")} — team page"><span class="gp-crest">${gCrest(g, "home")}</span><span class="gp-ab">${esc(g.home_abbr)}</span></button>${heroForm("home")}</div>
         </div>
         <div class="gp-sit" id="gp-sit">${heroSit}</div>
       </div>`;
@@ -13833,12 +14124,14 @@ export default function Home() {
       }
     }
     function closeDetail(fromHistory = false, forceRoot = false) {
-      // The pitcher sheet closes by popping ITS OWN history entry, so the in-app back
-      // arrow and the native back gesture run one identical path (popstate → syncFromUrl).
-      if (!fromHistory && !forceRoot && detail && detail._pitcher && pitcherPushed) {
-        pitcherPushed = false; history.back(); return;
+      // EVERY layered page (pitcher, article, recipe, terms, paper, analyst, calendar,
+      // player, team) closes by popping ITS OWN history entry, so the in-app chevron,
+      // the edge swipe and the hardware back button run one identical path
+      // (popstate → syncFromUrl). Direct teardown below is the popstate side of that
+      // door — and the fallback for the rare embed where pushState failed at open.
+      if (!fromHistory && !forceRoot && detail && detail._layer && layerPushed > 0) {
+        history.back(); return;
       }
-      pitcherPushed = false;
       // The closure this points into is about to be orphaned; a stale rebuilder
       // firing against a torn-down page is the one way this can misbehave.
       detailRerender = null; detailBuiltKind = "";
@@ -13911,28 +14204,10 @@ export default function Home() {
       if (!$("gamepage")) return;
       repaintBoxPane();
     }
-    function bindSheetDrag(sheet: any, grab: any) {
-      if (!sheet || !grab) return;
-      let y0: any = null, dy = 0;
-      const start = (e: any) => { y0 = (e.touches ? e.touches[0] : e).clientY; dy = 0; sheet.style.transition = "none"; };
-      const move = (e: any) => { if (y0 == null) return; dy = Math.max(0, ((e.touches ? e.touches[0] : e).clientY) - y0); sheet.style.transform = `translateY(${dy}px)`; };
-      const end = () => {
-        if (y0 == null) return;
-        sheet.style.transition = "";
-        if (dy > 110) { sheet.style.transform = ""; closeDetail(); }
-        else sheet.style.transform = "";
-        y0 = null;
-      };
-      grab.addEventListener("touchstart", start, { passive: true });
-      grab.addEventListener("touchmove", move, { passive: true });
-      grab.addEventListener("touchend", end);
-      grab.addEventListener("mousedown", (e: any) => {
-        start(e);
-        const mm = (ev: any) => move(ev);
-        const mu = () => { end(); window.removeEventListener("mousemove", mm); window.removeEventListener("mouseup", mu); };
-        window.addEventListener("mousemove", mm); window.addEventListener("mouseup", mu);
-      });
-    }
+    /* (bindSheetDrag — the grab-handle drag-to-dismiss — retired with the last bottom
+       sheet, 2026-08-10. Every layered surface is a full page now: the chevron, the edge
+       swipe-back and the hardware back button are the doors, and "dismiss-down" no longer
+       matches any surface's geometry. It is in git if a true bottom sheet ever returns.) */
     /* ══════════════ SWIPE BACK — ONE GESTURE, EVERY LAYER ══════════════
        Leon: "support swiping left to right to go back seamlessly."
 
@@ -14072,18 +14347,22 @@ export default function Home() {
 
     // ===================== "HOW PICKS WORK" SHEET (the ⓘ link) =====================
     function openRecipeSheet() {
-      detail = detailWithGameReturn({ _recipe: true });
+      // A FULL PAGE, NOT A BOTTOM SHEET (mandate 2026-08-10): same gamepage chassis as the
+      // terms and paper pages, chevron back, its own history entry — hardware back works.
+      detail = detailWithGameReturn({ _recipe: true, _layer: "recipe" });
       const html = `
-        <div class="sheet-bg" id="sheet-bg"></div>
-        <div class="sheet" id="sheet" role="dialog" aria-modal="true">
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head gold">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <div class="sh-sport">DiamondEdge</div>
-            <div class="rcp-title"><span class="pl-vdia">◆</span>How picks work</div>
-            <div class="sh-meta">what the words mean</div>
+        <div class="gamepage recipepage" id="gamepage" role="dialog" aria-modal="true" aria-label="How picks work">
+          <div class="gp-head">
+            <button class="gp-back" id="sheet-close" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx">How picks work</span>
+            <div class="hspacer"></div>
           </div>
-          <div class="sh-body">
+          <div class="gp-body" id="gp-body">
+            <div class="rcp-hero">
+              <div class="sh-sport">DiamondEdge</div>
+              <div class="rcp-title"><span class="pl-vdia">◆</span>How picks work</div>
+              <div class="sh-meta">what the words mean</div>
+            </div>
             <div class="dsec">
               <div class="dsec-h">Pick / No pick</div>
               <div class="dsec-b rcp">
@@ -14114,10 +14393,10 @@ export default function Home() {
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
+      requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+      pushLayerEntry("recipe");
       bindClick("sheet-close", () => closeDetail());
-      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-      bindSheetDrag($("sheet"), $("sh-grab"));
-      bindSwipeBack($("sheet"));
+      bindSwipeBack($("gamepage"));
     }
     // The pick-record breakdown — TODAY (with how many are still live/to-come) and THIS MONTH,
     // each split by market. Same sheet chrome as everything else, so overlays stay consistent.
@@ -14149,14 +14428,18 @@ export default function Home() {
       if (gid) {
         const g = gameById(gid);
         if (g) {
-          // Popping back INTO a game from a layered sheet (the pitcher page) restores the
-          // game on the tab the reader left, not on the default tab.
-          const bk = detail && detail._pitcher && detail._backToGame;
-          if (bk && bk.game && String(bk.game.game_id) === String(gid)) { pitcherPushed = false; restoreGameDetail(bk); }
+          // Popping back INTO a game from ANY layered page (pitcher, article, recipe,
+          // terms, paper, analyst, calendar, team) restores the game on the tab the
+          // reader left, not on the default tab.
+          const bk = detail && detail._layer && detail._backToGame;
+          if (bk && bk.game && String(bk.game.game_id) === String(gid)) { restoreGameDetail(bk); }
           else if (!detail || detail.game_id == null || String(detail.game_id) !== String(gid)) openDetail(g, undefined, true);
         }
         else if (!detail) { /* game not in the loaded slate yet — leave URL, board loads it */ }
-      } else if (detail && !detail._recipe) {
+      } else if (detail) {
+        // No ?g= here and something of ours is open: its entry was just popped, so this is
+        // the teardown side of the one door. (The old `_recipe` exemption is gone — every
+        // layered page owns a history entry now, so a pop landing here is always ours.)
         closeDetail(fromHistory);
       }
     }
@@ -14166,6 +14449,13 @@ export default function Home() {
        or, worse on the entry before it, closes the game underneath. One layer per pop. */
     window.addEventListener("popstate", () => {
       if (document.getElementById("pcard-layer")) { closePlayerCard(true); return; }
+      /* A LAYERED PAGE'S OWN ENTRY ANSWERS NEXT. The counter only says "we own entries";
+         WHAT closes is decided from state (detail/_layer + the URL) inside syncFromUrl,
+         so a stale count (a layer torn down through the brand-home door) degrades to a
+         no-op pop rather than closing the wrong surface. */
+      if (layerPushed > 0) { layerPushed--; syncFromUrl(true); return; }
+      // Account sub-modes (sign-in / subscribe / manage) walk back one mode per pop.
+      if (acctPushed > 0) { acctPushed--; if (tab === "account" && accountMode !== "menu") { acctModeBack(); return; } }
       syncFromUrl(true);
     });
 
@@ -14937,27 +15227,44 @@ export default function Home() {
     function openArticleFail(title: string, sub: string) {
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      detail = detailWithGameReturn({ _article: true });
-      layer.innerHTML = `
-        <div class="sheet-bg article-bg" id="sheet-bg"></div>
-        <div class="sheet article-story artfail" id="sheet" role="dialog" aria-modal="true">
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head">
-            <button class="close" id="sheet-close" aria-label="Close">✕</button>
-            <div class="art-visual is-fallback"><span>◆</span></div>
-            <div class="sh-sport">DiamondEdge</div>
-            <div class="art-title">${esc(title)}</div>
-            <div class="sh-meta">${esc(sub)}</div>
+      // the reader may already be a mounted page (a next/prev tap hit a refreshed feed) —
+      // it keeps its element and its history entry, exactly like a successful page turn
+      const already = !!layer.querySelector(".gamepage.artpage");
+      detail = detailWithGameReturn({ _article: true, _layer: "article" });
+      const inner = `
+          <div class="gp-body art-scroll" id="art-scroll">
+            <div class="art-hero art-type">
+              <span class="art-hero-scrim"></span>
+              <span class="art-hero-body">
+                <span class="art-rule" aria-hidden="true"><i>◆</i></span>
+                <span class="sh-sport">DiamondEdge</span>
+                <span class="art-title">${esc(title)}</span>
+                <span class="sh-meta">${esc(sub)}</span>
+              </span>
+            </div>
+          </div>`;
+      const live = layer.querySelector(".gamepage.artpage .art-swap") as any;
+      if (already && live) {
+        live.innerHTML = inner;
+      } else {
+        layer.innerHTML = `
+        <div class="gamepage artpage article-story artfail" id="gamepage" role="dialog" aria-modal="true">
+          <div class="gp-head">
+            <button class="gp-back" id="sheet-close" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx">DiamondEdge · News</span>
+            <div class="hspacer"></div>
           </div>
+          <div class="art-swap" id="art-swap">${inner}</div>
         </div>`;
+        requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+        pushLayerEntry("article");
+        bindSwipeBack($("gamepage"));
+      }
       document.body.classList.add("sheet-open");
       bindClick("sheet-close", () => closeDetail());
-      bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-      bindSwipeBack($("sheet"));
-      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     function openArticleSheetInner(s: any, key = "") {
-      detail = detailWithGameReturn({ _article: true });
+      detail = detailWithGameReturn({ _article: true, _layer: "article" });
       try { const h = String(s.headline || s.title || ""); document.title = /diamondedge/i.test(h) ? h : `${h} — DiamondEdge`; } catch {}  // avoid double-branding; closeDetail restores base
       /* ════════ THE READER WALKS THE DECK (Leon, 2026-08-10) ════════
          "If I click next story in the news it should move the story along."
@@ -15115,13 +15422,17 @@ export default function Home() {
              <button class="art-navbtn next" data-navk="${nextKey != null ? esc(nextKey) : ""}"${nextKey == null ? " disabled aria-disabled=\"true\"" : ""}><span>Next story</span><i aria-hidden="true">→</i></button>
            </nav>`
         : "";
+      /* ════════ THE READER IS A FULL PAGE NOW (Leon, 2026-08-10) ════════
+         "Make sure ALL clicks on the entire website go to a new full page with back button
+         — vs these popups." The bottom sheet is retired: the reader rides the same
+         `.gamepage` chassis as the game page, with the chevron back top-left, its own
+         history entry (hardware back closes it), and the share action in the header bar.
+         EVERYTHING the sheet had learned survives: the hero-is-the-card anatomy, the
+         persistent prev/next footer, the in-place story swap (only `.art-swap` re-renders
+         — the surface never leaves the screen), and the deck underneath following the
+         reader. */
       const inner = `
-          <div class="sh-grab" id="sh-grab"><span></span></div>
-          <div class="sh-head">
-            <span class="art-acts">
-              <button class="close art-act" id="art-share" aria-label="Share this story">↗</button>
-              <button class="close art-act" id="sheet-close" aria-label="Close">✕</button>
-            </span>
+          <div class="gp-body art-scroll" id="art-scroll">
             ${/* THE HEADER IS THE CARD, CONTINUED — not a photo with a headline underneath it.
                   The news card the reader just tapped is an App-Store "Today" card: the picture
                   FILLS it, a scrim rises from the foot, and the headline sits ON the image. The
@@ -15155,44 +15466,49 @@ export default function Home() {
                 ${newsDek(s) ? `<span class="sh-meta">${esc(newsDek(s))}</span>` : ""}
               </span>
             </div>
-          </div>
-          <div class="sh-body">
-            <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span></div>
-            ${takePanel}
-            <div class="art-body">${body}</div>
-            ${ctaRow}
-            ${adSlot("article-end")}
+            <div class="sh-body">
+              <div class="art-byline"><span>${esc(s.byline || "DiamondEdge Staff")}${niceTime(s.published_at, s.published_display) ? " · " + esc(niceTime(s.published_at, s.published_display)) : ""} · ${readMin} min read</span></div>
+              ${takePanel}
+              <div class="art-body">${body}</div>
+              ${ctaRow}
+              ${adSlot("article-end")}
+            </div>
           </div>
           ${navBar}`;
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
-      /* THE SURFACE STAYS. Advancing used to rewrite the whole layer, which destroyed the
-         `.sheet` element — and a fresh `.sheet` replays `sheetin`, the full slide-up from
-         the bottom of the screen. That is a close and a reopen, however fast it is. So a
-         reader that is ALREADY OPEN keeps its element and only swaps its contents; the
-         page turn is a short directional wipe on the head and the body, and the scrim, the
-         rounded corners and the swipe-back binding are never touched. */
-      const live = layer.querySelector(".sheet.article-story") as any;
-      const turning = !!live;
-      let sheet: any;
-      if (live) {
-        sheet = live;
-        sheet.innerHTML = inner;
-        sheet.classList.remove("art-turn-f", "art-turn-b");
-        void sheet.offsetWidth;                                   // re-arm the animation
-        sheet.classList.add(articleTurnBack ? "art-turn-b" : "art-turn-f");
+      /* THE SURFACE STAYS. Advancing only swaps `.art-swap` — the page chrome, the
+         history entry and the swipe-back binding are never touched, so a page turn is a
+         short directional wipe rather than a close-and-reopen. */
+      const livePage = layer.querySelector(".gamepage.artpage") as any;
+      let swap: any;
+      if (livePage) {
+        livePage.classList.remove("artfail");
+        swap = livePage.querySelector(".art-swap");
+        swap.innerHTML = inner;
+        swap.classList.remove("art-turn-f", "art-turn-b");
+        void swap.offsetWidth;                                   // re-arm the animation
+        swap.classList.add(articleTurnBack ? "art-turn-b" : "art-turn-f");
       } else {
         layer.innerHTML = `
-        <div class="sheet-bg article-bg" id="sheet-bg"></div>
-        <div class="sheet article-story" id="sheet" role="dialog" aria-modal="true">${inner}</div>`;
-        sheet = $("sheet");
-        bindClick("sheet-bg", () => closeDetail(), { keyboard: false });
-        bindSwipeBack(sheet);
+        <div class="gamepage artpage article-story" id="gamepage" role="dialog" aria-modal="true">
+          <div class="gp-head">
+            <button class="gp-back" id="sheet-close" aria-label="Back">${backChevron}</button>
+            <span class="gp-brand-tx art-headk">DiamondEdge · News</span>
+            <div class="hspacer"></div>
+            <button class="gp-share" id="art-share" aria-label="Share this story"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.7l7.4-4.3M8.3 13.3l7.4 4.3"/></svg></button>
+          </div>
+          <div class="art-swap" id="art-swap">${inner}</div>
+        </div>`;
+        requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+        pushLayerEntry("article");
+        bindSwipeBack($("gamepage"));
+        swap = $("art-swap");
       }
       articleTurnBack = false;
       document.body.classList.add("sheet-open");
       bindClick("sheet-close", () => closeDetail());
-      bindNewsCta(sheet);
+      bindNewsCta(swap);
       /* AND THE DECK UNDERNEATH FOLLOWS THE READER. Read four stories forward, close, and
          the briefing used to be sitting exactly where you left it four stories ago. The
          slide for a story is the one carrying its key, so the deck is simply told to be
@@ -15202,14 +15518,14 @@ export default function Home() {
         const sl = card && card.closest ? card.closest(".st-slide") : null;
         if (sl && sl.dataset.si != null) { const si = Number(sl.dataset.si); if (!isNaN(si) && si !== storyIdx) gotoStory(si); }
       }
-      sheet.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
+      swap.querySelectorAll(".art-navbtn").forEach((b: any) => (b.onclick = () => {
         const k = b.dataset.navk;
         if (!k) return;                                            // an end stop: it is there to say so
         articleTurnBack = navKeys.indexOf(k) < ci;
         // A missing story goes through the same door as every other failure — never a
         // dead tap, which is indistinguishable from the control being broken.
         openArticleSheet(newsStoryByKey(k), k);
-        const sb = $("sheet") && $("sheet").querySelector(".sh-body");
+        const sb = $("art-scroll");
         if (sb) sb.scrollTop = 0;
       }));
       const shb = $("art-share");
@@ -15221,7 +15537,6 @@ export default function Home() {
         if ((navigator as any).share) { try { await (navigator as any).share({ title, text: s.dek || title, url }); return; } catch {} }
         try { await navigator.clipboard.writeText(`${title} — ${url}`); toast("Link copied to clipboard"); } catch { toast(url); }
       };
-      bindSheetDrag($("sheet"), $("sh-grab"));
     }
     // ═════════════════ CINEMATIC STORIES (the News tab's default mode) ═════════════════
     // Instagram-stories-style: full-viewport dark-glass cards advanced one-by-one — tap
@@ -16705,7 +17020,7 @@ export default function Home() {
       let layer = $("sheet-layer");
       if (!layer) { layer = document.createElement("div"); layer.id = "sheet-layer"; document.body.appendChild(layer); }
       const prev = detail;
-      detail = detailWithGameReturn({ _terms: true });
+      detail = detailWithGameReturn({ _terms: true, _layer: "terms" });
       layer.innerHTML = `
         <div class="gamepage termspage" id="gamepage" role="dialog" aria-modal="true" aria-label="Terms and disclaimer">
           <div class="gp-head">
@@ -16727,9 +17042,14 @@ export default function Home() {
         </div>`;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
-      // the swipe and the arrow are ONE door: both restore whatever `detail` the terms page
-      // was opened on top of before closing, or the reader lands back on the wrong surface
-      const leaveTerms = () => { detail = prev; closeDetail(); };
+      pushLayerEntry("terms");
+      /* THE SWIPE, THE CHEVRON AND THE HARDWARE BACK ARE ONE DOOR — closeDetail walks the
+         history entry this page just took, and the popstate teardown runs once. A game the
+         terms covered restores via _backToGame; every other opener (the account routes) is
+         a tab still sitting beneath this layer, so there is nothing to restore. `prev` is
+         kept only for that assertion — it is never a torn-down sheet in practice. */
+      void prev;
+      const leaveTerms = () => closeDetail();
       bindClick("gp-back", leaveTerms);
       bindSwipeBack($("gamepage"), leaveTerms);
       if (mustAccept) {
@@ -16738,8 +17058,8 @@ export default function Home() {
         bindClick("terms-go", () => {
           if (!$("terms-box") || !$("terms-box").checked) return;
           acceptTerms();
-          detail = prev; closeDetail();
-          if (onAccept) setTimeout(onAccept, 260);
+          leaveTerms();
+          if (onAccept) setTimeout(onAccept, 320);
         }, { optional: "only rendered in the must-accept variant" });
       }
     }
@@ -16769,6 +17089,7 @@ export default function Home() {
       if (!a) { accountMode = "signin"; renderSignIn(); return; }
       if (accountMode === "subscribe") { renderSubscribe(); return; }
       if (accountMode === "manage") { renderManagePlan(); return; }
+      if (accountMode === "support") { renderSupport(); return; }
       const prem = isPremium();
       const plan = prem ? PLAN_COPY.premium : PLAN_COPY.free;
       const blk = headlineRecordBlock();
@@ -16823,6 +17144,7 @@ export default function Home() {
           <!-- ── 4. SUPPORT ── a real route, not a dead end ── -->
           <section class="acct-card">
             <div class="acct-card-k">Support</div>
+            <button class="acct-link" id="acct-support">Message support${supportUnread > 0 ? `<span class="sup-badge">${supportUnread}</span>` : ""}<span class="al-sub">In-app thread — we reply within a day</span><em>→</em></button>
             <a class="acct-link" href="mailto:kytepush@gmail.com?subject=DiamondEdge%20support">Email support<span class="al-sub">kytepush@gmail.com · we answer same day</span><em>→</em></a>
             <button class="acct-link" id="acct-billing">Billing question<span class="al-sub">Charges, refunds, receipts</span><em>→</em></button>
           </section>
@@ -16837,8 +17159,8 @@ export default function Home() {
           <button class="acct-signout" id="acct-signout">Sign out</button>
           <div class="acct-foot">Member since ${esc(a.since || todayISO())}.</div>
         </div>`;
-      bindClick("acct-upgrade", () => { accountMode = "subscribe"; renderSubscribe(); }, { optional: "premium members see Manage instead" });
-      bindClick("acct-manage", () => { accountMode = "manage"; renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
+      bindClick("acct-upgrade", () => { accountMode = "subscribe"; pushAcctEntry(); renderSubscribe(); }, { optional: "premium members see Manage instead" });
+      bindClick("acct-manage", () => { accountMode = "manage"; pushAcctEntry(); renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
       /* The preferences fold is part of THIS page now, so its controls bind here. Each
          re-render reopens the fold, because a toggle that closes the panel it lives in
          reads as the page throwing the reader out. */
@@ -16857,6 +17179,7 @@ export default function Home() {
         { optional: "only shown once a custom league order exists" });
       bindClick("acct-record", () => goDeskResults());
       bindClick("acct-how", () => openRecipeSheet());
+      bindClick("acct-support", () => { accountMode = "support"; pushAcctEntry(); renderSupport(); });
       bindClick("acct-billing", () => { location.href = "mailto:kytepush@gmail.com?subject=DiamondEdge%20billing"; });
       bindClick("acct-terms", () => openTermsSheet());
       bindClick("plan-terms", () => openTermsSheet(), { optional: "only on the free-member plan card" });
@@ -16880,7 +17203,7 @@ export default function Home() {
       })();
       view.innerHTML = `
         <div class="acct-page manage">
-          <button class="acct-x" id="mg-close" aria-label="Back">✕</button>
+          <button class="acct-back gp-back" id="mg-close" aria-label="Back">${backChevron}</button>
           <header class="mg-hero">
             <div class="mg-k">DiamondEdge Premium</div>
             <div class="mg-state"><span class="mg-dot" aria-hidden="true"></span>Active</div>
@@ -16900,9 +17223,9 @@ export default function Home() {
           <button class="mg-cancel" id="mg-cancel">Cancel subscription</button>
           <div class="acct-foot">Cancelling keeps your access until ${esc(renew)}. The record stays free either way.</div>
         </div>`;
-      bindClick("mg-close", () => { accountMode = "menu"; renderAccount(); });
+      bindClick("mg-close", () => acctExit());
       // BILLING-PORTAL WIRE-IN POINT: both of these become a Stripe Billing Portal session.
-      bindClick("mg-method", () => { accountMode = "subscribe"; renderSubscribe(); });
+      bindClick("mg-method", () => { accountMode = "subscribe"; pushAcctEntry(); renderSubscribe(); });
       bindClick("mg-receipts", () => toast("Receipts arrive by email at the address on this account"));
       // CANCEL WIRE-IN POINT: DELETE the subscription through the gateway. It must reach the
       // SERVER SESSION — dropping the local flag alone leaves the HttpOnly cookie in place and
@@ -16915,6 +17238,80 @@ export default function Home() {
         renderAccount();
         await entitlementRefresh();        // re-pull the now-public board and repaint every surface
       });
+    }
+    /* ═══════════ SUPPORT THREAD (2026-08-10) — the in-app half of the admin console ═══════════
+       A plain message thread between this reader and the owner. NOT REAL-TIME, ON PURPOSE,
+       and the copy says so: the owner answers from /admin/kp-desk, usually within a day,
+       and replies are mirrored to email. Identity is the HttpOnly uid cookie set at
+       sign-in — nothing here reads or trusts localStorage.
+
+       EGRESS DISCIPLINE: the thread refetches every 60s ONLY while this surface is open
+       and visible (the interval self-clears the moment the view unmounts); the unread
+       check at app open rides the /api/register response. No stream, no push, no
+       background polling — a support inbox does not need any of them. */
+    let supportPollT = 0;
+    function renderSupport() {
+      const view = $("account-view");
+      if (!view) return;
+      view.innerHTML = `
+        <div class="acct-page">
+          <button class="acct-back gp-back" id="sup-close" aria-label="Back">${backChevron}</button>
+          <header class="acct-hero" style="padding-bottom:4px">
+            <h2>Support</h2>
+          </header>
+          <section class="acct-card">
+            <p class="sup-note">We're a small team — replies usually land within a day. You'll also get a copy by email.</p>
+            <div class="sup-thread" id="sup-thread"><div class="sup-empty">Loading your messages…</div></div>
+            <form class="sup-form" id="sup-form">
+              <textarea id="sup-box" placeholder="How can we help? Picks, billing, bugs — ask anything." maxlength="4000" rows="3" aria-label="Your message"></textarea>
+              <button type="submit" class="acct-cta" id="sup-send">Send message</button>
+            </form>
+          </section>
+        </div>`;
+      bindClick("sup-close", () => { window.clearInterval(supportPollT); acctExit(); });
+      const supTime = (iso: string) => { try { return new Date(iso).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }); } catch { return ""; } };
+      const paint = (msgs: any[]) => {
+        const el = $("sup-thread"); if (!el) return;
+        if (!msgs.length) { el.innerHTML = `<div class="sup-empty">No messages yet — start the thread below.</div>`; return; }
+        el.innerHTML = msgs.map((m: any) =>
+          `<div class="sup-msg ${m.dir === "admin" ? "them" : "me"}"><div class="sup-b">${esc(m.body)}</div><div class="sup-at">${m.dir === "admin" ? "DiamondEdge" : "You"} · ${esc(supTime(m.at))}</div></div>`).join("");
+        el.scrollTop = el.scrollHeight;
+      };
+      const load = async () => {
+        try {
+          const r = await fetch("/api/support", { cache: "no-store" });
+          const j = await r.json().catch(() => null);
+          if (!$("sup-thread")) return;               // surface left while in flight
+          paint(j && Array.isArray(j.msgs) ? j.msgs : []);
+          if (supportUnread) { supportUnread = 0; renderDock(); }  // opening the thread reads it
+        } catch { const el = $("sup-thread"); if (el && !el.querySelector(".sup-msg")) el.innerHTML = `<div class="sup-empty">Couldn't load — check your connection.</div>`; }
+      };
+      load();
+      window.clearInterval(supportPollT);
+      supportPollT = window.setInterval(() => {
+        if (!$("sup-thread")) { window.clearInterval(supportPollT); return; } // view unmounted ⇒ stop
+        if (document.hidden) return;
+        load();
+      }, 60 * 1000);
+      const form = $("sup-form");
+      if (form) form.onsubmit = async (e: any) => {
+        e.preventDefault();
+        const box = $("sup-box");
+        const text = ((box && box.value) || "").trim();
+        if (!text) return;
+        const btn = $("sup-send"); if (btn) { btn.disabled = true; btn.textContent = "Sending…"; }
+        try {
+          const r = await fetch("/api/support", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ body: text }),
+          });
+          const j = await r.json().catch(() => ({}));
+          if (r.ok && j && j.ok) { if (box) box.value = ""; toast("Sent — we usually reply within a day"); load(); }
+          else if (r.status === 401) toast("Sign out and back in, then try again");
+          else toast("Couldn't send — try again in a moment");
+        } catch { toast("Couldn't send — check your connection"); }
+        const btn2 = $("sup-send"); if (btn2) { btn2.disabled = false; btn2.textContent = "Send message"; }
+      };
     }
     // SIGN-IN gateway: social buttons (Google/Apple/Facebook/X) + email — all functional
     // STUBS that set a mock session and persist it. NO real OAuth (wire-in points marked).
@@ -16933,7 +17330,7 @@ export default function Home() {
         `<button class="sgn-btn sgn-${p}" data-prov="${p}"><span class="sgn-mark">${PROVIDER_MARK[p]}</span><span class="sgn-tx">Continue with ${PROVIDER_LABEL[p]}</span></button>`;
       view.innerHTML = `
         <div class="acct-page signin">
-          <button class="acct-x" id="sgn-close" aria-label="Back">✕</button>
+          <button class="acct-back gp-back" id="sgn-close" aria-label="Back">${backChevron}</button>
           <div class="sgn-hero">
             <div class="sgn-dia" aria-hidden="true"></div>
             <h2>Join DiamondEdge</h2>
@@ -16956,7 +17353,7 @@ export default function Home() {
           </form>
           <div class="sgn-legal">Play responsibly. In the US, call or text 1-800-GAMBLER for free, confidential support.</div>
         </div>`;
-      bindClick("sgn-close", () => { if (isSignedIn()) { accountMode = "menu"; renderAccount(); } else switchTab("today"); });
+      bindClick("sgn-close", () => acctExit());
       bindClick("sgn-terms-open", () => openTermsSheet());
       // Nothing creates an account until the box is ticked. The prompt is inline rather than
       // a blocking alert, and the checkbox is the thing that gets pointed at.
@@ -17039,7 +17436,7 @@ export default function Home() {
       }
       view.innerHTML = `
         <div class="acct-page subscribe">
-          <button class="acct-x" id="sub-close" aria-label="Back">✕</button>
+          <button class="acct-back gp-back" id="sub-close" aria-label="Back">${backChevron}</button>
           <div class="sub-hero">
             <div class="sub-dia" aria-hidden="true"></div>
             <div class="sub-k">DiamondEdge Premium</div>
@@ -17096,8 +17493,8 @@ export default function Home() {
           ${termsMini("sub-terms")}
         </div>`;
       view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
-      bindClick("sub-close", () => { accountMode = "menu"; renderAccount(); });
-      bindClick("sub-skip", () => { accountMode = "menu"; renderAccount(); });
+      bindClick("sub-close", () => acctExit());
+      bindClick("sub-skip", () => acctExit());
       bindClick("sub-terms", () => openTermsSheet());
       // THE PURCHASE STEP REQUIRES THE ACKNOWLEDGMENT. If it is not already on file the full
       // text opens with the accept box, and the charge only proceeds after it is ticked.
@@ -17900,7 +18297,10 @@ export default function Home() {
       const papers = allPapers();
       const pp = papers.find((x: any) => x.id === id);
       if (!pp) return;
-      detail = detailWithGameReturn({ _paper: true, paper: pp.id });
+      // paper → related paper swaps IN PLACE and keeps the one history entry, so one back
+      // always leaves the library — never a chain of popped re-reads
+      const already = !!(detail && detail._paper);
+      detail = detailWithGameReturn({ _paper: true, paper: pp.id, _layer: "paper" });
       // Figures are spread across the body sections rather than dumped in a gallery: a chart
       // three screens from the sentence it proves is decoration. Balanced split, in order.
       const bodySecs = pp.sections.filter((s: any) => s.role === "methods" || s.role === "results" || s.role === "discussion");
@@ -17989,6 +18389,7 @@ export default function Home() {
         </div>`;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const pg = $("gamepage"); if (pg) pg.classList.add("in"); });
+      if (!already) pushLayerEntry("paper");
       bindClick("gp-back", () => closeDetail());
       layer.querySelectorAll("[data-paper]").forEach((b: any) => (b.onclick = () => { const t = $("gp-body"); if (t) t.scrollTop = 0; openPaper(b.dataset.paper); }));
       bindSwipeBack($("gamepage"));
@@ -20066,7 +20467,7 @@ export default function Home() {
         const on = tab === t;
         // EVERY tab keeps its label. iOS never hides the label of an inactive tab.
         return `<button class="dock-item${on ? " on" : ""}${t === "games" ? " main" : ""}" data-tab="${t}" aria-label="${NAV_LABEL[t]}"${on ? ' aria-current="page"' : ""}>
-          <span class="dock-ic">${DOCK_ICONS[t] || ""}</span>
+          <span class="dock-ic">${DOCK_ICONS[t] || ""}${t === "account" && supportUnread > 0 ? `<span class="dock-dot" aria-label="${supportUnread} unread support repl${supportUnread === 1 ? "y" : "ies"}"></span>` : ""}</span>
           <span class="dock-lab">${NAV_LABEL[t]}</span>
         </button>`;
       }).join("");
@@ -20276,6 +20677,7 @@ export default function Home() {
         // responsible for putting the header and the tab bar back simply did not run.
         if (t !== "today") { stopStories(); storyDeckReal = false; }
         tab = t;
+        track("tab", t); // batched — rides the tab-hide beacon, never its own request
         chromeGuard();   // the invariant, asserted on every single surface change
         TABS.forEach((k) => { const v = $(k + "-view"); if (v) v.style.display = k === t ? "block" : "none"; });
         renderDock(); // the floating dock is the primary nav — re-render so the gold pill moves
@@ -20330,6 +20732,9 @@ export default function Home() {
       // web-only chrome via body.native (CSS).
       const NATIVE = /DiamondEdgeNative/i.test(navigator.userAgent) || !!(window as any).Capacitor || /[?&]native=1/.test(location.search);
       if (NATIVE) document.body.classList.add("native");
+      // First-party analytics: the ONE session-start beacon (everything else rides the
+      // tab-hide flush), and — for a signed-in reader — the one register/unread sync.
+      try { anStart(); supportBootSync(); } catch {}
       /* ASK THE SERVER WHETHER THIS READER IS ENTITLED, BEFORE THE FEEDS. The
          answer decides WHICH PAYLOAD the loads below should fetch — public or
          premium — so it has to land first or a member's first board is the

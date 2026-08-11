@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-10T13:44:32Z",
+ "generated_utc": "2026-08-11T03:41:18Z",
  "by_game": {
   "822700": {
    "away": {
@@ -2912,10 +2912,10 @@
     "id": 543243,
     "name": "Sonny Gray",
     "throws": "R",
-    "era": 2.78,
-    "wl": "14-2",
-    "ip": 119.2,
-    "k9": 7.97,
+    "era": 2.79,
+    "wl": "14-3",
+    "ip": 125.2,
+    "k9": 7.88,
     "whip": 1.15,
     "starts": [
      {
@@ -3008,32 +3008,20 @@
       "k": 9,
       "p": 97,
       "res": "ND"
-     },
-     {
-      "date": "2026-06-23",
-      "opp": "COL",
-      "at": "A",
-      "ip": 7.0,
-      "h": 6,
-      "r": 1,
-      "er": 1,
-      "bb": 3,
-      "k": 11,
-      "p": 93,
-      "res": "W"
      }
     ],
-    "team": "BOS"
+    "team": "BOS",
+    "actual_starter": true
    },
    "home": {
     "id": 592791,
     "name": "Jameson Taillon",
     "throws": "R",
-    "era": 5.96,
+    "era": 5.68,
     "wl": "2-6",
-    "ip": 80.0,
-    "k9": 8.1,
-    "whip": 1.39,
+    "ip": 84.0,
+    "k9": 8.04,
+    "whip": 1.37,
     "starts": [
      {
       "date": "2026-08-05",
@@ -3125,22 +3113,10 @@
       "k": 5,
       "p": 90,
       "res": "L"
-     },
-     {
-      "date": "2026-05-16",
-      "opp": "CHW",
-      "at": "A",
-      "ip": 5.0,
-      "h": 8,
-      "r": 8,
-      "er": 8,
-      "bb": 1,
-      "k": 2,
-      "p": 90,
-      "res": "L"
      }
     ],
-    "team": "TOR"
+    "team": "TOR",
+    "actual_starter": true
    }
   },
   "823018": {
@@ -3148,11 +3124,11 @@
     "id": 691725,
     "name": "Andrew Painter",
     "throws": "R",
-    "era": 6.48,
+    "era": 6.27,
     "wl": "1-8",
-    "ip": 75.0,
-    "k9": 7.56,
-    "whip": 1.57,
+    "ip": 80.1,
+    "k9": 7.73,
+    "whip": 1.53,
     "starts": [
      {
       "date": "2026-08-05",
@@ -3244,32 +3220,20 @@
       "k": 3,
       "p": 69,
       "res": "ND"
-     },
-     {
-      "date": "2026-05-13",
-      "opp": "BOS",
-      "at": "A",
-      "ip": 5.0,
-      "h": 4,
-      "r": 1,
-      "er": 1,
-      "bb": 0,
-      "k": 4,
-      "p": 62,
-      "res": "ND"
      }
     ],
-    "team": "PHI"
+    "team": "PHI",
+    "actual_starter": true
    },
    "home": {
     "id": 690928,
     "name": "Hunter Dobbins",
     "throws": "R",
-    "era": 3.6,
+    "era": 3.4,
     "wl": "2-2",
-    "ip": 40.0,
-    "k9": 8.1,
-    "whip": 1.3,
+    "ip": 45.0,
+    "k9": 8.4,
+    "whip": 1.31,
     "starts": [
      {
       "date": "2026-08-04",
@@ -3337,7 +3301,8 @@
       "res": "ND"
      }
     ],
-    "team": "STL"
+    "team": "STL",
+    "actual_starter": true
    }
   },
   "823189": {
@@ -3345,11 +3310,11 @@
     "id": 669713,
     "name": "Hayden Wesneski",
     "throws": "R",
-    "era": 3.86,
+    "era": 3.29,
     "wl": "2-0",
-    "ip": 11.2,
-    "k9": 6.17,
-    "whip": 1.29,
+    "ip": 13.2,
+    "k9": 6.59,
+    "whip": 1.17,
     "starts": [
      {
       "date": "2026-08-04",
@@ -3378,17 +3343,18 @@
       "res": "W"
      }
     ],
-    "team": "HOU"
+    "team": "HOU",
+    "actual_starter": true
    },
    "home": {
     "id": 694918,
     "name": "Blade Tidwell",
     "throws": "R",
-    "era": 3.18,
+    "era": 3.15,
     "wl": "0-0",
-    "ip": 17.0,
-    "k9": 6.88,
-    "whip": 1.18,
+    "ip": 20.0,
+    "k9": 7.65,
+    "whip": 1.1,
     "starts": [
      {
       "date": "2026-08-04",
@@ -3404,7 +3370,8 @@
       "res": "ND"
      }
     ],
-    "team": "SF"
+    "team": "SF",
+    "actual_starter": true
    }
   },
   "823265": {
@@ -3412,10 +3379,10 @@
     "id": 701656,
     "name": "Logan Henderson",
     "throws": "R",
-    "era": 2.7,
+    "era": 2.77,
     "wl": "6-1",
-    "ip": 50.0,
-    "k9": 11.16,
+    "ip": 52.0,
+    "k9": 11.08,
     "whip": 0.9,
     "starts": [
      {
@@ -3508,32 +3475,20 @@
       "k": 7,
       "p": 84,
       "res": "W"
-     },
-     {
-      "date": "2026-05-10",
-      "opp": "NYY",
-      "at": "H",
-      "ip": 5.0,
-      "h": 4,
-      "r": 2,
-      "er": 2,
-      "bb": 1,
-      "k": 5,
-      "p": 74,
-      "res": "ND"
      }
     ],
-    "team": "MIL"
+    "team": "MIL",
+    "actual_starter": true
    },
    "home": {
     "id": 663554,
     "name": "Casey Mize",
     "throws": "R",
-    "era": 3.4,
+    "era": 3.52,
     "wl": "4-7",
-    "ip": 90.0,
-    "k9": 8.6,
-    "whip": 1.09,
+    "ip": 92.0,
+    "k9": 8.71,
+    "whip": 1.11,
     "starts": [
      {
       "date": "2026-08-05",
@@ -3625,22 +3580,10 @@
       "k": 6,
       "p": 97,
       "res": "L"
-     },
-     {
-      "date": "2026-06-17",
-      "opp": "HOU",
-      "at": "A",
-      "ip": 4.2,
-      "h": 6,
-      "r": 3,
-      "er": 3,
-      "bb": 1,
-      "k": 3,
-      "p": 86,
-      "res": "L"
      }
     ],
-    "team": "SD"
+    "team": "SD",
+    "actual_starter": true
    }
   },
   "823675": {
@@ -3648,11 +3591,11 @@
     "id": 669432,
     "name": "Trevor Rogers",
     "throws": "L",
-    "era": 4.2,
+    "era": 4.21,
     "wl": "7-7",
-    "ip": 115.2,
-    "k9": 7.63,
-    "whip": 1.24,
+    "ip": 119.2,
+    "k9": 7.67,
+    "whip": 1.25,
     "starts": [
      {
       "date": "2026-08-05",
@@ -3744,32 +3687,20 @@
       "k": 7,
       "p": 87,
       "res": "W"
-     },
-     {
-      "date": "2026-06-20",
-      "opp": "LAD",
-      "at": "A",
-      "ip": 7.0,
-      "h": 1,
-      "r": 0,
-      "er": 0,
-      "bb": 2,
-      "k": 6,
-      "p": 96,
-      "res": "W"
      }
     ],
-    "team": "BAL"
+    "team": "BAL",
+    "actual_starter": true
    },
    "home": {
     "id": 665152,
     "name": "Dean Kremer",
     "throws": "R",
-    "era": 5.93,
+    "era": 5.25,
     "wl": "1-4",
-    "ip": 41.0,
-    "k9": 8.78,
-    "whip": 1.32,
+    "ip": 48.0,
+    "k9": 8.81,
+    "whip": 1.17,
     "starts": [
      {
       "date": "2026-08-05",
@@ -3861,22 +3792,10 @@
       "k": 7,
       "p": 95,
       "res": "L"
-     },
-     {
-      "date": "2026-04-13",
-      "opp": "ARI",
-      "at": "H",
-      "ip": 5.0,
-      "h": 6,
-      "r": 4,
-      "er": 2,
-      "bb": 0,
-      "k": 9,
-      "p": 80,
-      "res": "ND"
      }
     ],
-    "team": "MIN"
+    "team": "MIN",
+    "actual_starter": true
    }
   },
   "823918": {
@@ -3995,17 +3914,18 @@
       "res": "W"
      }
     ],
-    "team": "KC"
+    "team": "KC",
+    "actual_starter": true
    },
    "home": {
     "id": 669373,
     "name": "Tarik Skubal",
     "throws": "L",
-    "era": 2.81,
+    "era": 2.86,
     "wl": "7-6",
-    "ip": 102.2,
-    "k9": 10.69,
-    "whip": 0.92,
+    "ip": 103.2,
+    "k9": 10.59,
+    "whip": 0.93,
     "starts": [
      {
       "date": "2026-08-04",
@@ -4097,22 +4017,10 @@
       "k": 9,
       "p": 87,
       "res": "W"
-     },
-     {
-      "date": "2026-06-24",
-      "opp": "NYY",
-      "at": "H",
-      "ip": 6.0,
-      "h": 4,
-      "r": 4,
-      "er": 4,
-      "bb": 0,
-      "k": 9,
-      "p": 85,
-      "res": "L"
      }
     ],
-    "team": "LAD"
+    "team": "LAD",
+    "actual_starter": true
    }
   },
   "823998": {
@@ -4122,9 +4030,9 @@
     "throws": "L",
     "era": 4.55,
     "wl": "6-9",
-    "ip": 128.2,
-    "k9": 9.79,
-    "whip": 1.24,
+    "ip": 130.2,
+    "k9": 9.85,
+    "whip": 1.25,
     "starts": [
      {
       "date": "2026-08-04",
@@ -4216,31 +4124,19 @@
       "k": 7,
       "p": 92,
       "res": "L"
-     },
-     {
-      "date": "2026-06-25",
-      "opp": "TOR",
-      "at": "A",
-      "ip": 7.0,
-      "h": 4,
-      "r": 3,
-      "er": 3,
-      "bb": 1,
-      "k": 5,
-      "p": 98,
-      "res": "W"
      }
     ],
-    "team": "TEX"
+    "team": "TEX",
+    "actual_starter": true
    },
    "home": {
     "id": 672282,
     "name": "Reid Detmers",
     "throws": "L",
-    "era": 4.12,
+    "era": 4.04,
     "wl": "3-8",
-    "ip": 129.0,
-    "k9": 10.47,
+    "ip": 131.1,
+    "k9": 10.48,
     "whip": 1.1,
     "starts": [
      {
@@ -4333,22 +4229,10 @@
       "k": 8,
       "p": 99,
       "res": "ND"
-     },
-     {
-      "date": "2026-06-21",
-      "opp": "ATH",
-      "at": "A",
-      "ip": 6.0,
-      "h": 6,
-      "r": 5,
-      "er": 5,
-      "bb": 4,
-      "k": 4,
-      "p": 90,
-      "res": "ND"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    }
   },
   "824887": {
@@ -4356,11 +4240,11 @@
     "id": 681035,
     "name": "Christian Scott",
     "throws": "R",
-    "era": 3.15,
+    "era": 3.45,
     "wl": "3-3",
-    "ip": 74.1,
-    "k9": 11.14,
-    "whip": 1.26,
+    "ip": 78.1,
+    "k9": 11.26,
+    "whip": 1.3,
     "starts": [
      {
       "date": "2026-08-05",
@@ -4452,32 +4336,20 @@
       "k": 6,
       "p": 82,
       "res": "ND"
-     },
-     {
-      "date": "2026-06-11",
-      "opp": "STL",
-      "at": "H",
-      "ip": 4.2,
-      "h": 7,
-      "r": 4,
-      "er": 4,
-      "bb": 1,
-      "k": 6,
-      "p": 88,
-      "res": "ND"
      }
     ],
-    "team": "NYM"
+    "team": "NYM",
+    "actual_starter": true
    },
    "home": {
     "id": 693821,
     "name": "Bryce Elder",
     "throws": "R",
-    "era": 3.69,
+    "era": 4.03,
     "wl": "8-6",
-    "ip": 126.2,
-    "k9": 7.39,
-    "whip": 1.2,
+    "ip": 131.2,
+    "k9": 7.38,
+    "whip": 1.25,
     "starts": [
      {
       "date": "2026-08-05",
@@ -4569,22 +4441,10 @@
       "k": 6,
       "p": 95,
       "res": "L"
-     },
-     {
-      "date": "2026-06-14",
-      "opp": "NYM",
-      "at": "A",
-      "ip": 4.0,
-      "h": 10,
-      "r": 6,
-      "er": 6,
-      "bb": 2,
-      "k": 2,
-      "p": 75,
-      "res": "L"
      }
     ],
-    "team": "ATL"
+    "team": "ATL",
+    "actual_starter": true
    }
   },
   "824969": {
@@ -4592,9 +4452,9 @@
     "id": 642547,
     "name": "Freddy Peralta",
     "throws": "R",
-    "era": 5.37,
+    "era": 5.43,
     "wl": "5-9",
-    "ip": 117.1,
+    "ip": 119.1,
     "k9": 8.9,
     "whip": 1.52,
     "starts": [
@@ -4688,32 +4548,20 @@
       "k": 5,
       "p": 98,
       "res": "ND"
-     },
-     {
-      "date": "2026-06-20",
-      "opp": "PHI",
-      "at": "A",
-      "ip": 2.2,
-      "h": 10,
-      "r": 10,
-      "er": 10,
-      "bb": 1,
-      "k": 2,
-      "p": 80,
-      "res": "L"
      }
     ],
-    "team": "TB"
+    "team": "TB",
+    "actual_starter": true
    },
    "home": {
     "id": 682052,
     "name": "Jacob Lopez",
     "throws": "L",
-    "era": 5.64,
+    "era": 5.61,
     "wl": "5-4",
-    "ip": 75.0,
-    "k9": 8.4,
-    "whip": 1.63,
+    "ip": 77.0,
+    "k9": 8.3,
+    "whip": 1.6,
     "starts": [
      {
       "date": "2026-08-05",
@@ -4805,22 +4653,10 @@
       "k": 2,
       "p": 83,
       "res": "ND"
-     },
-     {
-      "date": "2026-05-14",
-      "opp": "STL",
-      "at": "H",
-      "ip": 5.0,
-      "h": 4,
-      "r": 3,
-      "er": 2,
-      "bb": 3,
-      "k": 2,
-      "p": 86,
-      "res": "ND"
      }
     ],
-    "team": "ATH"
+    "team": "ATH",
+    "actual_starter": true
    }
   },
   "825048": {
@@ -4828,11 +4664,11 @@
     "id": 687312,
     "name": "Gabriel Hughes",
     "throws": "R",
-    "era": 4.25,
+    "era": 5.23,
     "wl": "0-3",
-    "ip": 29.2,
-    "k9": 8.49,
-    "whip": 1.18,
+    "ip": 31.0,
+    "k9": 8.42,
+    "whip": 1.26,
     "starts": [
      {
       "date": "2026-08-04",
@@ -4900,17 +4736,18 @@
       "res": "ND"
      }
     ],
-    "team": "COL"
+    "team": "COL",
+    "actual_starter": true
    },
    "home": {
     "id": 647336,
     "name": "Michael Soroka",
     "throws": "R",
-    "era": 3.07,
+    "era": 3.0,
     "wl": "8-3",
-    "ip": 82.0,
-    "k9": 8.67,
-    "whip": 1.09,
+    "ip": 84.0,
+    "k9": 8.79,
+    "whip": 1.07,
     "starts": [
      {
       "date": "2026-06-19",
@@ -5002,22 +4839,10 @@
       "k": 8,
       "p": 98,
       "res": "W"
-     },
-     {
-      "date": "2026-05-11",
-      "opp": "TEX",
-      "at": "A",
-      "ip": 6.1,
-      "h": 3,
-      "r": 0,
-      "er": 0,
-      "bb": 1,
-      "k": 5,
-      "p": 89,
-      "res": "W"
      }
     ],
-    "team": "ARI"
+    "team": "ARI",
+    "actual_starter": true
    }
   },
   "822697": {
@@ -6781,6 +6606,32 @@
    }
   },
   "823997": {
+   "away": {
+    "id": 674003,
+    "name": "Cody Bradford",
+    "throws": "L",
+    "era": 0.0,
+    "wl": "0-0",
+    "ip": 4.1,
+    "k9": 10.38,
+    "whip": 1.62,
+    "starts": [
+     {
+      "date": "2026-08-05",
+      "opp": "SF",
+      "at": "H",
+      "ip": 4.1,
+      "h": 5,
+      "r": 0,
+      "er": 0,
+      "bb": 2,
+      "k": 5,
+      "p": 70,
+      "res": "ND"
+     }
+    ],
+    "team": "TEX"
+   },
    "home": {
     "id": 696270,
     "name": "Ryan Johnson",

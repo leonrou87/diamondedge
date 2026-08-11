@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createHmac, timingSafeEqual, randomUUID } from "node:crypto";
+/* Admin-console data layer (2026-08-10): when premium is granted here, the
+   server-side user record (de_users) learns about it — that is the ONLY
+   coupling, and it is graceful: no service key / no uid cookie ⇒ no-op. */
+import { readUid, markPremium } from "../_lib/de";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /api/session — THE FIRST SERVER-SIDE ENTITLEMENT THIS APP HAS EVER HAD.
@@ -157,6 +161,7 @@ export async function POST(req: Request) {
     c.set(COOKIE, mint({ sub: randomUUID(), tier: "premium", exp }), {
       httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: MAX_AGE_S,
     });
+    try { const uid = await readUid(); if (uid) await markPremium(uid, "mock"); } catch {}
     return NextResponse.json({ ok: true, premium: true }, { headers: noStore });
   }
   if (!SECRET || !CODES.length) {
@@ -181,6 +186,7 @@ export async function POST(req: Request) {
     path: "/",
     maxAge: MAX_AGE_S,
   });
+  try { const uid = await readUid(); if (uid) await markPremium(uid, "code"); } catch {}
   return NextResponse.json(
     { ok: true, premium: true },
     { headers: { "Cache-Control": "private, no-store" } },

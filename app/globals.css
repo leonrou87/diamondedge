@@ -10661,3 +10661,155 @@ table.owt td.owt-b{font-family:var(--sans);font-size:12px;color:var(--ink3)}
   background:var(--ink);color:var(--paper);font-family:var(--disp);font-weight:800;
   font-size:12px;letter-spacing:.05em;text-transform:uppercase;cursor:pointer}
 .sub-code-note{margin:8px 0 0;min-height:1em;font-family:var(--sans);font-size:12px;color:var(--ink4)}
+
+/* ═════════════════ PAGES, NOT POPUPS (Leon, 2026-08-10) ═════════════════
+   Every surface that used to float — the article reader, the recipe sheet, the player
+   card — is a full page on the one chassis now: chevron back top-left, its own history
+   entry, content scrolling beneath a fixed head. The blocks below are the structural
+   adaptations; every themed rule the old sheets earned (the dark reader palette, the
+   hero anatomy) still applies through the classes they kept. */
+
+/* ── THE ARTICLE READER AS A FULL PAGE. Keeps `.article-story` for the dark palette;
+      `.artpage` carries the page geometry: head bar, swappable body, persistent nav. ── */
+.gamepage.artpage{background:#060912;color:#f8fbff}
+.gamepage.artpage .gp-head{background:rgba(6,9,18,.9);
+  -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  box-shadow:0 1px 0 rgba(255,255,255,.08)}
+.gamepage.artpage .gp-back,.gamepage.artpage .gp-share{background:rgba(255,255,255,.08);color:#fff}
+.gamepage.artpage .gp-back:hover,.gamepage.artpage .gp-share:hover{background:rgba(255,255,255,.16);color:#fff}
+.gamepage.artpage .art-headk{color:rgba(235,244,255,.7);font-size:13px;letter-spacing:.15em;font-weight:600}
+.gamepage.artpage .art-swap{flex:1;display:flex;flex-direction:column;min-height:0}
+.gamepage.artpage .art-scroll{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;padding:0}
+.gamepage.artpage .sh-body{overflow:visible;padding:15px 18px calc(26px + var(--sab));background:transparent}
+/* the page-turn wipe moves the whole swapped body, exactly as it moved the sheet's two halves */
+.art-turn-f .art-scroll,.art-turn-f .art-nav{animation:artturnf .26s var(--ease,ease) both}
+.art-turn-b .art-scroll,.art-turn-b .art-nav{animation:artturnb .26s var(--ease,ease) both}
+@media(prefers-reduced-motion:reduce){.art-turn-f .art-scroll,.art-turn-f .art-nav,.art-turn-b .art-scroll,.art-turn-b .art-nav{animation:none}}
+/* desktop: the reader stays a full dark page; the column narrows like every reading surface */
+@media(min-width:900px){
+  .gamepage.artpage{background:#060912;padding:0}
+  .gamepage.artpage>.gp-head{width:100%;max-width:none;border-radius:0}
+  .gamepage.artpage>.art-swap{width:100%;margin:0;flex:1;min-height:0}
+  .gamepage.artpage .art-hero{max-width:760px;margin-left:auto;margin-right:auto}
+  .gamepage.artpage .sh-body,.gamepage.artpage .art-nav{max-width:760px;margin-left:auto;margin-right:auto;width:100%}
+}
+
+/* ── THE RECIPE PAGE ("How picks work"): the gold band the sheet head carried, now a hero card ── */
+.recipepage .rcp-hero{position:relative;border-radius:var(--r-lg);padding:18px 16px 16px;margin-bottom:12px;
+  background:linear-gradient(140deg,rgba(var(--goldc),.24),rgba(var(--panec),.55));
+  box-shadow:var(--e1);animation:cardIn var(--t-enter) var(--ease-out) both}
+
+/* ── THE PLAYER PAGE. Still its own appended layer above the game page (the page beneath
+      stays mounted, keeps its scroll, keeps ticking) — but it PRESENTS as a full page. ── */
+.pcard.ppage{inset:0;top:0;bottom:0;width:100%;max-width:none;max-height:none;border-radius:0;
+  box-shadow:none;animation:ppagein .42s var(--ease-out) both}
+@keyframes ppagein{from{transform:translateX(100%)}to{transform:none}}
+#pcard-layer.closing .pcard.ppage{animation:ppageout .28s var(--ease) forwards}
+@keyframes ppageout{from{transform:none;opacity:1}to{transform:translateX(8%);opacity:0}}
+@media(prefers-reduced-motion:reduce){.pcard.ppage,#pcard-layer.closing .pcard.ppage{animation:none}}
+.pcard.ppage .pcard-body{flex:1;min-height:0;padding:8px 16px calc(30px + var(--sab))}
+.pcard.ppage .pp-name{text-transform:none;letter-spacing:.01em;font-weight:700;font-size:17px;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+@media(min-width:900px){
+  .pcard.ppage .pcard-body>*{max-width:760px;margin-left:auto;margin-right:auto}
+  .pcard.ppage .pcard-body{padding-top:14px}
+}
+
+/* ── ACCOUNT SUB-PAGES: the ✕ became the one chevron convention. Same grid button the
+      layered pages use, seated top-left where every other back lives. ── */
+.acct-back{position:absolute;left:4px;top:4px;z-index:3;
+  background:var(--paper);box-shadow:var(--e0);border:1px solid var(--line2)}
+.acct-back:hover{background:var(--paper)}
+.acct-back svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2.1;stroke-linecap:round;stroke-linejoin:round}
+
+/* ── NAMES WITH FACES: the inline avatar a tappable name carries in prose and rails.
+      Initials sit UNDER the image (a wrong id 200s a silhouette — see headshotUrl). ── */
+.pav.xs{width:19px;height:19px;vertical-align:-4.5px;margin-right:4px}
+.pav.xs i{font-size:7px}
+.plink .pav{border-radius:50%;overflow:hidden}
+
+/* ═════════════ THE CALENDAR PAGE — the picker as a DiamondEdge surface ═════════════
+   Display type, paper month cards, gold diamond marks on days with games, W-L in the
+   record's own green/red on graded nights, the selected day carrying the gold capsule.
+   One innerHTML paint, one delegated click — no per-cell listeners, no layout thrash. */
+.cp-today{border:1px solid rgba(var(--goldc),.4);background:var(--goldbg,rgba(var(--goldc),.12));
+  color:var(--golddeep);font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;padding:9px 13px;border-radius:11px;cursor:pointer;flex-shrink:0}
+.cp-today:active{transform:scale(.95)}
+.cp-legend{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;margin:2px 2px 12px;
+  font-family:var(--disp);font-weight:600;font-size:11px;letter-spacing:.05em;color:var(--ink3)}
+.cp-legend span{display:inline-flex;align-items:center;gap:6px}
+.cp-legend .cp-dot{font-size:9px}
+.cp-legend .cp-wl{font-size:9.5px;padding:2px 5px}
+.cp-month{position:relative;border-radius:var(--r-lg);padding:14px 12px 12px;margin-bottom:12px;
+  background:var(--paper);box-shadow:var(--e1)}
+.cp-mh{display:flex;align-items:center;gap:8px;margin:0 4px 10px}
+.cp-mh h3{font-family:var(--disp);font-weight:700;font-size:17px;letter-spacing:.02em;color:var(--ink);margin:0}
+.cp-dia{color:var(--gold);font-size:11px;line-height:1;text-shadow:0 1px 6px rgba(var(--goldc),.4)}
+.cp-dows{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:4px}
+.cp-dows span{text-align:center;font-family:var(--disp);font-weight:700;font-size:9.5px;
+  letter-spacing:.08em;color:var(--ink4)}
+.cp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cp-cell{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;min-height:44px;padding:5px 0 4px;border:0;border-radius:11px;background:transparent;
+  cursor:pointer;font-family:var(--disp);transition:background .18s ease,box-shadow .18s ease}
+.cp-cell b{font-weight:650;font-size:14px;line-height:1;color:var(--ink2);font-variant-numeric:tabular-nums}
+.cp-cell:hover{background:rgba(var(--tintc),.06)}
+.cp-cell.blank{background:none;cursor:default}
+.cp-cell.off{opacity:.22;pointer-events:none}
+.cp-cell.future b{color:var(--ink4)}
+.cp-cell.is-today{box-shadow:inset 0 0 0 1.5px rgba(var(--goldc),.5)}
+.cp-cell.on{background:linear-gradient(140deg,rgba(var(--goldc),.26),rgba(var(--goldc),.12));
+  box-shadow:inset 0 0 0 1.5px rgba(var(--goldc),.55),0 4px 12px rgba(var(--goldc),.18)}
+.cp-cell.on b{color:var(--golddeep);font-weight:800}
+.cp-dot{font-style:normal;font-size:7px;line-height:1;color:var(--gold)}
+.cp-nil{display:block;height:7px}
+.cp-wl{font-style:normal;font-family:var(--mono);font-weight:800;font-size:9px;line-height:1;
+  padding:1.5px 4px;border-radius:6px;font-variant-numeric:tabular-nums}
+.cp-wl.up{color:var(--g3);background:rgba(var(--greenc),.13)}
+.cp-wl.down{color:var(--r3);background:rgba(var(--redc),.10)}
+.cp-wl.flat{color:var(--ink3);background:rgba(var(--tintc),.08)}
+@media(min-width:768px){.cp-grid,.cp-dows{gap:6px}.cp-cell{min-height:52px}}
+@media(min-width:900px){.calpage .gp-body .cp-month,.calpage .gp-body .cp-legend{max-width:560px;margin-left:auto;margin-right:auto}.calpage .cp-month{margin-bottom:14px}}
+
+/* ── THE TEAM PAGE + the hero's team tap targets ── */
+.gp-tlink{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:transparent;
+  padding:4px 6px;margin:-4px -6px;border-radius:14px;cursor:pointer;font:inherit;color:inherit;
+  transition:background .18s ease,transform .14s var(--spring)}
+.gp-tlink:hover{background:rgba(var(--tintc),.07)}
+.gp-tlink:active{transform:scale(.96)}
+.gp-tlink:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.tp-hero .tp-crest{display:grid;place-items:center;margin-bottom:8px}
+.tp-hero img.tp-crestimg,.tp-hero .tp-crestimg{width:64px;height:64px;object-fit:contain}
+.tp-heroRow{display:flex;flex-wrap:wrap;gap:10px 22px}
+.tp-big{display:flex;flex-direction:column;gap:3px}
+.tp-big b{font-family:var(--disp);font-weight:750;font-size:22px;letter-spacing:0;color:var(--ink);font-variant-numeric:tabular-nums}
+.tp-big i{font-style:normal;font-family:var(--disp);font-weight:650;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4)}
+.tp-big.hot b{color:var(--green)}
+.tp-line{margin:0;font-size:14px;line-height:1.6;color:var(--ink)}
+.tp-line .pav{vertical-align:-11px}
+
+/* ═══ SUPPORT THREAD + UNREAD DOT (admin-console feature, 2026-08-10) ═══
+   The consumer half of /admin/kp-desk: a message thread on the Account tab and a
+   red dot on the dock when an admin reply is unread. Styled with the app's own
+   vars so it inherits the light liquid-glass identity. */
+.dock-dot{position:absolute;top:-2px;right:-4px;width:8px;height:8px;border-radius:50%;
+  background:#e0342f;box-shadow:0 0 0 2px rgba(255,255,255,.9)}
+.sup-badge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;
+  margin-left:8px;border-radius:9px;background:#e0342f;color:#fff;font-size:11px;font-weight:800}
+.sup-note{margin:0 0 10px;font-size:13px;line-height:1.5;color:var(--ink3,#5c626d)}
+.sup-thread{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto;
+  margin:0 0 12px;padding:2px}
+.sup-msg{max-width:86%;padding:9px 13px;border-radius:15px}
+.sup-msg.me{align-self:flex-end;background:var(--gold-soft,#f4e8c8);border-bottom-right-radius:5px}
+.sup-msg.them{align-self:flex-start;background:rgba(120,130,150,.12);border-bottom-left-radius:5px}
+.sup-b{font-size:14px;line-height:1.45;white-space:pre-wrap;word-break:break-word;color:var(--ink)}
+.sup-at{margin-top:3px;font-size:11px;color:var(--ink4,#8a8f99)}
+.sup-empty{padding:10px 2px;font-size:13px;color:var(--ink4,#8a8f99)}
+.sup-form{display:flex;flex-direction:column;gap:9px}
+.sup-form textarea{width:100%;box-sizing:border-box;font:inherit;font-size:14px;line-height:1.45;
+  padding:10px 12px;border:1px solid rgba(20,26,40,.14);border-radius:12px;background:#fff;
+  color:var(--ink);resize:vertical;min-height:64px}
+.sup-form textarea:focus{outline:none;border-color:var(--gold,#b8860b)}
+.sup-form .acct-cta{margin-top:0}
