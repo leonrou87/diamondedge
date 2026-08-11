@@ -4161,7 +4161,10 @@ export default function Home() {
             // the roster row's own copy of the measured-profile verdict. record.analyst_profiles
             // is the full block; these two are what a CARD needs, and they keep the honest
             // sentence on a card even if the block itself never arrives.
-            profHead: humanNote(r.profile_headline),
+            // proseDates: the served headline dates itself in ISO ("Rebuilt 2026-07-31 …
+            // since 2026-07-01") on a screen whose every other date reads "Jul 31, 2026" —
+            // same normalisation `basis` above already gets. A format, not a word.
+            profHead: proseDates(humanNote(r.profile_headline)),
             profAny: r.profile_has_characteristic === true,
           });
         });
@@ -6695,7 +6698,7 @@ export default function Home() {
         </div></div>`);
       }
       if (r && (r.days_off != null || r.last_game_date)) {
-        blocks.push(`<div class="dsec"><div class="dsec-h">Rest</div><div class="dsec-b"><p class="tp-line">${r.days_off != null ? `<b>${r.days_off}</b> day${r.days_off === 1 ? "" : "s"} off` : ""}${r.last_game_date ? `${r.days_off != null ? " · " : ""}last played ${esc(r.last_game_date)}` : ""}</p></div></div>`);
+        blocks.push(`<div class="dsec"><div class="dsec-h">Rest</div><div class="dsec-b"><p class="tp-line">${r.days_off != null ? `<b>${r.days_off}</b> day${r.days_off === 1 ? "" : "s"} off` : ""}${r.last_game_date ? `${r.days_off != null ? " · " : ""}last played ${esc(stratDateTxt(r.last_game_date) || String(r.last_game_date))}` : ""}</p></div></div>`);
       }
       // the probable / starting arm on this side rides along when the feed has him —
       // his name is the same playerLink tap every other surface uses
@@ -11777,13 +11780,13 @@ export default function Home() {
       const rest = pi.rest || {};
       const ra = rest.away, rh = rest.home;
       if (ra || rh) {
-        const rr = (ab: any, r: any) => r ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${r.days_off != null ? r.days_off + (r.days_off === 1 ? " day" : " days") + " off" : "—"}</div>${r.last_game_date ? `<div class="ic-sub">last ${esc(r.last_game_date)}</div>` : ""}</div>` : "";
+        const rr = (ab: any, r: any) => r ? `<div class="ic-side"><div class="ic-ab">${esc(ab)}</div><div class="ic-main">${r.days_off != null ? r.days_off + (r.days_off === 1 ? " day" : " days") + " off" : "—"}</div>${r.last_game_date ? `<div class="ic-sub">last ${esc(stratDateTxt(r.last_game_date) || String(r.last_game_date))}</div>` : ""}</div>` : "";
         blocks.push(`<div class="ic-card"><div class="ic-h">Rest</div><div class="ic-row2">${rr(A, ra)}${rr(H, rh)}</div></div>`);
       }
       const h = pi.h2h;
       if (h && (h.games || h.record)) {
         const lm = h.last_meeting;
-        const lmTxt = lm ? `last met ${esc(lm.date)} — ${esc(lm.away_team || A)} ${num(lm.away_score, 0)}, ${esc(lm.home_team || H)} ${num(lm.home_score, 0)}` : "";
+        const lmTxt = lm ? `last met ${esc(stratDateTxt(lm.date) || String(lm.date || ""))} — ${esc(lm.away_team || A)} ${num(lm.away_score, 0)}, ${esc(lm.home_team || H)} ${num(lm.home_score, 0)}` : "";
         blocks.push(`<div class="ic-card wide"><div class="ic-h">Head to Head</div><div class="ic-line"><b>${esc(h.record || "—")}</b>${h.games ? ` <span class="ic-tag">${h.games} mtgs</span>` : ""}${h.away_wins != null || h.home_wins != null ? ` <span class="ic-sub2">${A} ${h.away_wins ?? 0} · ${H} ${h.home_wins ?? 0}</span>` : ""}</div>${lmTxt ? `<div class="ic-sub3">${lmTxt}</div>` : ""}</div>`);
       }
       if (!blocks.length) return "";
@@ -17538,7 +17541,9 @@ export default function Home() {
           </section>
 
           <button class="acct-signout" id="acct-signout">Sign out</button>
-          <div class="acct-foot">Member since ${esc(a.since || todayISO())}.</div>
+          ${/* The raw ISO date ("2026-08-01") was the one date on the page not in the
+                app's own format — same helper every other served date goes through. */""}
+          <div class="acct-foot">Member since ${esc(stratDateTxt(String(a.since || todayISO())) || String(a.since || todayISO()))}.</div>
         </div>`;
       bindClick("acct-upgrade", () => { accountMode = "subscribe"; pushAcctEntry(); renderSubscribe(); }, { optional: "premium members see Manage instead" });
       bindClick("acct-manage", () => { accountMode = "manage"; pushAcctEntry(); renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
@@ -18766,7 +18771,10 @@ export default function Home() {
               <h1 class="rp-title">${esc(pp.title)}</h1>
               ${pp.subtitle ? `<p class="rp-deck">${esc(pp.subtitle)}</p>` : ""}
               <div class="rp-byline">${esc(pp.authors)}${pp.date ? ` · ${esc(paperDateTxt(pp.date) || pp.date)}` : ""}${pp.words ? ` · ${pp.words.toLocaleString("en-US")} words` : ""}</div>
-              ${pp.correction ? `<div class="rp-corr"><span class="rp-corr-k">Correction</span><p>${mdInline(pp.correction)}</p></div>` : ""}
+              ${/* proseDates on the banner only (never the paper body): the correction
+                    dateline read "2026-08-10" over a byline reading "Aug 3, 2026" — two
+                    date formats on one header. A format, not a word. */""}
+              ${pp.correction ? `<div class="rp-corr"><span class="rp-corr-k">Correction</span><p>${mdInline(proseDates(pp.correction))}</p></div>` : ""}
               ${pp.verdict ? `<div class="rp-verdict ${vt}"><span class="rp-verdict-k">Verdict</span><p>${esc(pp.verdict)}</p></div>` : ""}
               ${pp.abstract ? `<div class="rp-abstract"><span class="rp-seck">Abstract</span><p>${mdInline(pp.abstract)}</p></div>` : ""}
               ${pp.figures.length ? `<div class="rp-figs">

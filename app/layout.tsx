@@ -45,12 +45,12 @@ const jetmono = JetBrains_Mono({
   fallback: ["ui-monospace", "SFMono-Regular", "monospace"],
 });
 
-// THE DESCRIPTION HAS TO BE TRUE. It claimed five leagues ("MLB, NBA, NHL, NFL and Soccer")
-// while the board ships MLB picks and a soccer slate — the other three are model work, not a
-// product a reader can open today. A meta description is a promise made in a search result,
-// and this product's entire pitch is that it does not overclaim. It says what it does.
+// THE DESCRIPTION HAS TO BE TRUE — in both directions. It once overclaimed five leagues;
+// then it said "every MLB pick" while NFL/WNBA/MLS boards went live with their own graded
+// records (2026-08-10). "Every pick" is the claim that stays true as leagues arm and rest:
+// whatever is on the board is graded in the open, and nothing is promised by name.
 const DESC =
-  "Today's story, the bets worth taking, and every MLB pick graded in the open — win or lose, in public.";
+  "Today's story, the bets worth taking, and every pick graded in the open — win or lose, in public.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://diamondedge.kytepush.com"),

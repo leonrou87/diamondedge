@@ -7,7 +7,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "DiamondEdge — Today's Picks, Games & Results",
     short_name: "DiamondEdge",
     description:
-      "Today's story, the bets worth taking, and every MLB pick graded in the open — win or lose, in public.",
+      "Today's story, the bets worth taking, and every pick graded in the open — win or lose, in public.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",
