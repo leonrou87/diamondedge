@@ -51,11 +51,21 @@ export default function Home() {
     };
     const mlbLogo = (ab: any) => `https://www.mlbstatic.com/team-logos/${TEAM_ID[ab] || 0}.svg`;
     const nbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nba/500/${NBA_SLUG[ab] || (ab || "").toLowerCase()}.png`;
+    // WNBA: every ESPN slug is the lowercased abbreviation (verified across all 15 clubs 2026-08-10)
+    const wnbaLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/wnba/500/${String(ab || "").toLowerCase()}.png`;
     const nhlLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nhl/500/${NHL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
     const nflLogo = (ab: any) => `https://a.espncdn.com/i/teamlogos/nfl/500/${NFL_SLUG[ab] || (ab || "").toLowerCase()}.png`;
-    const soccerFlag = (ab: any) => `https://a.espncdn.com/i/teamlogos/countries/500/${String(ab || "").toLowerCase()}.png`;
+    // MLS club abbr → ESPN team id (all 30 clubs, pulled from the live scoreboard
+    // 2026-08-10). MLS rides the soccer tab, and a club must get its CREST — the
+    // country-flag fallback below gave Colorado Rapids the Colombian flag.
+    const MLS_ID: any = { ATL: 18418, ATX: 20906, CHI: 182, CIN: 18267, CLB: 183, CLT: 21300, COL: 184, DAL: 185, DC: 193, HOU: 6077, LA: 187, LAFC: 18966, MIA: 20232, MIN: 17362, MTL: 9720, NE: 189, NSH: 18986, NYC: 17606, ORL: 12011, PHI: 10739, POR: 9723, RBNY: 190, RSL: 4771, SD: 22529, SEA: 9726, SJ: 191, SKC: 186, STL: 21812, TOR: 7318, VAN: 9727 };
+    const soccerFlag = (ab: any) =>
+      MLS_ID[String(ab || "").toUpperCase()]
+        ? `https://a.espncdn.com/i/teamlogos/soccer/500/${MLS_ID[String(ab || "").toUpperCase()]}.png`
+        : `https://a.espncdn.com/i/teamlogos/countries/500/${String(ab || "").toLowerCase()}.png`;
     const logoFor = (sp: string, ab: any) =>
       sp === "soccer" ? soccerFlag(ab)
+      : sp === "wnba" ? wnbaLogo(ab)
       : sp === "nba" ? nbaLogo(ab)
       : sp === "nhl" ? nhlLogo(ab)
       : sp === "nfl" ? nflLogo(ab)
@@ -491,20 +501,22 @@ export default function Home() {
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
     const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + Math.round(n) : "" + Math.round(n); const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-    const SPORTS = ["mlb", "nba", "nhl", "nfl", "soccer"];
+    const SPORTS = ["mlb", "wnba", "nba", "nhl", "nfl", "soccer"];
     // Base document title — restored when a game sheet closes; a game sheet sets a per-matchup title
     // so shared/opened ?g= links, bookmarks, browser history and tabs read as the actual game.
     const DEF_TITLE = (typeof document !== "undefined" && document.title) || "DiamondEdge — Today's Picks, Games & Results";
-    const SPORT_LABEL: any = { all: "All", mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
-    const SPORT_ICON: any = { all: "◆", mlb: "⚾", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
-    const SPORT_UNIT: any = { mlb: "runs", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
-    /* The de_ms_v1 sports (2026-08-10): each has its OWN Supabase key (`nfl`/`nba`/`nhl`)
-       carrying the sport's record (preseason and regular graded on separate lines, started
-       0-0 at launch), a `season_note` when the sport is off-season, and the slate. These
-       records are brand-new tracks — NEVER blended with MLB's, never given a backtest. */
-    const MS_SPORTS = new Set(["nfl", "nba", "nhl"]);
-    // The moment a game starts, named per sport — the pick wall is 3h before this.
-    const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", soccer: "kickoff" };
+    const SPORT_LABEL: any = { all: "All", mlb: "MLB", wnba: "WNBA", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
+    const SPORT_ICON: any = { all: "◆", mlb: "⚾", wnba: "🏀", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
+    const SPORT_UNIT: any = { mlb: "runs", wnba: "points", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
+    /* The de_ms_v1 sports (2026-08-10): each has its OWN Supabase key (`nfl`/`nba`/`nhl`/
+       `wnba`) carrying the sport's record (preseason and regular graded on separate lines,
+       started 0-0 at launch), a `season_note` when the sport is off-season, and the slate.
+       These records are brand-new tracks — NEVER blended with MLB's, never given a
+       backtest. (MLS is de_ms_v1 too but rides the SOCCER tab: its cards arrive on the
+       pregame board with competition "MLS"; its own key `mls` carries the record.) */
+    const MS_SPORTS = new Set(["nfl", "nba", "nhl", "wnba"]);
+    // The moment a game starts, named per sport — the pick wall is 16h before this.
+    const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
     const REDUCE = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -871,8 +883,9 @@ export default function Home() {
       "pregame_picks", "picks_v4_beta_live", "picks_v4_beta",
       /* the de_ms_v1 sport boards — sealed twins exist (`nfl__sealed` etc.) and the
          route already whitelists them (e246ca8), so an entitled reader gets the full
-         board (pick/stars/why once each wall passes) through the same one paywall */
-      "nfl", "nba", "nhl"]);
+         board (pick/stars/why once each wall passes) through the same one paywall.
+         `mls` rides the SOCCER tab visually but keeps its own sealed board. */
+      "nfl", "nba", "nhl", "wnba", "mls"]);
     let premiumOk = true;
     let premiumRetryAt = 0;
     async function snapPremium(k: string, ac: AbortController | null, opts: any) {

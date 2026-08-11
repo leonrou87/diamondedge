@@ -52,6 +52,8 @@ export const KEYS = [
   "nfl",
   "nba",
   "nhl",
+  "wnba",
+  "mls",
 ];
 
 export type Manifest = { v: Record<string, string>; newest: string; n: number };
