@@ -6045,24 +6045,9 @@ export default function Home() {
        2026, so an old game may show the club's current park rather than the one it was
        played in — a wrong blur behind a settled score, which is the cheapest error available
        here. When the payload does carry a venue id, this map should give way to it. */
-    const PARK_BY_HOME: Record<string, number> = {
-      "Milwaukee Brewers": 32, "Los Angeles Angels": 1, "St. Louis Cardinals": 2889,
-      "Arizona Diamondbacks": 15, "New York Mets": 3289, "Philadelphia Phillies": 2681,
-      "Detroit Tigers": 2394, "Colorado Rockies": 19, "Houston Astros": 2392,
-      "Los Angeles Dodgers": 22, "Boston Red Sox": 3, "Tampa Bay Rays": 2529,
-      "Texas Rangers": 5325, "Cincinnati Reds": 2602, "Kansas City Royals": 7,
-      "Washington Nationals": 3309, "Athletics": 2523, "Oakland Athletics": 10,
-      "San Francisco Giants": 2395, "Baltimore Orioles": 2, "Pittsburgh Pirates": 31,
-      "San Diego Padres": 2680, "Cleveland Guardians": 5, "Chicago White Sox": 4,
-      "Toronto Blue Jays": 14, "Seattle Mariners": 680, "Minnesota Twins": 3312,
-      "Atlanta Braves": 4705, "Chicago Cubs": 17, "New York Yankees": 3313,
-      "Miami Marlins": 4169,
-    };
-    function parkWashUrl(g: any) {
-      const home = String((g && (g.home || g.home_team)) || "").trim();
-      const id = PARK_BY_HOME[home];
-      return id ? `/parks/${id}.webp` : "";
-    }
+    /* PARK MASTHEADS REMOVED ENTIRELY (Leon, 2026-08-10: "really didn't work at all,
+       remove all of it"). PARK_BY_HOME + parkWashUrl deleted with the hero park element;
+       public/parks/*.webp remain on disk, unreferenced. */
     const HERO_TINT: any = {
       fire:   ["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
       weather:["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
@@ -8649,8 +8634,12 @@ export default function Home() {
       if (!c) return "";
       const s = committeeStrength(pl);
       const sentence = confidenceSentence(c);
+      /* NO RAW SCORE IN THE TOOLTIP (Leon, 2026-08-10: "the tooltip on all picks says
+         49/10 % confidence"). "49/100 confidence" read as a garbled percent and as
+         self-doubt under a starred pick — stars ARE the confidence language now, so the
+         tooltip explains the tier in words and never re-leaks the internal 0-100 score. */
       return [
-        `${c.score}/100 confidence${c.basisLabel ? ` · ${c.basisLabel}` : ""}`,
+        c.basisLabel || "",
         sentence,
         s ? `Strength tier: ${s.label}.` : "",
       ].filter(Boolean).join(" — ");
@@ -9478,8 +9467,14 @@ export default function Home() {
          incoming tag AND "No bet", the exact contradiction the incoming state exists
          to prevent. A pass mark only belongs on a game the desk actually read and
          declined, so it is suppressed whenever the picks are still pending. */
+      /* A SIGNED-OUT READER NEVER SEES "NO BET" (Leon, 2026-08-10: "it should say
+         sign in to unlock"). The pass/pick distinction is itself premium information —
+         a locked slate reads as one uniform "sign in to unlock", and only an entitled
+         reader sees which games the desk declined. */
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
-        ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
+        ? (entitled()
+            ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
+            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>${esc(unlockCtaTxt())}</i></span>`)
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
@@ -13341,7 +13336,6 @@ export default function Home() {
         : "";
       const gameHero =`<div class="gp-hero" style="--t1:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][0] : "rgba(47,111,224,.16)"};--t2:${HERO_TINT[tintSheet] ? HERO_TINT[tintSheet][1] : "rgba(11,158,109,.12)"}">
         <div class="gp-hero-wash" aria-hidden="true"></div>
-        ${(() => { const u = parkWashUrl(g); return u ? `<div class="gp-hero-park" aria-hidden="true" style="background-image:url('${u}')"></div>` : ""; })()}
         <div class="gp-mu">
           <div class="gp-team away"><span class="gp-crest">${gCrest(g, "away")}</span><span class="gp-ab">${esc(g.away_abbr)}</span>${heroForm("away")}</div>
           <div class="gp-center">${heroScore}</div>
