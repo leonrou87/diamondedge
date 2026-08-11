@@ -164,7 +164,27 @@ function verifyCode(given: string): boolean {
 
 /** GET — "am I entitled?" The client asks the SERVER, never localStorage. */
 export async function GET() {
-  const s = await entitledRequest();
+  let s = await entitledRequest();
+  /* WHOP SESSIONS RE-PROVE THEMSELVES DAILY. The cookie outlives a cancelled
+     subscription by design (30d), so a Whop-backed session re-validates its key
+     at most every 24h: still valid → quietly re-minted with a fresh `wv`;
+     cancelled/lapsed → cookie cleared, premium off — within a day, no re-paste.
+     Whop unreachable → the member keeps access (billing blips never lock out
+     paying readers; the next GET retries). */
+  if (s && s.wk && (!s.wv || Math.floor(Date.now() / 1000) - s.wv > 86400)) {
+    const w = await whopCheck(s.wk);
+    const c = await cookies();
+    if (w === "invalid") {
+      c.delete(COOKIE);
+      s = null;
+    } else if (w === "valid") {
+      const now = Math.floor(Date.now() / 1000);
+      const exp = now + MAX_AGE_S;
+      c.set(COOKIE, mint({ ...s, exp, wv: now }), {
+        httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: MAX_AGE_S,
+      });
+    }
+  }
   return NextResponse.json(
     {
       premium: !!s,
@@ -211,29 +231,51 @@ export async function POST(req: Request) {
     try { const uid = await readUid(); if (uid) await markPremium(uid, "mock"); } catch {}
     return NextResponse.json({ ok: true, premium: true }, { headers: noStore });
   }
-  if (!SECRET || !CODES.length) {
+  if (!SECRET || (!CODES.length && !WHOP_KEY)) {
     return NextResponse.json(
       { ok: false, reason: "unconfigured" },
       { status: 503, headers: noStore },
     );
   }
   const code = String((body && body.code) || "").trim().slice(0, 128);
-  if (!code || !verifyCode(code)) {
+  if (!code) {
+    return NextResponse.json(
+      { ok: false, reason: "invalid" },
+      { status: 401, headers: noStore },
+    );
+  }
+  /* Owner codes first (constant-time, offline), then the paid rail: the same
+     box redeems a Whop membership key. */
+  let via: "code" | "whop" | null = verifyCode(code) ? "code" : null;
+  if (!via && WHOP_KEY) {
+    const w = await whopCheck(code);
+    if (w === "unavailable") {
+      return NextResponse.json(
+        { ok: false, reason: "whop_unavailable" },
+        { status: 503, headers: noStore },
+      );
+    }
+    if (w === "valid") via = "whop";
+  }
+  if (!via) {
     return NextResponse.json(
       { ok: false, reason: "invalid" },
       { status: 401, headers: noStore },
     );
   }
   const exp = Math.floor(Date.now() / 1000) + MAX_AGE_S;
+  const now = Math.floor(Date.now() / 1000);
   const c = await cookies();
-  c.set(COOKIE, mint({ sub: randomUUID(), tier: "premium", exp }), {
+  c.set(COOKIE, mint(via === "whop"
+    ? { sub: randomUUID(), tier: "premium", exp, wk: code, wv: now }
+    : { sub: randomUUID(), tier: "premium", exp }), {
     httpOnly: true,          // the whole point: JS cannot read or write it
     secure: true,
     sameSite: "lax",
     path: "/",
     maxAge: MAX_AGE_S,
   });
-  try { const uid = await readUid(); if (uid) await markPremium(uid, "code"); } catch {}
+  try { const uid = await readUid(); if (uid) await markPremium(uid, via); } catch {}
   return NextResponse.json(
     { ok: true, premium: true },
     { headers: { "Cache-Control": "private, no-store" } },
