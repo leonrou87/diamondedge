@@ -43,6 +43,15 @@ export const KEYS = [
   "research_roadmap",
   "research_papers",
   "system_health",
+  /* de_ms_v1 sport boards (2026-08-10). Without these the league tabs' snap()
+     hit /api/snap/nfl, got the 404 the SERVED_KEYS list exists to give, demoted
+     the whole session off the proxy (snapProxyFailed) and burned the reader's
+     12-read direct budget on Supabase full-price reads. In the manifest they are
+     first-class surfaces: stamped (~40 bytes each), edge-cached at DEFAULT_TTL,
+     revalidated by the platform's mssync hook on real change. */
+  "nfl",
+  "nba",
+  "nhl",
 ];
 
 export type Manifest = { v: Record<string, string>; newest: string; n: number };
