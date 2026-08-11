@@ -705,6 +705,16 @@ export default function Home() {
     let snapProxyOk = true;
     let snapProxyRetryAt = 0;
     const SNAP_PROXY_COOLDOWN_MS = 60_000;
+    /* ═══ THE DIRECT PATH IS A BUDGETED LAST RESORT (2026-08-10, the 50k-user audit) ═══
+       Every snapDirect call is one browser hitting Supabase at full price, CORS preflight
+       and all — the exact per-user origin cost the edge proxy exists to eliminate. At 9
+       users the fallback's residue measured 652 requests/day; at 50,000 users an edge
+       outage would turn it into a self-inflicted stampede on the origin, which now also
+       serves stale from cache and so no longer needs rescuing this hard. A session may
+       spend at most SNAP_DIRECT_BUDGET direct reads, ever; past that the read fails like
+       any network error and the app keeps showing what it already holds. */
+    let snapDirectSpent = 0;
+    const SNAP_DIRECT_BUDGET = 12;
     function snapProxyUsable() {
       if (snapProxyOk) return true;
       if (Date.now() < snapProxyRetryAt) return false;
@@ -716,6 +726,10 @@ export default function Home() {
       snapProxyRetryAt = Date.now() + SNAP_PROXY_COOLDOWN_MS;
     }
     async function snapDirect(k: string, ac: AbortController | null, opts: any = {}) {
+      if (snapDirectSpent >= SNAP_DIRECT_BUDGET) {
+        throw new Error("snap: direct-read budget exhausted — keeping what we hold");
+      }
+      snapDirectSpent++;
       const sig = ac ? { signal: ac.signal } : {};
       const h = { apikey: KEY, Authorization: `Bearer ${KEY}` };
       if (opts.lite) {
@@ -16809,7 +16823,7 @@ export default function Home() {
           <!-- ── 4. SUPPORT ── a real route, not a dead end ── -->
           <section class="acct-card">
             <div class="acct-card-k">Support</div>
-            <a class="acct-link" href="mailto:support@diamondedge.app?subject=DiamondEdge%20support">Email support<span class="al-sub">support@diamondedge.app · we answer same day</span><em>→</em></a>
+            <a class="acct-link" href="mailto:kytepush@gmail.com?subject=DiamondEdge%20support">Email support<span class="al-sub">kytepush@gmail.com · we answer same day</span><em>→</em></a>
             <button class="acct-link" id="acct-billing">Billing question<span class="al-sub">Charges, refunds, receipts</span><em>→</em></button>
           </section>
 
@@ -16843,7 +16857,7 @@ export default function Home() {
         { optional: "only shown once a custom league order exists" });
       bindClick("acct-record", () => goDeskResults());
       bindClick("acct-how", () => openRecipeSheet());
-      bindClick("acct-billing", () => { location.href = "mailto:support@diamondedge.app?subject=DiamondEdge%20billing"; });
+      bindClick("acct-billing", () => { location.href = "mailto:kytepush@gmail.com?subject=DiamondEdge%20billing"; });
       bindClick("acct-terms", () => openTermsSheet());
       bindClick("plan-terms", () => openTermsSheet(), { optional: "only on the free-member plan card" });
       bindClick("acct-signout", () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); });
