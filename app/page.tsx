@@ -2095,29 +2095,68 @@ export default function Home() {
       if (pl.premium === true && (pl.side == null || pl.side === "")) return true;
       return false;
     }
-    /* ═════════ AD SLOTS (Leon: full production sports-scores app — free tier carries
-       ads, premium gets the picks AND zero ads). The slot is the CONTRACT: a stable,
-       reserved, labeled container (`data-ad-slot`) an ad network can later fill by key
-       without a layout change. Until a network is wired, every slot runs the house ad —
-       the premium upsell — so no reader ever sees an empty gray box. Premium renders
-       NO slot at all: ad-free is part of what they bought. */
-    const AD_SLOTS_ON = true;
-    function adSlot(key: string) {
-      if (!AD_SLOTS_ON) return "";
-      if (entitled()) return "";
-      return `<aside class="ad-slot" data-ad-slot="${esc(key)}" aria-label="Sponsored">
-        <span class="ad-eyebrow">Sponsored</span>
-        <div class="ad-house" role="button" tabindex="0" aria-label="Go premium — ad-free with every DiamondEdge Pick">
-          <span class="ad-house-mark" aria-hidden="true">◆</span>
-          <span class="ad-house-tx"><b>Go ad-free — and unlock every DiamondEdge Pick</b><i>Premium members see zero ads and the full board.</i></span>
-          <span class="ad-house-cta">${unlockCtaTxt()}</span>
-        </div>
+    /* ═════════ SPORTSBOOK PARTNER SLOTS (Leon, 2026-08-10) — first-party, config-driven,
+       free readers only. Three placements share this one builder: the Odds tab's
+       "Shop this line" card, ONE quiet card mid-board (spliced after the sixth tile,
+       never between the first games), and one inline card between stories in the
+       article reader. House-built cards in the app's own card language — NO external
+       ad scripts, NO trackers, NO layout shift: until a partner below carries a real
+       affiliate URL the builder returns "" and the slots simply do not exist. The code
+       ships dark and lights up when the links land. Premium renders NOTHING either
+       way — ad-free is part of what they bought, and the subscribe screen names it as
+       a perk. Every card carries the FTC "Partner offer" label and the app's one-line
+       responsible-gambling copy, and no card ever implies the partner endorses our
+       picks: the only number a card may quote is OUR served line, and the partner is
+       named as a place to shop it, nothing more.
+       (This replaces the house-upsell ad that used to fill these slots — a paywall
+       pitch dressed as a sponsorship taught readers to ignore the slot before it ever
+       earned a cent, and the premium sell has real homes of its own.) */
+    // OWNER: replace with affiliate tracking links. A slot renders only once its url is
+    // a real link (anything other than "#") — the array ships dark; paste links to light it.
+    const AD_PARTNERS: { id: string; label: string; tagline: string; url: string }[] = [
+      { id: "book-a", label: "Your Sportsbook", tagline: "Compare totals and prices on today's board", url: "#" },
+      { id: "book-b", label: "Second Book", tagline: "Line-shop the slate before first pitch", url: "#" },
+    ];
+    const adLivePartners = () => AD_PARTNERS.filter((p) => p && p.label && p.url && p.url !== "#");
+    // Deterministic partner per slot key — stable across repaints (a card must never
+    // flicker to a different book mid-session), rotating by day so a multi-partner
+    // config shares the surfaces evenly.
+    function adPartnerFor(key: string) {
+      const live = adLivePartners();
+      if (!live.length) return null;
+      const seed = key + todayISO();
+      let h = 0;
+      for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+      return live[Math.abs(h) % live.length];
+    }
+    /* The slot: a paper card, gold accent, quiet. `g` is passed only by the Odds tab,
+       where the card names the game's total — a number this pane ALREADY prints publicly
+       (the graded-line card, or the wall grid's market record), so quoting it here can
+       never weaken the premium redaction; the partner is somewhere to shop it, never a
+       voice on it. On a free reader's ungraded game pregameLine() is served redacted,
+       so the LAST WALL — the market's own latest public check — is the fallback. */
+    function adSlot(key: string, g?: any) {
+      if (entitled()) return "";                    // premium is ad-free, by contract
+      const p = adPartnerFor(key);
+      if (!p) return "";                            // dark until a real affiliate link exists
+      const pg = g ? pregameLine(g) : null;
+      let tot = pg && pg.total && pg.total.line != null ? Number(pg.total.line) : null;
+      if (tot == null && g) { const w = totalWalls(g); if (w.length) tot = Number(w[w.length - 1].line); }
+      if (tot != null && !isFinite(tot)) tot = null;
+      const shop = tot != null;
+      return `<aside class="ad-slot" data-ad-slot="${esc(key)}">
+        <span class="ad-eyebrow">Partner offer</span>
+        <a class="ad-partner" href="${esc(p.url)}" target="_blank" rel="noopener sponsored" aria-label="Partner offer from ${esc(p.label)}">
+          <span class="ad-p-mark" aria-hidden="true">${esc((p.label || "?").slice(0, 1).toUpperCase())}</span>
+          <span class="ad-p-tx">
+            <b>${shop ? `Shop this line — the total sits at ${esc(lineStr(tot))}` : esc(p.tagline)}</b>
+            <i>${shop ? `${esc(p.label)} · ${esc(p.tagline)}` : esc(p.label)}</i>
+          </span>
+          <span class="ad-p-cta" aria-hidden="true">Go</span>
+          <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
+        </a>
       </aside>`;
     }
-    document.addEventListener("click", (e: any) => {
-      const el = e.target && e.target.closest && e.target.closest(".ad-house");
-      if (el) { e.stopPropagation(); openUnlock(); }
-    }, true);
     /* ═══ THE ONE GATE. NOTHING ELSE IN THIS FILE DECIDES WHO MAY SEE A SIDE ═══
        That sentence was in this file already, as a claim about GATE_SETTLED_PICKS — and it
        was FALSE as written. There were FOUR independent implementations:
@@ -11055,8 +11094,9 @@ export default function Home() {
           const section = (label: string, arr: any[], cls = "") => {
             if (!arr.length) return "";
             const cardsArr = arr.map((g: any) => gameCard(g, n++));
-            // ONE ad slot mid-board on a full slate (free tier only — adSlot returns ""
-            // for premium). Spliced after the sixth card so it never leads the board.
+            // ONE partner card mid-board on a full slate (free tier only — adSlot returns ""
+            // for premium, and for everyone until a real affiliate link is configured).
+            // Spliced after the sixth card so it never sits between the first games.
             if (!label && cardsArr.length > 6) cardsArr.splice(6, 0, adSlot("board-mid"));
             return `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${cardsArr.join("")}</div></div>`;
           };
@@ -13193,8 +13233,12 @@ export default function Home() {
       // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded
       //     against. It shares the grid's re-render slot (see `repaintOddsMove`) because
       //     what it prints depends on whether the wall grid arrived.
+      // (2) The partner "Shop this line" card closes the pane — under the market's own
+      //     record, never above it, and only for free readers with a live partner config.
+      //     It shares the grid's re-render slot (see `repaintOddsMove`) because the total
+      //     it quotes can arrive with the wall grid, after first paint.
       return `<div class="oddspane"><div id="odds-linecard">${oddsLineCard(g)}</div>${
-        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}</div>`;
+        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}<div id="odds-partner">${adSlot("odds-shop", g)}</div></div>`;
     }
     function oddsLineCard(g: any) {
       const raw = pregameLineRaw(g);
@@ -13286,6 +13330,11 @@ export default function Home() {
       // 8.5" a hundred pixels above the caption that says it again with its check.
       const card = document.getElementById("odds-linecard");
       if (card) card.innerHTML = safeHtml("odds line card", () => oddsLineCard(detail), "");
+      // The partner card repaints with the grid too: the total it quotes is the grid's
+      // last public check when the graded line is redacted, and that number only exists
+      // once the grid has landed. Same-shape swap — never a layout shift.
+      const ap = document.getElementById("odds-partner");
+      if (ap) ap.innerHTML = safeHtml("odds partner card", () => adSlot("odds-shop", detail), "");
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
@@ -17483,6 +17532,7 @@ export default function Home() {
             ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and what the desk disagreed about.")}
             ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
             ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free readers; you just get the calls too.")}
+            ${perk("Ad-free", "No partner offers on the board, the odds pages or the news. Premium is the picks and nothing else.")}
           </div>
           <div class="pay-methods">
             <div class="pay-k">Pay with</div>

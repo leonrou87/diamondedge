@@ -10446,23 +10446,32 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
   .run-float{display:none}
 }
 
-/* ═════════ AD SLOTS — reserved, labeled, filled by the house until a network is wired.
-   Premium renders none (adSlot returns "" when entitled). ═════════ */
+/* ═════════ AD SLOTS — first-party sportsbook partner cards, config-driven (AD_PARTNERS).
+   Dark until a real affiliate link exists; premium renders none (adSlot returns "" when
+   entitled). Paper card, gold accent — the app's own card language, no network junk. ═════════ */
 .ad-slot{grid-column:1 / -1;display:block;margin:2px 0}
 .ad-eyebrow{display:block;font-family:var(--sans);font-weight:700;font-size:8.5px;
   letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin:0 2px 4px}
-.ad-house{display:flex;align-items:center;gap:11px;padding:12px 14px;cursor:pointer;
-  background:linear-gradient(135deg,rgba(198,161,66,.09),rgba(198,161,66,.03));
-  border-radius:14px;box-shadow:inset 0 0 0 1px rgba(198,161,66,.22)}
-.ad-house:active{transform:scale(.99)}
-.ad-house-mark{flex:none;width:30px;height:30px;display:grid;place-items:center;
-  font-size:15px;color:var(--golddeep);background:rgba(198,161,66,.12);border-radius:9px}
-.ad-house-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.ad-house-tx b{font-family:var(--sans);font-weight:700;font-size:12.5px;line-height:1.3;color:var(--ink)}
-.ad-house-tx i{font-style:normal;font-family:var(--sans);font-size:11px;color:var(--ink3)}
-.ad-house-cta{flex:none;font-family:var(--sans);font-weight:800;font-size:11px;
+.ad-partner{display:flex;align-items:center;flex-wrap:wrap;gap:11px;padding:12px 14px;cursor:pointer;
+  text-decoration:none;background:var(--paper,#fff);
+  background-image:linear-gradient(135deg,rgba(198,161,66,.09),rgba(198,161,66,.03));
+  border-radius:14px;box-shadow:inset 0 0 0 1px rgba(198,161,66,.22),var(--e1,0 1px 3px rgba(0,0,0,.06))}
+.ad-partner:active{transform:scale(.99)}
+.ad-p-mark{flex:none;width:30px;height:30px;display:grid;place-items:center;
+  font-family:var(--disp);font-weight:800;font-size:14px;color:var(--golddeep);
+  background:rgba(198,161,66,.12);border-radius:9px}
+.ad-p-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ad-p-tx b{font-family:var(--sans);font-weight:700;font-size:12.5px;line-height:1.3;color:var(--ink)}
+.ad-p-tx i{font-style:normal;font-family:var(--sans);font-size:11px;color:var(--ink3)}
+.ad-p-cta{flex:none;font-family:var(--sans);font-weight:800;font-size:11px;
   letter-spacing:.04em;color:#fff;background:var(--golddeep);padding:7px 12px;border-radius:10px}
+.ad-p-fine{flex-basis:100%;font-family:var(--sans);font-size:9.5px;letter-spacing:.02em;
+  color:var(--ink3);margin-top:1px}
 .sh-body .ad-slot{margin:16px 0 4px}
+.oddspane .ad-slot{margin:0}
+/* the odds pane's partner mount exists for the grid repaint even when the slot is dark —
+   an empty mount must not buy the flex column an extra gap */
+#odds-partner:empty{display:none}
 
 /* ═════════════════════════════════════════════════════════════════════════════
    THE RESTRUCTURED GAME PAGE (2026-08-08)
