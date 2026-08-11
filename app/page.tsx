@@ -2600,7 +2600,7 @@ export default function Home() {
     // "PIT -1.5" — the chosen side's own point, named by team abbr (never bare home/away).
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
     // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
-    const LEAD_MS: any = { "T-24h": 864e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
+    const LEAD_MS: any = { "T-24h": 864e5, "T-16h": 576e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
     function pickMadeMeta(pl: any) {
       if (!pl || pl.src !== "v4") return "";
       const bits: string[] = [];
@@ -8370,7 +8370,7 @@ export default function Home() {
     // Picks first appear when the book posts (~T-24h); they firm up at the five walls
     // (T-24h/12h/6h/3h/1h). This renders "next check T-6h · in 1h 22m" for upcoming games,
     // ticking live via the shared 60s clock below.
-    const WALL_ORDER: [string, number][] = [["T-24h", 864e5], ["T-12h", 432e5], ["T-6h", 216e5], ["T-3h", 108e5], ["T-1h", 36e5]];
+    const WALL_ORDER: [string, number][] = [["T-24h", 864e5], ["T-16h", 576e5], ["T-12h", 432e5], ["T-6h", 216e5], ["T-3h", 108e5], ["T-1h", 36e5]];
     function nextWallInfo(g: any) {
       const fp = firstPitchTs(g);
       if (fp == null) return null;
@@ -8397,7 +8397,12 @@ export default function Home() {
       if (!w || fp == null) return "";
       const pl = displayPick(g);
       const has = isPick(pl);
-      const lead = !has ? `first look` : w.final ? `pick locked in` : `next check ${w.label}`;
+      /* T-16h WALL (2026-08-11): a posted pick is write-once — it froze at its
+         T-16h wall and no later market check can move it. "next check" on a
+         tile that already carries its pick promised motion that can no longer
+         happen; the chip now says the truth: the pick is locked from the
+         moment it exists, and the countdown belongs to games still waiting. */
+      const lead = !has ? `first look` : `pick locked in`;
       return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}">⏱ ${esc(lead)} · ${esc(w.inTxt)}</span>`;
     }
     const wallFromFp = (fp: number) => {
@@ -9386,13 +9391,14 @@ export default function Home() {
     function picksEtaTime(g?: any) {
       /* A de_ms_v1 GAME'S WALL IS ITS OWN, NOT MLB'S. `picks_eta` is served per MLB game,
          and the fallback scan below reads the first one it finds — which put "12:40 PM PT"
-         (the MLB slate's first wall) on an NFL page whose real wall is three hours before
-         ITS kickoff. The multisport contract is fixed and simple — picks freeze at T-3h —
-         so the time is computed from the game's own start, never borrowed across sports. */
+         (the MLB slate's first wall) on an NFL page whose real wall is sixteen hours before
+         ITS kickoff. The multisport contract is fixed and simple — picks freeze at T-16h
+         (owner order 2026-08-10; was T-3h) — so the time is computed from the game's own
+         start, never borrowed across sports. */
       if (g && MS_SPORTS.has(String(g.sport || "").toLowerCase())) {
         const ts = firstPitchTs(g);
         if (ts != null) {
-          const w = new Date(ts - 3 * 3600 * 1000);
+          const w = new Date(ts - 16 * 3600 * 1000);
           if (!isNaN(w.getTime()))
             return `${w.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`;
         }
@@ -9405,9 +9411,9 @@ export default function Home() {
       const e = (g && typeof g.picks_eta === "object" ? g.picks_eta : null)
         || scan(livePayload) || scan(payload) || scan(betaLiveData) || scan(betaData);
       const iso = e && (e.expected_local_pt || e.expected_utc);
-      if (!iso) return "6:00 AM PT";
+      if (!iso) return "3:10 AM PT";
       const d = new Date(String(iso));
-      if (isNaN(d.getTime())) return "6:00 AM PT";
+      if (isNaN(d.getTime())) return "3:10 AM PT";
       // always rendered IN Pacific, because the sentence says "PT" — the served value is an
       // absolute instant (offset or Z), so the zone is a formatting choice, not a guess
       const t = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" });
@@ -10950,7 +10956,7 @@ export default function Home() {
       const lab = SPORT_LABEL[lg] || lg.toUpperCase();
       if (d && (d.mode === "armed" || d.is_offseason)) {
         const note = String(d.season_note || "").trim().replace(/\.$/, "");
-        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does — picks post at each game's T-3h wall, and the record grades in the open from 0-0.</div></div>`;
+        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does — picks post the night before at each game's T-16h wall, and the record grades in the open from 0-0.</div></div>`;
       }
       const nx = msNextSlate(lg);
       if (nx) {
@@ -10974,7 +10980,7 @@ export default function Home() {
         ? `<div class="fn-countdown"><span class="fnc-k">${esc(k)}</span><b class="fnc-val">${esc(v)}</b></div>` : "";
       const regPlayed = rec.regular && ((rec.regular.wins || 0) + (rec.regular.losses || 0) + (rec.regular.pushes || 0) > 0);
       const chips = `${chip("Preseason", line(rec.preseason))}${regPlayed || !rec.preseason ? chip("Regular season", line(rec.regular)) : ""}`;
-      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes at its T-3h wall and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
     function metaRow() {
       if (MS_SPORTS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
@@ -11152,17 +11158,15 @@ export default function Home() {
        — which is a cron description, not a product promise, and the chip's fixed
        "2:00 AM PT → 6:00 AM PT" string was wide enough to push the whole page into
        horizontal scroll at 375px. It now says the time, once, in words, and wraps. */
-    /* WHEN THE PICKS ACTUALLY LAND, WHICH IS NOT ONE TIME (2026-08-09).
-       This said "this board fills in with the day's picks by 6:00 AM PT", and that was never
-       going to be true. The day's RULE is locked overnight, but a PICK cannot exist until its
-       game has been read, and that read happens about three hours before THAT game's first
-       pitch. On the 9th the earliest game was 9:15 AM, so the earliest possible pick was 6:15
-       — and the 7 PM games could not be picked before 4 PM. At 6:00 the board would have been
-       empty underneath a promise that it would be full.
-       So the card now says the shape of it: the first pick lands at the earliest game's own
-       wall, and the rest follow their games through the day. The served `picks_eta` is per
-       game now (schedule_forward.picks_eta), so `games[0]` — the slate is sorted by first
-       pitch — is genuinely the first one, not a slate-wide guess. */
+    /* WHEN THE PICKS ACTUALLY LAND (2026-08-11: THE T-16h WALL — owner order).
+       Picks now post at each game's T-16h wall. For a normal slate every wall has already
+       passed by the 03:10 AM PT rule freeze, so the whole board posts overnight — "the
+       night before" in the reader's terms — and only a game starting after ~7 PM PT waits
+       for its own T-16h moment. The served `picks_eta` is per game
+       (schedule_forward.picks_eta, floor = the 03:10 freeze), so `games[0]` — the slate is
+       sorted by first pitch — is genuinely the first one, not a slate-wide guess.
+       (History: through 2026-08-10 the wall was T-3h and picks trickled in through the
+       day; those days' records and copy stand as served.) */
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
       const first = esc(picksEtaTime(games && games[0]));
       const countdown = `<div class="fn-countdown soon"><span class="fnc-k">First pick</span><b class="fnc-val">${first}</b></div>`;
@@ -11177,7 +11181,7 @@ export default function Home() {
       const sps = Array.from(new Set((games || []).map((g: any) => String(g.sport || "").toLowerCase()).filter(Boolean)));
       const spOne = sps.length === 1 ? sps[0] : (league !== "all" ? league : "");
       const noun = spOne ? (WALL_NOUN[spOne] || "start") : (sps.length > 1 ? "start" : "first pitch");
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts about three hours before its own ${esc(noun)}.</span></div>`;
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts the night before — about sixteen hours ahead of its own ${esc(noun)}.</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
