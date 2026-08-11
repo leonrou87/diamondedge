@@ -1961,12 +1961,14 @@ export default function Home() {
         }).catch(() => {});
       } catch {}
     }
-    // ===================== ACCOUNT / AUTH (stubbed session — no real OAuth/signup) =====================
-    // The signed-in user is one localStorage record `de_account`:
+    // ===================== ACCOUNT / AUTH — REAL SIGN-IN VIA SUPABASE (2026-08-10) =====================
+    // The signed-in user is STILL one localStorage record `de_account`:
     //   { provider:"google"|"apple"|"facebook"|"x"|"email", name, email, since }
-    // OAUTH WIRE-IN POINT: each social button's handler currently calls mockSignIn(provider).
-    // A real flow replaces that with the provider's OAuth (redirect / popup / native SDK),
-    // then persists the returned profile + a session token here and mirrors it server-side.
+    // What changed is only how it gets minted: the sign-in screen now runs a real email
+    // magic link (and, flag-gated, Google OAuth) against the project's GoTrue, and the
+    // redirect back lands in the SAME setAccount → POST /api/register path the mock
+    // used. Legacy accounts the mock era minted are ordinary de_account records, so they
+    // keep working untouched — no migration, no breakage.
     function getAccount() {
       try { const raw = localStorage.getItem("de_account"); return raw ? JSON.parse(raw) : null; } catch { return null; }
     }
@@ -1975,31 +1977,112 @@ export default function Home() {
     }
     const isSignedIn = () => !!getAccount();
     const PROVIDER_LABEL: any = { google: "Google", apple: "Apple", facebook: "Facebook", x: "X", email: "Email" };
-    // Create a mock signed-in session for a provider (persists immediately). Returns the account.
-    function mockSignIn(provider: string, email?: string, name?: string) {
-      const nm = name || (provider === "email" && email ? String(email).split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) : "DiamondEdge Member");
-      const em = email || `${provider === "email" ? "you" : provider}@diamondedge.app`;
-      const acct = { provider, name: nm, email: em, since: todayISO() };
-      setAccount(acct);
-      /* SERVER MIRROR (2026-08-10): the sign-in becomes a de_users row + a signed HttpOnly
-         uid cookie, so the owner's console can see users and the support thread knows who
-         is talking. Fire-and-forget: if the data layer is down or unconfigured, sign-in
-         works exactly as it always did. */
+    /* SERVER MIRROR: the sign-in becomes a de_users row + a signed HttpOnly uid cookie,
+       so the owner's console can see users and the support thread knows who is talking.
+       Fire-and-forget: if the data layer is down or unconfigured, sign-in still works. */
+    function registerAccount(acct: any) {
       try {
         fetch("/api/register", {
           method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: acct.email, name: acct.name, provider, sid: anSid }),
+          body: JSON.stringify({ email: acct.email, name: acct.name, provider: acct.provider, sid: anSid }),
         }).then((r) => r.json()).then((j) => {
           if (j && typeof j.n === "number" && j.n > 0) { supportUnread = j.n; renderDock(); }
         }).catch(() => {});
       } catch {}
-      return acct;
+    }
+    /* ═══════════ SUPABASE AUTH, BY DIRECT FETCH — NO supabase-js ═══════════
+       This single-file app needs exactly three GoTrue endpoints (/otp, /user, /logout)
+       plus the redirect-back hash, and a client library is not a fair price for them:
+       zero new dependencies, zero boot cost (the hash parse below is a string check
+       when there is nothing in it). The tokens live in ONE localStorage record,
+       `de_supa_session`, held purely so sign-out can revoke them — ENTITLEMENT NEVER
+       READS THEM: the paywall stays the HttpOnly /api/session cookie, exactly as
+       before. KNOWN PLATFORM GOTCHA (THE DOCKET, same Supabase project): supabase-js
+       auth can hang under browser instrumentation — one more reason raw fetch beats
+       the SDK here, and why this flow is verified by curl + code inspection rather
+       than by driving a headless browser through the email loop. */
+    const AUTH_GOOGLE = process.env.NEXT_PUBLIC_AUTH_GOOGLE === "1";
+    const getSupaSession = () => { try { const raw = localStorage.getItem("de_supa_session"); return raw ? JSON.parse(raw) : null; } catch { return null; } };
+    const setSupaSession = (s: any) => { try { if (s) localStorage.setItem("de_supa_session", JSON.stringify(s)); else localStorage.removeItem("de_supa_session"); } catch {} };
+    /* Send the magic link. `redirect_to` rides the query string (GoTrue's contract) and
+       must be on the project's auth allow-list — diamondedge.kytepush.com and the dev
+       ports are registered there. NOTE: the project's default mailer is rate-limited to
+       a couple of emails an hour — fine for launch, but production volume needs custom
+       SMTP in the Supabase dashboard (owner step; the kytepush@gmail.com app password
+       can serve). The 429 is surfaced honestly rather than retried. */
+    async function supaSendMagicLink(email: string): Promise<{ ok: boolean; reason?: string }> {
+      if (!SUPA || !KEY) return { ok: false, reason: "unconfigured" };
+      try {
+        const r = await fetch(`${SUPA}/auth/v1/otp?redirect_to=${encodeURIComponent(location.origin)}`, {
+          method: "POST", headers: { "Content-Type": "application/json", apikey: KEY },
+          body: JSON.stringify({ email, create_user: true, gotrue_meta_security: {} }),
+        });
+        if (r.ok) return { ok: true };
+        const j = await r.json().catch(() => ({} as any));
+        return { ok: false, reason: String(j.error_code || j.code || j.msg || j.message || `http_${r.status}`) };
+      } catch { return { ok: false, reason: "network" }; }
+    }
+    // Google OAuth is a plain redirect through GoTrue's /authorize; the same hash
+    // completion below finishes it. Gated on NEXT_PUBLIC_AUTH_GOOGLE=1 — the button
+    // only renders once the owner has wired the Google client in the Supabase dashboard.
+    const supaGoogleUrl = () => `${SUPA}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(location.origin)}`;
+    /* THE REDIRECT BACK. GoTrue verifies the emailed token server-side and lands the
+       reader on location.origin with the session in the URL FRAGMENT — the fragment
+       never reaches our server or any log, and it is scrubbed from the address bar
+       before anything else runs. From here the flow IS the old mock flow: build the
+       account (name falls back to the email local-part), setAccount, register, toast. */
+    async function supaBootComplete() {
+      let hash = "";
+      try { hash = String(location.hash || ""); } catch {}
+      if (!hash || (hash.indexOf("access_token=") < 0 && hash.indexOf("error_code=") < 0 && hash.indexOf("error=") < 0)) return;
+      const q = new URLSearchParams(hash.replace(/^#/, ""));
+      const clean = () => { try { history.replaceState(null, "", location.pathname + location.search); } catch {} };
+      if (q.get("error") || q.get("error_code")) {
+        clean();
+        const why = String(q.get("error_code") || "");
+        toast(why === "otp_expired" ? "That sign-in link expired — request a fresh one" : "Sign-in didn't complete — try again");
+        return;
+      }
+      const at = q.get("access_token"), rt = q.get("refresh_token");
+      if (!at) return;
+      clean();
+      try {
+        const r = await fetch(`${SUPA}/auth/v1/user`, { headers: { apikey: KEY, Authorization: `Bearer ${at}` } });
+        const u = await r.json().catch(() => null);
+        if (!r.ok || !u || !u.email) { toast("Sign-in didn't complete — try again"); return; }
+        setSupaSession({ access_token: at, refresh_token: rt || "", at: Date.now() });
+        const provRaw = String((u.app_metadata && u.app_metadata.provider) || "email");
+        const md = u.user_metadata || {};
+        const name = String(md.full_name || md.name || "").trim()
+          || String(u.email).split("@")[0].replace(/[._]/g, " ").replace(/\b\w/g, (c: string) => c.toUpperCase());
+        const prev = getAccount();
+        const acct = {
+          provider: PROVIDER_LABEL[provRaw] ? provRaw : "email",
+          name, email: String(u.email),
+          // a returning member keeps their original member-since date
+          since: prev && prev.email === String(u.email) && prev.since ? prev.since : todayISO(),
+        };
+        setAccount(acct);
+        registerAccount(acct);
+        refreshAccountButton();
+        if (tab === "account") { accountMode = "menu"; renderAccount(); }
+        toast(`Signed in as ${acct.name}`);
+      } catch { toast("Sign-in didn't complete — check your connection"); }
+    }
+    // Sign-out revokes the Supabase session too — best-effort and never blocking: the
+    // local token record is dropped either way, which is what signs this device out.
+    function supaSignOut() {
+      const s = getSupaSession();
+      setSupaSession(null);
+      if (!s || !s.access_token || !SUPA || !KEY) return;
+      try { fetch(`${SUPA}/auth/v1/logout`, { method: "POST", headers: { apikey: KEY, Authorization: `Bearer ${s.access_token}` } }).catch(() => {}); } catch {}
     }
     async function signOut() {
       /* The sign-out reaches the beacon too: the event batch flushes NOW (it carries the
          signout row and, server-side, bumps last_seen), and the unread dot clears. */
       try { track("signout"); anFlush(true); supportUnread = 0; renderDock(); } catch {}
       setAccount(null);
+      supaSignOut();                      // revoke + drop the Supabase token, if one exists
       /* THE SERVER SESSION IS THE ENTITLEMENT NOW, so signing out has to reach
          it. Clearing localStorage alone would leave the HttpOnly cookie in
          place and the next /api/session would put the reader straight back. */
@@ -17556,14 +17639,16 @@ export default function Home() {
                and "Continue with Google" was tappable before the consent copy was ever
                on screen. Consent is explicit and recorded (de_terms, versioned). -->
           <label class="terms-check sgn-check"><input type="checkbox" id="sgn-terms"${termsAccepted() ? " checked" : ""}><span>I have read and agree to the <button class="terms-link" id="sgn-terms-open" type="button">Terms &amp; Disclaimer</button>. I understand DiamondEdge is for entertainment and information only, is not financial, investment or betting advice, and that I am solely responsible for any decision I make. 21+ where applicable.</span></label>
-          <div class="sgn-socials">
-            ${social("google")}${social("apple")}${social("facebook")}${social("x")}
-          </div>
-          <div class="sgn-or"><span>or with email</span></div>
+          ${/* GOOGLE IS REAL OAUTH NOW, behind NEXT_PUBLIC_AUTH_GOOGLE=1 — the button only
+                renders once the owner has wired the Google client into the Supabase
+                dashboard. Apple / Facebook / X were mocks and are hidden entirely;
+                re-enable each here (social("apple") etc.) once a real OAuth app exists. */""}
+          ${AUTH_GOOGLE ? `<div class="sgn-socials">${social("google")}</div><div class="sgn-or"><span>or with email</span></div>` : ""}
           <form class="sgn-email" id="sgn-form">
             <input type="email" id="sgn-mail" placeholder="you@email.com" autocomplete="email" aria-label="Email address" required>
-            <button type="submit" class="sgn-emailbtn">Continue with email</button>
+            <button type="submit" class="sgn-emailbtn" id="sgn-mailgo">Continue with email</button>
           </form>
+          <p class="sgn-hint">We'll email you a one-tap sign-in link — no password to remember.</p>
           <div class="sgn-legal">Play responsibly. In the US, call or text 1-800-GAMBLER for free, confidential support.</div>
         </div>`;
       bindClick("sgn-close", () => acctExit());
@@ -17581,31 +17666,54 @@ export default function Home() {
         acceptTerms();
         next();
       };
+      // Google is a real redirect through GoTrue's /authorize; supaBootComplete()
+      // finishes the sign-in when the reader lands back on the origin.
       view.querySelectorAll(".sgn-btn").forEach((b: any) => (b.onclick = () => gate(() => {
-        // OAUTH WIRE-IN POINT (per provider): replace mockSignIn with the real provider flow,
-        // then persist the returned profile via setAccount and confirm entitlement server-side.
-        mockSignIn(b.dataset.prov);
-        onSignedIn();
+        if (b.dataset.prov === "google") { try { location.href = supaGoogleUrl(); } catch {} }
       })));
       const form = $("sgn-form");
       if (form) form.onsubmit = (e: any) => {
         e.preventDefault();
-        gate(() => {
-          const mail = ($("sgn-mail") && $("sgn-mail").value || "").trim();
-          // EMAIL AUTH WIRE-IN POINT: send a magic link / OTP here; on verify, setAccount(...).
-          mockSignIn("email", mail || undefined);
-          onSignedIn();
+        gate(async () => {
+          const mail = (($("sgn-mail") && $("sgn-mail").value) || "").trim();
+          if (!mail || mail.indexOf("@") < 1) { toast("Enter your email address"); return; }
+          const go = $("sgn-mailgo");
+          if (go) { go.disabled = true; go.textContent = "Sending…"; }
+          const r = await supaSendMagicLink(mail);
+          if (r.ok) { renderMagicSent(mail); return; }
+          const go2 = $("sgn-mailgo");
+          if (go2) { go2.disabled = false; go2.textContent = "Continue with email"; }
+          // The failure is named, never retried silently — the default mailer really is
+          // rate-limited, and a reader told the truth can act on it.
+          toast(/rate_limit/.test(String(r.reason || "")) ? "Too many sign-in emails just now — try again in a little while"
+            : r.reason === "unconfigured" ? "Sign-in isn't configured on this build"
+            : r.reason === "network" ? "Couldn't reach the sign-in service — check your connection"
+            : "Couldn't send the link — try again in a moment");
         });
       };
     }
-    // Post-sign-in: refresh header avatar, re-render surfaces that show account/pick state,
-    // land on the account hub with a brief confirmation.
-    function onSignedIn() {
-      refreshAccountButton();
-      accountMode = "menu";
-      const a = getAccount();
-      toast(`Signed in${a && a.name ? " as " + a.name : ""}`);
-      renderAccount();
+    /* The "check your email" state — it REPLACES the form after a successful send, in
+       place, so the reader is never left staring at a button that already fired. The
+       social row and divider leave with it: every remaining affordance on the screen
+       is about the one email that is now in flight. */
+    function renderMagicSent(mail: string) {
+      const view = $("account-view");
+      if (!view) return;
+      const form = view.querySelector(".sgn-email");
+      if (!form) return;
+      const sent = document.createElement("div");
+      sent.className = "sgn-sent";
+      sent.setAttribute("role", "status");
+      sent.innerHTML = `
+        <span class="sgn-sent-ic" aria-hidden="true">✉</span>
+        <b>Check your email</b>
+        <p>We sent a one-tap sign-in link to <b>${esc(mail)}</b>. Open it on this device and you'll land back here, signed in. It can take a minute to arrive.</p>
+        <button class="sgn-sent-again" id="sgn-again" type="button">Use a different email</button>`;
+      form.replaceWith(sent);
+      const hint = view.querySelector(".sgn-hint"); if (hint) hint.remove();
+      const or = view.querySelector(".sgn-or"); if (or) or.remove();
+      const soc = view.querySelector(".sgn-socials"); if (soc) soc.remove();
+      bindClick("sgn-again", () => renderSignIn(), { optional: "only in the magic-link sent state" });
     }
     // SUBSCRIPTION / PAYMENT: Credit Card + Apple Pay + PayPal + Google Pay as STUBS. On
     // "subscribe" it sets the de_premium entitlement with a success animation. NO real
@@ -20949,6 +21057,10 @@ export default function Home() {
       // First-party analytics: the ONE session-start beacon (everything else rides the
       // tab-hide flush), and — for a signed-in reader — the one register/unread sync.
       try { anStart(); supportBootSync(); } catch {}
+      // A magic-link / OAuth redirect back carries the session in the URL fragment —
+      // completed (and the hash scrubbed) before the shell renders. Costs a string
+      // check on every ordinary boot; fire-and-forget, it never blocks the board.
+      try { supaBootComplete(); } catch {}
       /* ASK THE SERVER WHETHER THIS READER IS ENTITLED, BEFORE THE FEEDS. The
          answer decides WHICH PAYLOAD the loads below should fetch — public or
          premium — so it has to land first or a member's first board is the
