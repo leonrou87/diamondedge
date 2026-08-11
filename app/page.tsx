@@ -8446,12 +8446,18 @@ export default function Home() {
     // live inning / start time / "Final". The chip carries the game phase at a glance.
     function leagueTag(g: any) {
       const lg = String(g.sport || "").toLowerCase();
-      const comp = g.meta && g.meta.competition ? esc(g.meta.competition) : "";
+      /* THE SERVED CARD CARRIES THESE AT THE TOP LEVEL (audit 2026-08-11). The de_ms_v1
+         tracker card ships `competition` ("NFL Preseason Week 2", "MLS") and — on settled
+         cards — `preseason` as bare fields with `meta: null`; only this reader assumed a
+         `meta` wrapper, so on the real payload comp was always "" and the badge never
+         fired. Read both spellings; the served flag wins where it exists. */
+      const compRaw = (g.competition ?? (g.meta && g.meta.competition)) || "";
+      const comp = compRaw ? esc(String(compRaw)) : "";
       /* PRESEASON IS BADGED, ALWAYS (mission 2026-08-10). A preseason game is graded on
          its own line of the sport's record and must never read as a regular-season game.
          The served flag wins; the competition string ("NFL Preseason Week 2") is the
          fallback for feeds that carry only the label. */
-      const pre = !!(g.meta && (g.meta.preseason || /preseason/i.test(String(g.meta.competition || ""))));
+      const pre = !!(g.preseason || (g.meta && g.meta.preseason) || /preseason/i.test(String(compRaw)));
       /* A SOCCER CARD NAMES ITS COMPETITION (2026-08-11). "Soccer" alone on an MLS card
          says nothing — and the tl-comp suffix is hidden at card size by design (long
          strings like "NFL Preseason Week 2" don't fit). A short competition name IS the
@@ -9895,10 +9901,14 @@ export default function Home() {
          sign in to unlock"). The pass/pick distinction is itself premium information —
          a locked slate reads as one uniform "sign in to unlock", and only an entitled
          reader sees which games the desk declined. */
+      /* …AND UNIFORM MEANS UNIFORM. The locked-pick chip below says "Unlock" (the
+         one-line rule); this chip said "Sign in to unlock". Two labels on one board
+         let a signed-out reader tell a pass from a withheld pick by chip width alone —
+         the exact distinction the uniform slate exists to hide. One chip, one word. */
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
         ? (entitled()
             ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
-            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>${esc(unlockCtaTxt())}</i></span>`)
+            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>Unlock</i></span>`)
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
@@ -10859,7 +10869,11 @@ export default function Home() {
                   first half is gated on the branch it describes and the second half, which
                   is a fact about the machine on any finished day, is not. */""}
             ${isPast && (voiceHtml || rule) ? `<p class="stgy-past">${voiceHtml ? "This is how that day's strategy was described on the day it played. " : ""}It is not running now — the search picks again every night.</p>` : ""}
-            ${whyTxt ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
+            ${/* THE LOCKED FOLD SAYS THE RECORD ONCE. dayRuleUpsellHtml's evidence line is
+                  this same fact — record over window — so printing whyTxt under it stated
+                  131-44-8 twice in adjacent paragraphs. The upsell owns the fact when it
+                  renders; whyTxt owns it the rest of the time. */""}
+            ${whyTxt && !dayRuleLocked(s, dateISO) ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
                  goes — the Desk, and specifically the record on it. -->
@@ -10978,7 +10992,10 @@ export default function Home() {
       const lab = lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || lg.toUpperCase());
       if (d && (d.mode === "armed" || d.is_offseason)) {
         const note = String(d.season_note || "").trim().replace(/\.$/, "");
-        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does — picks post the night before at each game's T-16h wall, and the record grades in the open from 0-0.</div></div>`;
+        // The wall + open-grading sentence lives on the record strip directly above this
+        // state (msRecordStripHtml) — repeating it here said the same thing twice on one
+        // quiet screen. The strip owns the promise; this state owns the schedule.
+        return `<div class="state"><div class="st-ico">${esc(lab)}</div><div class="big">${esc(lab)} is off-season</div><div class="sm">${esc(note ? note + "." : "The new season hasn't started yet.")} The board arms itself the moment the schedule does.</div></div>`;
       }
       const nx = msNextSlate(lg);
       if (nx) {
@@ -11010,7 +11027,11 @@ export default function Home() {
          the served games), so the preseason chip appears only when preseason ball is
          actually on the board or that line already has grades in it. */
       const prePlayed = rec.preseason && ((rec.preseason.wins || 0) + (rec.preseason.losses || 0) + (rec.preseason.pushes || 0) > 0);
-      const preNow = (((d && d.games) || []) as any[]).some((x: any) => x && (x.preseason || (x.meta && x.meta.preseason)));
+      /* Upcoming tracker cards carry preseason IN THE COMPETITION STRING only (the bare
+         flag is withheld from ungraded public cards by the platform's allowlist — see
+         ms_picks.build_card), so the string is read here too or an all-preseason August
+         NFL board wears a "Regular season" chip (audit 2026-08-11). */
+      const preNow = (((d && d.games) || []) as any[]).some((x: any) => x && (x.preseason || (x.meta && x.meta.preseason) || /preseason/i.test(String((x.competition ?? (x.meta && x.meta.competition)) || ""))));
       const chips = `${prePlayed || preNow ? chip("Preseason", line(rec.preseason)) : ""}${regPlayed || !preNow ? chip("Regular season", line(rec.regular)) : ""}`;
       return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
@@ -11335,7 +11356,7 @@ export default function Home() {
              for a database outage. The reader's next move is completely different in the two
              cases (try another date vs. retry), so they are two states. */
           if (!payload && dayLoadFailed) { body.innerHTML = loadErrorHtml(); bindMeta(); bindLoadRetry(); return; }
-          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Record tab.</div></div>`; bindMeta(); return; }
+          if (!payload) { body.innerHTML = `<div class="state"><div class="st-ico">◆</div><div class="big">No games to show</div><div class="sm">Nothing's loaded for ${esc(isNaN(new Date(curDate).getTime()) ? "that date" : dispDate)} — try another date or head back to today. Every past DiamondEdge Pick stays graded on the Desk.</div></div>`; bindMeta(); return; }
           /* ═══ "NOTHING SCHEDULED" IS A CLAIM ABOUT THE WORLD ═══
              The soccer tab said "NO SOCCER ON THE BOARD · Nothing scheduled for Sunday, August
              9". There were fixtures that day. What was true is that our provider had been
@@ -11360,8 +11381,8 @@ export default function Home() {
           const stale = msEmpty ? null : leagueFeedStale(league);
           const noun = league === "all" ? "games" : SPORT_LABEL[league] + " on the board";
           body.innerHTML = msEmpty ? msEmpty : stale
-            ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">Our ${esc(SPORT_LABEL[league])} feed has gone quiet — the last fixture we hold is from ${esc(stale.lastLabel)}, so there is no ${esc(SPORT_LABEL[league])} board today. MLB is running as normal, and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`
-            : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Record tab.</div></div>`;
+            ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">Our ${esc(SPORT_LABEL[league])} feed has gone quiet — the last fixture we hold is from ${esc(stale.lastLabel)}, so there is no ${esc(SPORT_LABEL[league])} board today. MLB is running as normal, and every past DiamondEdge Pick stays graded on the Desk.</div></div>`
+            : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Desk.</div></div>`;
         } else {
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           const allPending = games.length > 0 && games.every((g: any) => picksPending(g));
@@ -11720,7 +11741,7 @@ export default function Home() {
           else
             s.push(`The model gives this about a ${(Number(pl.p) * 100).toFixed(0)}% chance to win at ${fmtOdds(pl.price)}${be != null ? `, clear of the ${(be * 100).toFixed(0)}% break-even` : ""}.`);
         }
-        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Record tab.`);
+        s.push(`Like every DiamondEdge Pick, this one is graded against the final score — the full running record is on the Desk.`);
       }
       return s.slice(0, 4);
     }
@@ -13439,9 +13460,12 @@ export default function Home() {
       </g>`;
       const first = w[0], last = w[w.length - 1];
       const moved = Math.abs(last.line - first.line) > 0.001;
+      // The chart caption speaks the sport's own start noun (the section header above it
+      // already does) — "through first pitch" was printing on football and soccer charts.
+      const startNoun = WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "start";
       const cap = moved
         ? `Opened at ${lineStr(first.line)} at the ${first.wall} check and started at ${lineStr(last.line)}.`
-        : `Held at ${lineStr(first.line)} from the ${first.wall} check through first pitch.`;
+        : `Held at ${lineStr(first.line)} from the ${first.wall} check through ${startNoun}.`;
       /* THE BET IN PROSE, AND WHOSE PRICE EACH NUMBER IS.
          This pane prints THREE prices and used to distinguish none of them. On a real game
          it read: a line card saying "over −110", this caption saying "we took over 8 at
@@ -13464,12 +13488,15 @@ export default function Home() {
       // The axis is hours before first pitch, said in the caption rather than as a label at
       // the right edge — at 375px that label lands on top of the last tick.
       return `<div class="omv">
-        <svg viewBox="0 0 ${W} ${H}" class="omv-svg" role="img" aria-label="${esc(`How the total moved into first pitch.${marked ? ` Our bet: ${label}.` : ""}`)}">
+        <svg viewBox="0 0 ${W} ${H}" class="omv-svg" role="img" aria-label="${esc(`How the total moved into ${startNoun}.${marked ? ` Our bet: ${label}.` : ""}`)}">
           ${band}${gridY}
           <path class="omv-step" d="${d}"/>
           ${dots}${mark}${xlab}
         </svg>
-        <p class="omv-cap">${esc(cap + bet)} Each mark is a check, that many hours before first pitch.</p>
+        ${/* "…hours before first pitch" was the third start-noun in four lines of this
+              pane (header, held-caption, axis note). The axis note says the unit and
+              stops. */""}
+        <p class="omv-cap">${esc(cap + bet)} Each mark is a check, that many hours out.</p>
       </div>`;
     }
     // The same rows as a table — the number, the best price we found and the book quoting it.
@@ -13682,7 +13709,7 @@ export default function Home() {
       const mastDek = art && art.dek && !PICK_WORDS.test(cleanBlurb(art.dek)) ? mdBold(cleanBlurb(art.dek)) : "";
       /* The competition joins the kicker only when it adds a word — WNBA cards arrive
          with competition "WNBA", and "WNBA · WNBA" is a label restating itself. */
-      const kickComp = g.meta && g.meta.competition ? String(g.meta.competition) : "";
+      const kickComp = String((g.competition ?? (g.meta && g.meta.competition)) || "");
       const kickLab = SPORT_LABEL[sp] || sp;
       const kickLine = [kickLab, kickComp && kickComp.toLowerCase() !== String(kickLab).toLowerCase() ? esc(kickComp) : ""].filter(Boolean).join(" · ");
       const previewMasthead = `<div class="sh-mast">
@@ -14733,7 +14760,7 @@ export default function Home() {
             <div class="dsec">
               <div class="dsec-h">The receipts</div>
               <div class="dsec-b rcp">
-                <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record lives on the Record tab.</p>
+                <p><b>Every pick is graded in public.</b> The side, the line and the price freeze before the game, the final score does the judging, and the whole record lives on the Desk.</p>
                 <p><b>Every pick must clear the real price.</b></p>
                 <p><b>Win rate always travels with the price.</b> That's why every number we show you carries its return right next to it.</p>
               </div>
@@ -17496,7 +17523,10 @@ export default function Home() {
           <section class="acct-card">
             <div class="acct-card-k">Support</div>
             <button class="acct-link" id="acct-support">Message support${supportUnread > 0 ? `<span class="sup-badge">${supportUnread}</span>` : ""}<span class="al-sub">In-app thread — we reply within a day</span><em>→</em></button>
-            <a class="acct-link" href="mailto:kytepush@gmail.com?subject=DiamondEdge%20support">Email support<span class="al-sub">kytepush@gmail.com · we answer same day</span><em>→</em></a>
+            ${/* One reply promise, not two: the row above says "we reply within a day" and
+                  this one said "we answer same day" — adjacent rows, different claims. The
+                  address is the information this row adds. */""}
+            <a class="acct-link" href="mailto:kytepush@gmail.com?subject=DiamondEdge%20support">Email support<span class="al-sub">kytepush@gmail.com</span><em>→</em></a>
             <button class="acct-link" id="acct-billing">Billing question<span class="al-sub">Charges, refunds, receipts</span><em>→</em></button>
           </section>
 
@@ -17841,7 +17871,10 @@ export default function Home() {
                carried until this pass. A sell that quotes a number the record cannot
                produce is the one place it matters most that they agree. -->
           <div class="up-perks">
-            ${perk("Every Strong ◆◆◆ and Good ◆◆ pick, unlocked", "The exact side, line and price we froze before the game — never re-written after the fact.")}
+            ${/* The sub-sell headline directly above already says "Every Strong ◆◆◆ and
+                  Good ◆◆ pick, unlocked" — this perk repeated it verbatim two inches down.
+                  The perk now leads with what its own body actually promises. */""}
+            ${perk("The exact call, frozen before the game", "The side, the line and the price — never re-written after the fact.")}
             ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and what the desk disagreed about.")}
             ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
             ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free readers; you just get the calls too.")}
@@ -19092,7 +19125,12 @@ export default function Home() {
         <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
         ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
         ${rLocked ? dayRuleUpsellHtml(s) : (rule ? `<p class="lab-today-p">${esc(rule)}</p>` : "")}
-        <p class="lab-today-w">Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk.</p>
+        ${/* Locked, the upsell one line up already says what it did over the window and that
+              it froze before first pitch — the process line then repeats both within four
+              lines. So the locked variant keeps only what the upsell does not say. */""}
+        <p class="lab-today-w">${rLocked
+          ? "Chosen by last night's run from the finished games of the past few weeks. The conditions it is written in are on the Desk."
+          : "Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk."}</p>
       </section>`;
     }
     /* ══════════════════ THE NIGHTLY SEARCH — "How we chose today's strategy" ══════════════════
@@ -19295,7 +19333,10 @@ export default function Home() {
         cap: [`not the hit rate, not the price,`,
               `not how good the reasoning sounds`],
         aria: `every candidate is scored on wins minus losses`,
-        step: ["Rank", "Every rule is scored on one thing: how many more times it won than it lost over the window. The single best score is the one that plays."] as [string, string],
+        /* The scoring formula is already stated twice above this step — in the lede and in
+           the figure's WINS − LOSSES band — so the step stopped restating it a third time
+           and says only what Rank adds: the single best score plays. */
+        step: ["Rank", "Ranked on that one score — and the single best rule takes the card."] as [string, string],
         lede: `It ranks them on one number and one number only: how many more times a rule won than it lost. One rule comes out the other side — no vote, no committee — and that is the one on your card before the first pitch.`,
       };
     }
@@ -19379,11 +19420,16 @@ export default function Home() {
       const poolSentence = mid.isForge
         ? `Every night, while the league sleeps, DiamondEdge writes out far more candidate rules than a person could read in a lifetime, and replays every single one of them against the games that just finished — the last few weeks${scaleTxt ? `, <b>${esc(scaleTxt)}</b>` : ""}.`
         : `Every night, while the league sleeps, DiamondEdge replays every strategy it can build against the games that just finished — the last few weeks${scaleTxt ? `, <b>${esc(scaleTxt)}</b>` : ""}.`;
+      /* THE DISCARD IS SAID ONCE IN PROSE. This lede used to close with "Then it gets
+         thrown away — win or lose — and tomorrow the whole search runs again from
+         nothing", the same fact the figure's caption ("Tonight it runs again from zero,
+         and yesterday's winner has to win the job back") and the Lock step ("At midnight
+         it is deleted") state on the same screen. Three tellings; the two that sit on
+         the mechanism they describe survive. */
       const lede = [
         `There is no house system here.`,
         poolSentence,
         mid.lede,
-        `Then it gets thrown away — win or lose — and tomorrow the whole search runs again from nothing.`,
       ].join(" ");
       /* ═══ STEP 2 WAS A FALSE CLAIM ABOUT OUR OWN METHOD (fixed 2026-08-09) ═══
          It read: "Each one is marked on a slice of that window it was held back from — so
@@ -19593,7 +19639,12 @@ export default function Home() {
         ${censusLine}
         ${blk.own ? "" : `<p class="rstr-note">The rows below are the <b>engine's own shadow ledger</b>, not the DiamondEdge record. These are picks the engine graded against itself on nights the desk was on the card. They are evidence about the tiers; they are not a track record, and not one of them is counted anywhere else on this site.</p>`}
         <div class="rstr-rows">${rows}</div>
-        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.</p>
+        ${/* When the census line above has already said "they are in the record and they
+              are not in these rows", the bolded restatement of the same fact in this foot
+              was the second telling on one figure. The foot then keeps only the framing. */""}
+        <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${censusLine
+          ? " — a cut of the record, never a shortlist."
+          : `. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.`}</p>
       </section>`;
     }
     /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
@@ -20586,9 +20637,10 @@ export default function Home() {
         ${name ? `<h3 class="dp-today-h">${esc(name)}</h3>` : ""}
         ${locked ? "" : paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
         ${summary ? `<p class="dp-today-w">${esc(summary)}</p>` : ""}
-        ${locked ? dayRuleUpsellHtml(s, {
-          foot: "The record above is real and free — it is the same record we grade ourselves on, win or lose.",
-        }) : ""}
+        ${/* NO FOOT ON THE DESK'S UPSELL: the record hero is directly above this section
+              saying the record is public, and dp-cta below closes with "The record on this
+              page is public." A third assurance between them was the same fact again. */""}
+        ${locked ? dayRuleUpsellHtml(s) : ""}
         ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p></details>` : ""}
       </section>`;
     }
@@ -20698,7 +20750,10 @@ export default function Home() {
                     is not to relabel the paper — it is to stop the link pretending. The
                     bullet now says what the search does in its own words, and the link is
                     offered as what it is: the full write-up of an earlier one. */""}
-              <li><b>An overnight search.</b> Every strategy it can write, replayed against every finished game, every night. Our ${paperLink(DESK_PAPERS.SEARCH, "full write-up of an earlier search")} shows how a nightly ranking is built.</li>
+              ${/* THE MECHANISM SENTENCE LIVES IN dp-pitch, one scroll up — this bullet
+                    repeated it nearly word for word on the same page. The bullet keeps the
+                    claim-word and the evidence link; the pitch keeps the mechanism. */""}
+              <li><b>An overnight search, every night.</b> Our ${paperLink(DESK_PAPERS.SEARCH, "full write-up of an earlier search")} shows how a nightly ranking is built.</li>
               <li><b>Walk-forward, never hindsight.</b> Each day's strategy is ${paperLink(DESK_PAPERS.WALKFWD, "chosen before the games it is graded on")} — and we ${paperLink(DESK_PAPERS.MULTITEST, "count every idea we tested")}, so a lucky one cannot pose as a real one.</li>
               <li><b>Four independent engines.</b> They ${paperLink(DESK_PAPERS.ANALYSTS, "read different things")} and are graded separately, so agreement means something.</li>
             </ul>
