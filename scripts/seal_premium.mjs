@@ -49,7 +49,14 @@ if (!SURL || !SKEY) {
   process.exit(4);
 }
 
-const plaintext = readFileSync(src, "utf8");
+const raw = readFileSync(src, "utf8");
+/* COMPACT SERIALIZATION (2026-08-13). The builders pretty-print the full
+   twins; sealing the indentation made the picks_unified ciphertext ~19MB and
+   the upsert began dying on the DB's statement timeout (57014) — members sat
+   on an Aug-11 board for two days. Re-serializing compact is byte-for-byte the
+   same JSON to the route's JSON.parse and cuts the statement ~47%. */
+let plaintext = raw;
+try { plaintext = JSON.stringify(JSON.parse(raw)); } catch { /* sealed as-is; the probe below rejects non-JSON anyway */ }
 /* Fail loudly if handed the PUBLIC artifact by mistake. Sealing the redacted
    board would be harmless but silently useless — members would pay for the
    same thing free readers get, and nothing would report it. */
