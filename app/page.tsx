@@ -526,6 +526,87 @@ export default function Home() {
     const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
+    /* ═══════════ ONE "TODAY" — AND IT IS THE BOARD'S OWN DAY (2026-08-13) ═══════════
+       The 2026-08-12 publishing outage put two confident surfaces on one screen: the
+       slate said "no bets" while the strip beside it said 4-1. Both were reading the
+       same stale previous-day payload — the slate filtered it against the PHONE's
+       calendar (which had rolled past) and found nothing; the strip fell back to the
+       served day ledger and asserted a record the slate could not show.
+
+       THE DECISION, WRITTEN WHERE IT LIVES: every surface that describes the slate —
+       the board, the strategy strip's so-far record, their empty states — describes
+       THE BOARD BEING SHOWN, so each derives its day from the served payload's OWN
+       date (boardOwnDate → slateDayISO), never from the client clock. The client
+       clock keeps exactly two jobs: choosing which date-strip cell wears the word
+       "Today" (the reader's calendar is theirs), and NOTICING that the calendar has
+       rolled past the board — a fact to DECLARE (the stale bar), never to disguise by
+       rendering the new day as a confidently empty board. A stale or missing payload
+       shows the stale bar plus the last-known board; "no bets today" can only render
+       off a fresh payload that genuinely holds zero picks for its own date. */
+    function boardOwnDate(src: any): string {
+      const d = String((src && src.date) || "").slice(0, 10);
+      if (isISO(d)) return d;
+      /* The live board carries NO top-level date, and its games[] span years — a finals
+         tail behind it and next week's fixtures ahead of it — so no scan of the games
+         can date it (measured 2026-08-13: 2022→2026-08-23 in one payload). What DOES
+         date it is its own generation stamp: the board is rebuilt continuously through
+         its slate day, so the PT calendar day it was generated on IS the day it
+         describes. PT because that is the slate's home clock — the 03:10 PT freeze,
+         and the backend writes game dates in the slate's home timezone. */
+      const t = feedStampMs(src);
+      if (!t) return "";
+      try { return new Date(t).toLocaleDateString("en-CA", { timeZone: "America/Los_Angeles" }); } catch { return ""; }
+    }
+    /* HOW STALE IS "STALE". The pregame payload regenerates ~every 30 min while games
+       are on, so 45 minutes of stamp silence during a live window is an outage, not a
+       slow cycle. Outside live hours the stamp is allowed to age (a 3 AM board is
+       healthy at noon) — unless the SERVER already confessed (`__served_stale` rides
+       in from /api/snap's last-known-good fallback, see snap()), or the board's own
+       date has fallen behind the reader's calendar. The old-day test ALSO requires an
+       old stamp, so a reader ahead of the slate's timezone (Tokyo at breakfast) never
+       sees a fresh evening board flagged as yesterday's. */
+    const BOARD_STALE_MS = 45 * 60 * 1000;
+    function boardStaleInfo() {
+      const src = livePayload || payload;
+      if (!src) return null;
+      const day = boardOwnDate(src);
+      const stamp = feedStampMs(src);
+      const age = stamp ? Date.now() - stamp : Infinity;
+      const oldDay = isISO(day) && day < todayISO() && age > BOARD_STALE_MS;
+      const ageStale = stamp > 0 && age > BOARD_STALE_MS && (liveWindowActive() || !!(src as any).__served_stale);
+      if (!oldDay && !ageStale) return null;
+      return { day: isISO(day) ? day : todayISO(), stamp, oldDay };
+    }
+    /* THE DAY THE SLATE IS ACTUALLY SHOWING — the one derivation every paired surface
+       (board ↔ strip) reads, so they cannot disagree about which day they describe.
+       A reader who picked a date gets that date; a reader on "today" whose served
+       board has fallen a day behind gets the BOARD's day, with the stale bar saying
+       so — because rendering the new day off an old payload is exactly how "NO BETS"
+       and "4-1" came to share a screen. */
+    function slateDayISO() {
+      if (curDate !== todayISO()) return curDate;
+      const st = boardStaleInfo();
+      return st && st.oldDay ? st.day : curDate;
+    }
+    /* THE STALE BAR — quiet, honest, and the only voice allowed to explain an old
+       board. It states the board's own generation time in the reader's words and says
+       the app is still trying (the pollers genuinely are — pollPregame every 4 min,
+       and /api/snap keeps serving last-good in the meantime). It never blames the
+       schedule. One line at 375px by construction (ellipsis, no wrap). */
+    function staleBarHtml(st: any) {
+      let asOf: string;
+      if (st.stamp) {
+        const d = new Date(st.stamp);
+        const dayK = d.toLocaleDateString("en-CA");
+        const t = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+        const when = dayK === todayISO() ? "" : dayK === shiftDate(todayISO(), -1) ? " yesterday"
+          : ` ${d.toLocaleDateString("en-US", { weekday: "long" })}`;
+        asOf = `Board as of ${t}${when}`;
+      } else {
+        asOf = `Board from ${new Date(st.day + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}`;
+      }
+      return `<div class="stalebar" role="status"><span class="sb-dot" aria-hidden="true"></span><b>${esc(asOf)}</b><span class="sb-tx">— reconnecting…</span></div>`;
+    }
     const REDUCE = typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
     const TZ_ABBR = (() => {
       try {
@@ -939,7 +1020,18 @@ export default function Home() {
               .filter(Boolean).join("&");
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}${qs ? "?" + qs : ""}`,
               { ...(ac ? { signal: ac.signal } : {}) });
-            if (r.ok) return await r.json();
+            if (r.ok) {
+              const j = await r.json();
+              /* THE SERVER'S CONFESSION RIDES WITH THE BYTES (2026-08-13). /api/snap
+                 answers an origin failure with its last-known-good copy and says so in
+                 `x-snap-stale` (see the route's serve-stale note). The client keeps
+                 that honesty: the flag travels on the payload so boardStaleInfo() can
+                 DECLARE the stale board (the stale bar) instead of rendering old bytes
+                 as a confident fresh day. The underscore keeps it out of the
+                 served-field namespace; nothing serializes payloads back out. */
+              try { if (j && typeof j === "object" && !Array.isArray(j) && r.headers.get("x-snap-stale")) (j as any).__served_stale = true; } catch {}
+              return j;
+            }
             snapProxyFailed();
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
@@ -2319,6 +2411,17 @@ export default function Home() {
     // and it carries no direction in text, class, title or aria.
     const lockedSideChip = (tight = false) =>
       `<span class="lockside${tight ? " sm" : ""}">${lockSvg}<i>Premium</i></span>`;
+    /* THE FINAL→GRADED WINDOW SAYS SO (deferred list, 2026-08-13). A locked chip on a
+       game that has already gone FINAL is not withholding a bet anyone can still place —
+       the grade lands with the next intraday cycle and the side then ships whole to every
+       reader, free. "Unlock" in that window sells a pick that is minutes from being
+       public, which reads as a stale board the moment the grade appears. So the chip says
+       what is actually happening. Keyed on the GAME state alone — never on the pick — so
+       pass chips and pick chips on the same final slate stay pixel-identical (the uniform-
+       slate rule: chip text must not leak the pass/withheld distinction). */
+    const gameFinalNow = (g: any) =>
+      ["final", "post"].includes(String((g && g.status) || "").toLowerCase());
+    const unlockChipTxt = (g: any) => (gameFinalNow(g) ? "grading…" : "Unlock");
     // ===================== VIG / +EV GATE =====================
     // A bet is only worth taking when our win probability clears the PRICE's break-even (the
     // vig-inclusive hurdle). "Right side of the line" at a bad price (e.g. 64% at -196, which
@@ -4016,7 +4119,7 @@ export default function Home() {
       const actChip = word === "DIAMONDEDGE PICK" ? "" : `<span class="de-act">${esc(word)}</span>`;
       const head = `<div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span>${actChip}${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
       const callRow = callHtml ? `<div class="de-callrow">${callHtml}${atLine}</div>` : "";
-      const unlockRow = locked ? `<div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : "";
+      const unlockRow = locked ? `<div class="de-unlock">${lockSvg}${esc(gameFinalNow(g) ? "grading…" : unlockCtaTxt())}</div>` : "";
       /* ═══════ THE HERO'S BETTING STRIP — the SAME pick language as the board ═══════
          Leon asked whether the pick cleanup covers the game page. It does, and this is where.
 
@@ -4035,7 +4138,7 @@ export default function Home() {
             ${compactDePickHtml(g, pl, locked, "strip", avoid, stamp)}
             ${priceTxt}
           </div>
-          ${locked ? `<div class="destrip-unlock">${lockSvg}${esc(unlockCtaTxt())}</div>` : ""}
+          ${locked ? `<div class="destrip-unlock">${lockSvg}${esc(gameFinalNow(g) ? "grading…" : unlockCtaTxt())}</div>` : ""}
         </section>`;
       }
       return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
@@ -7850,7 +7953,14 @@ export default function Home() {
       // tomorrow's fixtures), live games only if plausibly still live (no timestamp, or started
       // within the last 12h — the payload carries stale "live" zombies from prior days), and
       // finals only when they finaled today (local day == viewer's today).
-      if (curDate === todayISO()) {
+      /* KEYED ON THE DATE BEING ASKED ABOUT (forDate), not on the globally selected one
+         (2026-08-13). These are per-date filters, so they follow the question: a caller
+         asking for the stale board's own day (slateDayISO during an outage) gets that
+         day's games through the dated branch above, instead of having them re-filtered
+         away against the client's calendar — which is what turned a served stale board
+         into a fabricated empty "today". For every existing caller forDate === curDate,
+         so nothing else moves. */
+      if (forDate === todayISO()) {
         const t = todayISO();
         inLg = inLg.filter((g: any) => {
           const st = (g.status || "pre").toLowerCase();
@@ -7875,11 +7985,14 @@ export default function Home() {
       return inLg;
     }
 
-    // Pick the first league that actually has games on the current date.
+    // Pick the first league that actually has games on the day the slate will show —
+    // slateDayISO(), so a boot onto a stale board lands on the league whose cards the
+    // board can actually render rather than an empty default.
     function bestLeague() {
       if (!payload) return league;
-      if (gamesForLeague(payload, league).length) return league;
-      return SPORTS.find((s) => gamesForLeague(payload, s).length) || league;
+      const d = slateDayISO();
+      if (gamesForLeague(payload, league, d).length) return league;
+      return SPORTS.find((s) => gamesForLeague(payload, s, d).length) || league;
     }
 
     // ===================== TRACK RECORD ACCESS =====================
@@ -9411,17 +9524,50 @@ export default function Home() {
       for (const c of cand) { const t = line(c); if (t) return t; }
       return "";
     }
-    /* WHEN, EXACTLY. The tag is two words; the sentence beneath the board is where the time
-       belongs, and it was HARD-CODED to "6:00 AM PT" in two places. The backend serves the
-       expected publish time per day (`picks_eta.expected_local_pt`); a hard-coded time is a
-       promise the UI cannot keep the moment that schedule moves. Served value wins, and the
-       existing string is the fallback so nothing changes until it needs to. */
-    function picksEtaTime(g?: any) {
-      /* A de_ms_v1 GAME'S WALL IS ITS OWN, NOT MLB'S. `picks_eta` is served per MLB game,
-         and the fallback scan below reads the first one it finds — which put "12:40 PM PT"
-         (the MLB slate's first wall) on an NFL page whose real wall is sixteen hours before
-         ITS kickoff. The multisport contract is fixed and simple — picks freeze at T-16h
-         (owner order 2026-08-10; was T-3h) — so the time is computed from the game's own
+    /* ═══ WHEN PICKS POST — ONE DERIVATION, COMPUTED FROM THE FIXED CONTRACT (2026-08-13) ═══
+       Owner report (screenshot): the schedule header's FIRST PICK chip wandered — sometimes
+       "3:10 AM PT", sometimes an older value, and it popped in late. The old path scanned
+       FOUR feeds for a served per-game `picks_eta` object — copies that predate the T-16h
+       wall (T-3h-era times survive in cached payloads) and that resolve DIFFERENTLY as each
+       feed lands, so the chip could paint one time and then correct itself to another. That
+       whole scan is gone.
+
+       The contract is fixed and simple (owner order 2026-08-11): the slate freezes and posts
+       at the 03:10 AM PT overnight run; a game's own wall is T-16h before its start, so only
+       a game starting after ~7:10 PM PT posts later than the freeze, at its own T-16h moment.
+       Both inputs are KNOWN at first paint — a constant and the game's start — so every
+       surface that states this time computes the same answer, renders it in the same paint as
+       its container, and never corrects itself. picksEtaRaw (the served human STRING on the
+       incoming tag) is untouched: the words stay served; the TIME is contract. */
+    const FREEZE_PT = { h: 3, m: 10 };
+    // The UTC instant of `h:m America/Los_Angeles` on dateISO — DST-correct without a tz
+    // library: guess at PDT, format the guess back into PT, and shift by the difference.
+    function ptInstant(dateISO: string, h: number, m: number) {
+      let t = Date.parse(`${dateISO}T${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:00-07:00`);
+      if (!isFinite(t)) return NaN;
+      try {
+        const parts = new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour12: false, hour: "2-digit", minute: "2-digit" }).format(new Date(t));
+        const [hh, mm] = parts.split(":").map(Number);
+        if (isFinite(hh) && isFinite(mm)) t += (h * 60 + m - ((hh === 24 ? 0 : hh) * 60 + mm)) * 60000;
+      } catch {}
+      return t;
+    }
+    // The instant a given date's first pick posts (freeze, or the game's own later T-16h
+    // wall), whether that instant has passed, and the time formatted the one way we say it.
+    function pickPostInfo(dateISO: string, g?: any) {
+      const d = isISO(dateISO) ? String(dateISO).slice(0, 10) : todayISO();
+      let post = ptInstant(d, FREEZE_PT.h, FREEZE_PT.m);
+      const ts = g ? firstPitchTs(g) : null;
+      if (ts != null && isFinite(post) && ts - 16 * 3600 * 1000 > post) post = ts - 16 * 3600 * 1000;
+      const time = isFinite(post)
+        ? `${new Date(post).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`
+        : "3:10 AM PT";
+      return { post, time, posted: isFinite(post) && Date.now() >= post };
+    }
+    function picksEtaTime(g?: any, dateISO?: string) {
+      /* A de_ms_v1 GAME'S WALL IS ITS OWN, NOT MLB'S — and it has no 03:10 freeze: the
+         multisport pipeline posts each pick at exactly T-16h before that game's start
+         (owner order 2026-08-10; was T-3h), so the time is computed from the game's own
          start, never borrowed across sports. */
       if (g && MS_TABS.has(String(g.sport || "").toLowerCase())) {
         const ts = firstPitchTs(g);
@@ -9431,21 +9577,8 @@ export default function Home() {
             return `${w.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`;
         }
       }
-      const scan = (pl: any) => {
-        const gs = (pl && pl.games) || [];
-        const hit = gs.find((x: any) => x && x.picks_eta && typeof x.picks_eta === "object" && x.picks_eta.expected_local_pt);
-        return hit ? hit.picks_eta : null;
-      };
-      const e = (g && typeof g.picks_eta === "object" ? g.picks_eta : null)
-        || scan(livePayload) || scan(payload) || scan(betaLiveData) || scan(betaData);
-      const iso = e && (e.expected_local_pt || e.expected_utc);
-      if (!iso) return "3:10 AM PT";
-      const d = new Date(String(iso));
-      if (isNaN(d.getTime())) return "3:10 AM PT";
-      // always rendered IN Pacific, because the sentence says "PT" — the served value is an
-      // absolute instant (offset or Z), so the zone is a formatting choice, not a guess
-      const t = d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" });
-      return `${t} PT`;
+      const d = (g && gameDateISO(g)) || (isISO(dateISO) ? String(dateISO).slice(0, 10) : "") || slateDayISO();
+      return pickPostInfo(d, g).time;
     }
     const picksEtaShort = (g: any) => {
       const raw = picksEtaRaw(g);
@@ -9911,11 +10044,11 @@ export default function Home() {
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
         ? (entitled()
             ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
-            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>Unlock</i></span>`)
+            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>${unlockChipTxt(g)}</i></span>`)
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow${locked ? " haslock" : passMark ? " haspass" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>Unlock</i></span>` : passMark}</div>
+             <div class="tv-callrow${locked ? " haslock" : passMark ? " haspass" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>${unlockChipTxt(g)}</i></span>` : passMark}</div>
              ${liveCash}
            </div>`
         : incoming
@@ -10612,9 +10745,17 @@ export default function Home() {
        flight is still OPEN, and "so far" is still earned — nothing here counts a win that
        could still be lost, because the predicate cannot produce one. */
     function dayPickLedger(dateISO: string) {
+      /* SAME PAYLOAD, SAME DATE FILTER, SAME TIER RULES AS THE SLATE (2026-08-13).
+         The strip's number and the board's cards must be one derivation: this reads the
+         same source renderSlate reads (on today, livePayload and payload are the same
+         object; a picked past date loads into payload) through the same gamesForLeague
+         date filter, and counts the same displayPick the tiles render. `board` carries
+         how many cards the slate can actually show for this day — the record fallback
+         below yields to it (see strategyBarHtml), so a count can never stand beside a
+         board that cannot back it. */
       const src = dateISO === todayISO() ? (livePayload || payload) : payload;
       const games = src ? gamesForLeague(src, league, dateISO) : [];
-      const out = { w: 0, l: 0, p: 0, open: 0, settled: 0, picks: 0, early: 0 };
+      const out = { w: 0, l: 0, p: 0, open: 0, settled: 0, picks: 0, early: 0, board: games.length };
       games.forEach((g: any) => {
         const pl = displayPick(g);
         if (!pl || pl.action !== "TAKE") return;
@@ -10666,8 +10807,12 @@ export default function Home() {
            something is still coming (the day's picks are pending); otherwise no bar at all,
            because a strip that says nothing is worse than no strip. */
         if (!datePicksPending(dateISO)) return "";
-        const when = picksEtaTime();
-        const line = `Chosen by the overnight run — it lands with today's picks by ${when}`;
+        // Same single derivation as the schedule chip (pickPostInfo), same two tenses:
+        // a moment still ahead is promised; a moment already passed is stated as passed.
+        const pp = pickPostInfo(dateISO);
+        const line = pp.posted
+          ? `Chosen by the overnight run — it lands with today's picks, posted ${pp.time}`
+          : `Chosen by the overnight run — it lands with today's picks by ${pp.time}`;
         return `<div class="dstgy stgy-wait" id="stgy"><div class="stgy-bar" role="status">
             <span class="stgy-mark waiting">${strategyMark()}</span>
             <span class="stgy-tx"><i>${esc(eyebrow)}</i><b>${esc(line)}</b></span>
@@ -10808,7 +10953,15 @@ export default function Home() {
          biggest type in the app — the Desk masthead (deskRecordHero) — which is where this
          strip's own link lands. It is just not the answer to "how is today going". */
       const led = dayPickLedger(dateISO);
-      const ledgerRow = led.picks ? null : dailyRecordFor(dateISO);
+      /* ═══ THE COUNT YIELDS TO THE BOARD (2026-08-13, the outage rule) ═══
+         The served day ledger stays the fallback for a loaded archive board whose own
+         picks are not countable — but ONLY while the slate is actually showing that
+         day's cards (led.board, counted by the same derivation the slate renders).
+         During the 2026-08-12 outage this fallback asserted "4-1" beside a slate that
+         could not show a single card — a record next to a board must never claim what
+         the board cannot back. No cards ⇒ no stat. The record itself is not lost: the
+         Desk, the record screens and the calendar still carry the served row. */
+      const ledgerRow = led.picks || !led.board ? null : dailyRecordFor(dateISO);
       const rec = led.settled
         ? { w: led.w, l: led.l, p: led.p }
         : ledgerRow && (ledgerRow.w + ledgerRow.l + ledgerRow.p)
@@ -11036,11 +11189,22 @@ export default function Home() {
          NFL board wears a "Regular season" chip (audit 2026-08-11). */
       const preNow = (((d && d.games) || []) as any[]).some((x: any) => x && (x.preseason || (x.meta && x.meta.preseason) || /preseason/i.test(String((x.competition ?? (x.meta && x.meta.competition)) || ""))));
       const chips = `${prePlayed || preNow ? chip("Preseason", line(rec.preseason)) : ""}${regPlayed || !preNow ? chip("Regular season", line(rec.regular)) : ""}`;
-      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — graded from ${esc(startLab)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
+      /* AN OFF-SEASON TRACK HAS NO "GRADED FROM <past date>" (deferred list, 2026-08-13).
+         The NBA strip said "graded from Aug 10, 2026" while the empty state right under it
+         said the season opens Oct 3 — a date-stamped grading claim about a track with
+         nothing to grade reads as a contradiction, and the launch date is a fact about the
+         LEDGER (when its 0-0 line was opened), not about any game. Off-season the strip
+         promises the same discipline anchored to the only date that matters there: opening
+         night. In season, the dated form returns untouched. */
+      const offSeason = !!(d && (d.mode === "armed" || d.is_offseason));
+      const gradedFrom = offSeason ? "graded in the open from opening night" : `graded from ${startLab}`;
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
     function metaRow() {
       if (MS_TABS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
-      return safeHtml("today's strategy strip", () => strategyBarHtml(), "");
+      // ONE DAY, BOTH SURFACES: the strip describes the same day the slate renders —
+      // slateDayISO(), the shared derivation — never a "today" re-derived on its own.
+      return safeHtml("today's strategy strip", () => strategyBarHtml(slateDayISO()), "");
     }
 
     // ===================== GAMES TAB =====================
@@ -11224,8 +11388,20 @@ export default function Home() {
        (History: through 2026-08-10 the wall was T-3h and picks trickled in through the
        day; those days' records and copy stand as served.) */
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
-      const first = esc(picksEtaTime(games && games[0]));
-      const countdown = `<div class="fn-countdown soon"><span class="fnc-k">First pick</span><b class="fnc-val">${first}</b></div>`;
+      /* THE CHIP HAS ONE SOURCE AND TWO TENSES (owner report, 2026-08-13). The time is
+         pickPostInfo — the 03:10 freeze constant, lifted only by the first game's own
+         T-16h wall — so it is the same answer on every paint and never pops in late with
+         a different value than it settles on. Before the post instant the chip promises
+         ("Picks post · 3:10 AM PT"); after it, a board still wearing this banner means
+         the reader's copy is a beat behind the publisher, so the chip stops sounding
+         future about a moment that already happened — the picks are live and were
+         posted at that time — while the pollers pull them in. */
+      const g0 = games && games.length ? games[0] : null;
+      const noteDay = (g0 && gameDateISO(g0)) || (curDate > todayISO() ? curDate : slateDayISO());
+      const pp = pickPostInfo(noteDay, g0);
+      const countdown = pp.posted
+        ? `<div class="fn-countdown soon"><span class="fnc-k">Picks live</span><b class="fnc-val">posted ${esc(pp.time)}</b></div>`
+        : `<div class="fn-countdown soon"><span class="fnc-k">Picks post</span><b class="fnc-val">${esc(pp.time)}</b></div>`;
       /* SHORT, BECAUSE IT SAYS THE SAME THING EVERY DAY. This was a five-line paragraph
          that also printed the first-pick time TWICE — once in the prose and again in the
          chip beside it — and took a quarter of the screen above a slate the reader came to
@@ -11297,19 +11473,30 @@ export default function Home() {
       // has not loaded) kept showing today's "MLB 10" over an empty schedule card. Every path
       // that resolves a view repaints through this one helper now (defined out here so both the
       // early-return branch and the has-games tail can reach it).
+      /* THE DAY THIS PAINT DESCRIBES (2026-08-13, the outage class). On a picked date it
+         is that date; on "today" it is slateDayISO() — the board's own day when the
+         served board has fallen behind the client calendar, so a stale payload renders
+         AS ITSELF (its games, its record, its date in the refnote) under the stale bar,
+         never as a fabricated empty new day. Everything below — the games filter, the
+         rail counts, the display date, the ppd lookup — reads this one value, and the
+         strip above (metaRow → strategyBarHtml(slateDayISO())) reads the same one, which
+         is what makes the pair unable to disagree. */
+      const staleInfo = curDate === todayISO() ? safeRun("board staleness", () => boardStaleInfo()) : null;
+      const viewDay = staleInfo && staleInfo.oldDay ? staleInfo.day : curDate;
+      const staleBar = staleInfo ? safeHtml("stale board bar", () => staleBarHtml(staleInfo), "") : "";
       const paintRailCounts = () => {
         const cntSrc = payload || (curDate > todayISO() ? livePayload : null);
-        ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = cntSrc ? gamesForLeague(cntSrc, lg).length : 0; el.textContent = c || ""; } });
+        ["all", ...SPORTS].forEach((lg) => { const el = $("cnt-" + lg); if (el) { const c = cntSrc ? gamesForLeague(cntSrc, lg, viewDay).length : 0; el.textContent = c || ""; } });
       };
       {
-        const dispDate = new Date(curDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
+        const dispDate = new Date(viewDay + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
         const isFuture = curDate > todayISO();
         // A de_ms_v1 tab needs its sport payload (record strip, season_note, next slate) —
         // fire-and-forget; the loader repaints quietly when it lands and caches for 5 min.
         if (MS_TABS.has(league)) { try { loadMsSport(league); } catch {} }
         // Games for this date. Future dates often have no snapshot yet — fall back to the live
         // board (it carries upcoming fixtures) so the SCHEDULE still shows even without picks.
-        let games = payload ? gamesForLeague(payload, league) : [];
+        let games = payload ? gamesForLeague(payload, league, viewDay) : [];
         if (isFuture && !games.length && livePayload) games = gamesForLeague(livePayload, league, curDate);
         // Still nothing? The v4 pick feed carries tomorrow's slate as soon as books post
         // (~T-24h) — synthesize minimal tiles from it so picks show the moment they exist.
@@ -11332,7 +11519,7 @@ export default function Home() {
           // then repaint quietly so any postponed card lands. Cached after first load.
           loadBeta().then(() => { try { if (tab === "games") renderSlate(true); } catch {} }).catch(() => {});
         }
-        const ppdGames = ppdGamesFor(curDate, games);
+        const ppdGames = ppdGamesFor(viewDay, games);
         // REPAINT ⇒ REBIND (see the boot warm-up): every path out of renderSlate below must
         // reach a bindMeta(), or the record chip this line just re-created has no handler.
         if (meta) meta.innerHTML = metaRow();
@@ -11349,6 +11536,17 @@ export default function Home() {
         if (!games.length) {
           // Early-return states still need their chrome bound (record chip / All picks /
           // How-picks-work went DEAD on future+empty dates before this).
+          /* ═══ A STALE BOARD NEVER RENDERS A CONFIDENT EMPTY DAY (2026-08-13) ═══
+             Every branch below states a fact about the schedule ("nothing scheduled",
+             "no games to show"). When the board being held is STALE, none of those facts
+             are known — the truthful sentence is about OUR feed, under the stale bar,
+             with no claim about what the world's schedule holds. This is what makes
+             "no bets today" impossible to show off anything but a fresh payload. */
+          if (staleInfo) {
+            const staleNoun = league === "all" ? "games" : `${SPORT_LABEL[league]} games`;
+            body.innerHTML = `${staleBar}<div class="state"><div class="st-ico">◆</div><div class="big">The board hasn't updated</div><div class="sm">The last board we received holds no ${esc(staleNoun)} for ${esc(dispDate)}, and we haven't been able to fetch a newer one yet. Reconnecting — the slate refreshes itself the moment publishing resumes, and every past DiamondEdge Pick stays graded on the Desk.</div></div>`;
+            paintRailCounts(); bindMeta(); return;
+          }
           /* A de_ms_v1 tab that is empty on a FUTURE date must not borrow the generic
              future banner — that banner's countdown reads the MLB slate's first wall, so
              the NBA tab on an August date said "first pick 12:40 PM PT" over nothing.
@@ -11427,7 +11625,9 @@ export default function Home() {
           // five-step confidence scale to a reader who had not asked, on every visit, and
           // the scale it explained is now shown on the tile only as stars beside the call.
           // It survives on the game page and in "How picks work", where someone is looking.
-          body.innerHTML = `${futureBanner}${rail}${grouped}
+          // The stale bar leads a stale board (invariant: staleness is declared, never
+          // disguised) — the last-known slate renders whole beneath it, as itself.
+          body.innerHTML = `${staleBar}${futureBanner}${rail}${grouped}
             <div class="refnote">${nAll}${esc(lgSuffix)} game${nAll > 1 ? "s" : ""} · ${esc(dispDate)}${ppdGames.length ? ` · ${ppdGames.length} postponed` : ""}</div>`;
         }
       }
@@ -20354,6 +20554,9 @@ export default function Home() {
     }
     function zeroScopeTxt(isToday: boolean) {
       if (!isToday) return "No graded picks in this window";
+      // An outage must not read as a quiet morning (2026-08-13): when the board itself is
+      // stale, the honest zero-state is about OUR feed, not a promise about tonight.
+      if (safeRun("record zero-state staleness", () => boardStaleInfo())) return "Waiting on a fresh board";
       const n = picksInPlayToday();
       return n ? `${n} pick${n === 1 ? "" : "s"} in play · first grades tonight` : "First grades tonight";
     }
@@ -21401,6 +21604,10 @@ export default function Home() {
           } else { bar.style.transform = ""; bar.classList.remove("show", "go"); }
         }, { passive: true });
       })();
+      // debug hook: swap the whole served board (both today references) — how the
+      // stale-board rendering (boardStaleInfo / the stale bar) is exercised without
+      // waiting for a real outage: inject yesterday's archived payload and repaint.
+      root._injectBoard = (p: any) => { payload = p; livePayload = p; dayLoading = false; dayLoadFailed = false; try { renderSlate(); } catch {} return true; };
       // debug hook: inject a live_scores snapshot without waiting for the poller
       root._mlbLoad = (g: any) => loadMlbBox(g || detail, true);
       root._injectLiveScores = (ls: any) => { liveScores = ls; const ch = applyLiveScores(); if (ch) refreshLiveViews(); return ch; };
