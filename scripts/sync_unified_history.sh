@@ -12,6 +12,42 @@ TMP="$(mktemp "${TMPDIR:-/tmp}/unified_history_sync_body.XXXXXX")"
 trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 set -a; source "$HOME/.kytepush-platform.env"; set +a
+
+# ═══ PREMIUM SEAL, SHA-GUARDED (2026-08-13, free-tier lockdown) ═══
+# Same function as sync_unified_live.sh — see the comment there. Short form:
+# the seal gets its own stamp (sha over the twin minus the per-cycle generated
+# stamps, the sync_ms_premium.sh pattern), checked on EVERY run, so an
+# unchanged twin never buys a ~13 MB re-upsert of an identical sealed row and
+# a twin that moved while the public bytes did not still gets sealed.
+SEAL_WROTE=0
+seal_full_guarded() {
+  local FULL="$1" KEY="$2" SEAL_STAMP="$3" SSHA
+  [ -f "$FULL" ] || return 0
+  SSHA=$(/opt/homebrew/bin/python3 - "$FULL" <<'PY'
+import hashlib, json, sys
+p = json.load(open(sys.argv[1]))
+for k in ("generated_utc", "generated_at"):
+    p.pop(k, None)
+print(hashlib.sha256(json.dumps(p, sort_keys=True).encode()).hexdigest())
+PY
+) || SSHA=""  # unreadable twin: fall through and let seal_premium.mjs say why
+  if [ -n "$SSHA" ] && [ -f "$SEAL_STAMP" ] && [ "$(cat "$SEAL_STAMP")" = "$SSHA" ]; then
+    echo "$(date '+%F %T') premium seal $KEY unchanged (sha=${SSHA:0:12}) — skipped"
+    return 0
+  fi
+  # NODE RESOLVER (2026-08-13): launchd's PATH has no NVM/homebrew.
+  local NODE
+  NODE="$(command -v node || true)"
+  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
+  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
+  if "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULL" "$KEY"; then
+    [ -n "$SSHA" ] && echo "$SSHA" > "$SEAL_STAMP"
+    SEAL_WROTE=1
+    return 0
+  fi
+  echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
+  return 1
+}
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 # FRESHNESS GUARD — warn loudly if the unified history is missing recent days
 LATEST=$(python3 -c "import json; d=json.load(open('$FILE')); ds=sorted(g.get('date') for g in d.get('games',[])); print(ds[-1] if ds else '')" 2>/dev/null)
@@ -38,6 +74,14 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   else
     echo "$(date '+%F %T') UNIFIED HISTORY HEARTBEAT FAILED http=$HB_HTTP $(head -c 200 /tmp/unified_history_heartbeat_resp.txt)" >&2
     exit 1
+  fi
+  # Seal check on the heartbeat branch too (2026-08-13) — a no-op sha compare
+  # when nothing changed, a real seal when the full twin moved alone.
+  seal_full_guarded \
+    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json" \
+    picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
+  if [ "$SEAL_WROTE" = "1" ]; then
+    "$DIR/scripts/revalidate_edge.sh" picks_unified || true
   fi
   exit 0
 fi
@@ -100,17 +144,11 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   # THE PREMIUM HALF (2026-08-10) — see sync_unified_live.sh. $FILE is the
   # PUBLIC variant now; this seals the private full twin for /api/premium.
   # Non-fatal by design: a failed seal must never take the public publish down.
-  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
-  # `node` was "command not found" on EVERY launchd run (seals only succeeded
-  # from user shells; sealed rows sat at Aug 11 while the public board moved).
-  NODE="$(command -v node || true)"
-  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
-  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
-  FULLH="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json"
-  if [ -f "$FULLH" ]; then
-    "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULLH" picks_unified \
-      || echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
-  fi
+  # Sha-guarded since 2026-08-13 — see seal_full_guarded above: a stamp-only
+  # rebuild of the twin no longer buys a ~13 MB re-upsert of an identical row.
+  seal_full_guarded \
+    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json" \
+    picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   "$DIR/scripts/revalidate_edge.sh" picks_unified || true

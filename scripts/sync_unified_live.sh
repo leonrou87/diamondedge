@@ -22,6 +22,53 @@ trap 'rm -f "$TMP"' EXIT
 [ -f "$FILE" ] || exit 0
 # creds: read from disk, never printed
 set -a; source "$HOME/.kytepush-platform.env"; set +a
+
+# ═══ PREMIUM SEAL, SHA-GUARDED (2026-08-13, free-tier lockdown) ═══
+# The seal used to ride ONLY the public file's raw sha: every cycle that
+# rewrote the public board — including stamp-only rewrites, which is most of
+# them — re-sealed and re-upserted a multi-MB ciphertext row (measured: the
+# picks_unified statement is ~13 MB compact), pure write churn on the shared
+# free-tier Nano's disk-IO budget. And the asymmetric miss: a cycle where the
+# FULL twin changed while the public bytes did not took the heartbeat branch
+# and never sealed at all. Now the seal carries its own stamp — sha over the
+# twin's content MINUS the per-cycle generated stamps, the sync_ms_premium.sh
+# pattern — checked on EVERY run: an unchanged twin costs one local sha and no
+# DB statement; a changed twin seals no matter which branch the public sync
+# took. SEAL_WROTE=1 lets the heartbeat branch revalidate the edge tag so a
+# member sees the fresh board promptly instead of at /api/premium's 120 s net.
+SEAL_WROTE=0
+seal_full_guarded() {
+  local FULL="$1" KEY="$2" SEAL_STAMP="$3" SSHA
+  [ -f "$FULL" ] || return 0
+  SSHA=$(/opt/homebrew/bin/python3 - "$FULL" <<'PY'
+import hashlib, json, sys
+p = json.load(open(sys.argv[1]))
+for k in ("generated_utc", "generated_at"):
+    p.pop(k, None)
+print(hashlib.sha256(json.dumps(p, sort_keys=True).encode()).hexdigest())
+PY
+) || SSHA=""  # unreadable twin: fall through and let seal_premium.mjs say why
+  if [ -n "$SSHA" ] && [ -f "$SEAL_STAMP" ] && [ "$(cat "$SEAL_STAMP")" = "$SSHA" ]; then
+    echo "$(date '+%F %T') premium seal $KEY unchanged (sha=${SSHA:0:12}) — skipped"
+    return 0
+  fi
+  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
+  # `node` was "command not found" on EVERY launchd run, so the seal only ever
+  # succeeded when this script was run from a user shell. That is why the
+  # sealed rows sat at Aug 11 while the public board stayed current.
+  local NODE
+  NODE="$(command -v node || true)"
+  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
+  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
+  if "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULL" "$KEY"; then
+    [ -n "$SSHA" ] && echo "$SSHA" > "$SEAL_STAMP"
+    SEAL_WROTE=1
+    return 0
+  fi
+  echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
+  return 1
+}
+
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # HEARTBEAT (2026-07-31). The payload has not changed, so there is nothing to
@@ -49,6 +96,16 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   else
     echo "$(date '+%F %T') UNIFIED LIVE HEARTBEAT FAILED http=$HB_HTTP $(head -c 200 /tmp/unified_live_heartbeat_resp.txt)" >&2
     exit 1
+  fi
+  # THE TWIN CAN MOVE WHEN THE PUBLIC BYTES DID NOT (2026-08-13): the seal
+  # check now runs on the heartbeat branch too — a no-op sha compare when
+  # nothing changed, a real seal when the full board moved alone. Non-fatal,
+  # same as the changed-branch seal: members lose freshness, never the public.
+  seal_full_guarded \
+    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json" \
+    picks_unified_live "$DIR/scripts/.unified_live_seal.sha" || true
+  if [ "$SEAL_WROTE" = "1" ]; then
+    "$DIR/scripts/revalidate_edge.sh" picks_unified_live || true
   fi
   exit 0
 fi
@@ -87,19 +144,12 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   # twin for /api/premium. Guarded and non-fatal: a failed seal costs members
   # their picks until the next cycle, which is the right way round. It must
   # never take down the public publish, and it must never fall back to pushing
-  # the full board in the clear.
-  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
-  # `node` was "command not found" on EVERY launchd run, so the seal only ever
-  # succeeded when this script was run from a user shell. That is why the
-  # sealed rows sat at Aug 11 while the public board stayed current.
-  NODE="$(command -v node || true)"
-  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
-  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
-  FULL="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json"
-  if [ -f "$FULL" ]; then
-    "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULL" picks_unified_live \
-      || echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
-  fi
+  # the full board in the clear. Sha-guarded since 2026-08-13 — see
+  # seal_full_guarded above: a stamp-only rebuild of the twin no longer buys a
+  # multi-MB re-upsert of an identical sealed board.
+  seal_full_guarded \
+    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json" \
+    picks_unified_live "$DIR/scripts/.unified_live_seal.sha" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   "$DIR/scripts/revalidate_edge.sh" picks_unified_live || true
