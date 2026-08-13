@@ -1,0 +1,63 @@
+name: board-watchdog
+# ═══ THE OFF-MACHINE DEAD-MAN'S SWITCH (Leon, 2026-08-13) ═══
+# The Aug 10-13 outage proved the Mac cannot report its own paralysis: the TCC
+# wedge took launchd down wholesale, including anything that would have raised
+# the alarm. This runs on GitHub's machines, not Leon's: every 30 minutes it
+# reads the served board and emails kytepush@gmail.com if the board is stale
+# during game hours. If the Mac dies entirely, THIS still fires.
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check board freshness
+        id: fresh
+        run: |
+          set -e
+          GEN=$(curl -s --max-time 20 "https://diamondedge.kytepush.com/api/snap/picks_unified_live" \
+            | python3 -c "import json,sys;print(json.load(sys.stdin).get('generated_utc',''))" || echo "")
+          echo "generated_utc=$GEN"
+          if [ -z "$GEN" ]; then echo "verdict=unreachable" >> "$GITHUB_OUTPUT"; exit 0; fi
+          AGE_MIN=$(python3 - "$GEN" <<'EOF'
+          import sys, datetime
+          s = sys.argv[1].replace("Z", "+00:00")
+          gen = datetime.datetime.fromisoformat(s)
+          now = datetime.datetime.now(datetime.timezone.utc)
+          print(int((now - gen).total_seconds() // 60))
+          EOF
+          )
+          echo "board age: ${AGE_MIN} min"
+          # Game hours, generous: 15:00-07:00 UTC (8am-midnight PT). Overnight
+          # the board legitimately sleeps until the 03:10 PT freeze.
+          H=$(date -u +%H)
+          IN_HOURS=0; { [ "$H" -ge 15 ] || [ "$H" -lt 7 ]; } && IN_HOURS=1
+          if [ "$IN_HOURS" = "1" ] && [ "$AGE_MIN" -gt 90 ]; then
+            echo "verdict=stale" >> "$GITHUB_OUTPUT"; echo "age=$AGE_MIN" >> "$GITHUB_OUTPUT"
+          else
+            echo "verdict=ok" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Alert the owner
+        if: steps.fresh.outputs.verdict == 'stale' || steps.fresh.outputs.verdict == 'unreachable'
+        env:
+          GU: ${{ secrets.WATCHDOG_GMAIL_USER }}
+          GP: ${{ secrets.WATCHDOG_GMAIL_PASS }}
+          VERDICT: ${{ steps.fresh.outputs.verdict }}
+          AGE: ${{ steps.fresh.outputs.age }}
+        run: |
+          [ -n "$GU" ] && [ -n "$GP" ] || { echo "mail secrets unset — cannot alert"; exit 1; }
+          curl -s --max-time 30 --url "smtps://smtp.gmail.com:465" \
+            --user "$GU:$GP" --mail-from "$GU" --mail-rcpt "$GU" -T - <<EOF
+          From: DiamondEdge Watchdog (GitHub) <$GU>
+          To: $GU
+          Subject: DiamondEdge ALERT: board is $VERDICT
+
+          The served board at diamondedge.kytepush.com is $VERDICT${AGE:+ (${AGE} minutes old)} during game hours.
+          This alert comes from GitHub Actions — it fires even if the Mac is completely down.
+          Check the Mac: launchd fleet, publish_guard log, and the TCC runbook (multisport/TCC_LAUNDD_OUTAGE.md).
+          EOF
+          echo "alert sent"
