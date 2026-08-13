@@ -9581,6 +9581,14 @@ export default function Home() {
       return pickPostInfo(d, g).time;
     }
     const picksEtaShort = (g: any) => {
+      /* "PICKS SOON" MUST NEVER BE A LIE (Leon, 2026-08-13: games 2h out still said
+         picks-soon). Under the T-16 contract the whole slate posts at the freeze; a
+         game still not-decidable AFTER its day's post moment is not "soon" — its
+         pricing window was missed (the outage class) and no pick is coming today.
+         Say so, quietly and honestly. */
+      const day = (g && gameDateISO(g)) || slateDayISO();
+      const pp = pickPostInfo(day, g);
+      if (pp && pp.posted) return "NO PICK";
       const raw = picksEtaRaw(g);
       // a served string is used verbatim when it is short enough to be a tag; otherwise the tag
       // stays two words and the full sentence rides on the title/aria and the group header
