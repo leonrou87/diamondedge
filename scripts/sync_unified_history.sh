@@ -100,9 +100,15 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   # THE PREMIUM HALF (2026-08-10) — see sync_unified_live.sh. $FILE is the
   # PUBLIC variant now; this seals the private full twin for /api/premium.
   # Non-fatal by design: a failed seal must never take the public publish down.
+  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
+  # `node` was "command not found" on EVERY launchd run (seals only succeeded
+  # from user shells; sealed rows sat at Aug 11 while the public board moved).
+  NODE="$(command -v node || true)"
+  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
+  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
   FULLH="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json"
   if [ -f "$FULLH" ]; then
-    node "$DIR/scripts/seal_premium.mjs" "$FULLH" picks_unified \
+    "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULLH" picks_unified \
       || echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
   fi
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the

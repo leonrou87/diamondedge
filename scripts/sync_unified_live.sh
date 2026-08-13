@@ -88,9 +88,16 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   # their picks until the next cycle, which is the right way round. It must
   # never take down the public publish, and it must never fall back to pushing
   # the full board in the clear.
+  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
+  # `node` was "command not found" on EVERY launchd run, so the seal only ever
+  # succeeded when this script was run from a user shell. That is why the
+  # sealed rows sat at Aug 11 while the public board stayed current.
+  NODE="$(command -v node || true)"
+  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
+  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
   FULL="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json"
   if [ -f "$FULL" ]; then
-    node "$DIR/scripts/seal_premium.mjs" "$FULL" picks_unified_live \
+    "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULL" picks_unified_live \
       || echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
   fi
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
