@@ -81,7 +81,7 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
     "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json" \
     picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
   if [ "$SEAL_WROTE" = "1" ]; then
-    "$DIR/scripts/revalidate_edge.sh" picks_unified || true
+    bash "$DIR/scripts/revalidate_edge.sh" picks_unified || true
   fi
   exit 0
 fi
@@ -151,7 +151,7 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
-  "$DIR/scripts/revalidate_edge.sh" picks_unified || true
+  bash "$DIR/scripts/revalidate_edge.sh" picks_unified || true
 else
   echo "$(date '+%F %T') UNIFIED HISTORY SYNC FAILED http=$HTTP $(head -c 300 /tmp/unified_history_sync_resp.txt)" >&2; exit 1
 fi
