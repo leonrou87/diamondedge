@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-14T22:55:22Z",
+  "generated_utc": "2026-08-14T23:35:45Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -8698,7 +8698,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-14T22:55:38Z",
+      "updated": "2026-08-14T23:36:01Z",
       "order": [
         "vega",
         "atlas",
@@ -14134,10 +14134,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Right-hander Sandy Alcantara takes the ball for the Marlins at Great American Ball Park on Friday, against the Reds. Chase Burns (5-1 with a 3.74 ERA over his last 8 starts) gets the ball for the Reds. Burns went 5 1/3 innings last time out, giving up 5 runs on 6 hits with 3 walks and 6 strikeouts in an 8-2 loss at Washington on Saturday. Alcantara (5-2 with a 2.52 ERA over his last 8 starts) threw 7 shutout innings last time out, giving up 3 hits and 1 walk with 8 strikeouts in a 7-0 win against the Angels on Saturday.",
+            "Right-hander Sandy Alcantara takes the ball for the Marlins at Great American Ball Park on Friday, against the Reds. Chase Burns (4-1 with a 3.99 ERA over his last 7 starts) gets the ball for the Reds. Burns went 5 1/3 innings last time out, giving up 5 runs on 6 hits with 3 walks and 6 strikeouts in an 8-2 loss at Washington on Saturday. Alcantara (4-2 with a 1.88 ERA over his last 7 starts) threw 7 shutout innings last time out, giving up 3 hits and 1 walk with 8 strikeouts in a 7-0 win against the Angels on Saturday.",
             "The Reds are 58-62 and are 6-4 over their last ten; the Marlins are 62-60 and are 5-5 over their last ten. The Reds have scored 3.9 runs a game over their last fifteen, the Marlins 5.7. They have split the 4 meetings between them this season."
           ],
-          "text": "Right-hander Sandy Alcantara takes the ball for the Marlins at Great American Ball Park on Friday, against the Reds. Chase Burns (5-1 with a 3.74 ERA over his last 8 starts) gets the ball for the Reds. Burns went 5 1/3 innings last time out, giving up 5 runs on 6 hits with 3 walks and 6 strikeouts in an 8-2 loss at Washington on Saturday. Alcantara (5-2 with a 2.52 ERA over his last 8 starts) threw 7 shutout innings last time out, giving up 3 hits and 1 walk with 8 strikeouts in a 7-0 win against the Angels on Saturday.\n\nThe Reds are 58-62 and are 6-4 over their last ten; the Marlins are 62-60 and are 5-5 over their last ten. The Reds have scored 3.9 runs a game over their last fifteen, the Marlins 5.7. They have split the 4 meetings between them this season.",
+          "text": "Right-hander Sandy Alcantara takes the ball for the Marlins at Great American Ball Park on Friday, against the Reds. Chase Burns (4-1 with a 3.99 ERA over his last 7 starts) gets the ball for the Reds. Burns went 5 1/3 innings last time out, giving up 5 runs on 6 hits with 3 walks and 6 strikeouts in an 8-2 loss at Washington on Saturday. Alcantara (4-2 with a 1.88 ERA over his last 7 starts) threw 7 shutout innings last time out, giving up 3 hits and 1 walk with 8 strikeouts in a 7-0 win against the Angels on Saturday.\n\nThe Reds are 58-62 and are 6-4 over their last ten; the Marlins are 62-60 and are 5-5 over their last ten. The Reds have scored 3.9 runs a game over their last fifteen, the Marlins 5.7. They have split the 4 meetings between them this season.",
           "blurb": {
             "text": "Right-hander Sandy Alcantara takes the ball for the Marlins at Great American Ball Park on Friday, against the Reds. The Reds have scored 3.9 runs a game over their last fifteen, the Marlins 5.7.",
             "record_line": "Over the 17 nights that chose it (Jul 27 to Aug 12) this rule went 113-37-6.",
@@ -14378,10 +14378,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "It is Jackson Jobe for the Tigers against the visiting White Sox at Comerica Park on Friday. Sean Newcomb (1-3, 2.66 ERA) gets the ball for the White Sox. Newcomb was untouchable in his last logged start: 3 shutout innings on no hits and no walks, with 4 strikeouts in a 4-1 loss at Detroit on June 20. Jobe (1-0, 0.00 ERA) threw 5 shutout innings last time out, giving up 1 hit and 1 walk with 4 strikeouts in an 8-0 win at San Francisco on Saturday.",
+            "It is Jackson Jobe for the Tigers against the visiting White Sox at Comerica Park on Friday. Sean Newcomb gets the ball for the White Sox. Newcomb was untouchable in his last logged start: 3 shutout innings on no hits and no walks, with 4 strikeouts in a 4-1 loss at Detroit on June 20. Jobe threw 5 shutout innings last time out, giving up 1 hit and 1 walk with 4 strikeouts in an 8-0 win at San Francisco on Saturday.",
             "The Tigers are 60-61 and are 7-3 over their last ten; the White Sox are 62-58 and are 4-6 over their last ten. The Tigers have scored 4.8 runs a game over their last fifteen, the White Sox 5.1. The season series is level at 3-3."
           ],
-          "text": "It is Jackson Jobe for the Tigers against the visiting White Sox at Comerica Park on Friday. Sean Newcomb (1-3, 2.66 ERA) gets the ball for the White Sox. Newcomb was untouchable in his last logged start: 3 shutout innings on no hits and no walks, with 4 strikeouts in a 4-1 loss at Detroit on June 20. Jobe (1-0, 0.00 ERA) threw 5 shutout innings last time out, giving up 1 hit and 1 walk with 4 strikeouts in an 8-0 win at San Francisco on Saturday.\n\nThe Tigers are 60-61 and are 7-3 over their last ten; the White Sox are 62-58 and are 4-6 over their last ten. The Tigers have scored 4.8 runs a game over their last fifteen, the White Sox 5.1. The season series is level at 3-3.",
+          "text": "It is Jackson Jobe for the Tigers against the visiting White Sox at Comerica Park on Friday. Sean Newcomb gets the ball for the White Sox. Newcomb was untouchable in his last logged start: 3 shutout innings on no hits and no walks, with 4 strikeouts in a 4-1 loss at Detroit on June 20. Jobe threw 5 shutout innings last time out, giving up 1 hit and 1 walk with 4 strikeouts in an 8-0 win at San Francisco on Saturday.\n\nThe Tigers are 60-61 and are 7-3 over their last ten; the White Sox are 62-58 and are 4-6 over their last ten. The Tigers have scored 4.8 runs a game over their last fifteen, the White Sox 5.1. The season series is level at 3-3.",
           "blurb": {
             "text": "The season series is level at 3-3. The Tigers have scored 4.8 runs a game over their last fifteen, the White Sox 5.1.",
             "record_line": "Over the 17 nights that chose it (Jul 27 to Aug 12) this rule went 113-37-6.",
@@ -14618,7 +14618,7 @@
       "pick": {
         "status": "PASS",
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-14T10:06:23Z",
         "timestamp": "2026-08-14T10:06:23Z",
         "lead_time": "T-3h",
@@ -14752,7 +14752,7 @@
       "pick": {
         "status": "PASS",
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-14T10:06:23Z",
         "timestamp": "2026-08-14T10:06:23Z",
         "lead_time": "T-3h",
@@ -14908,7 +14908,7 @@
       "pick": {
         "status": "PASS",
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-14T10:06:23Z",
         "timestamp": "2026-08-14T10:06:23Z",
         "lead_time": "T-3h",
@@ -15452,6 +15452,25 @@
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         "premium_locked": true
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 75,
+        "wind_mph": 7,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 7.1,
+        "humidity_pct": 67,
+        "precip_prob": 0,
+        "carry_index": 1.04,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-14T22:38:00Z",
+        "forecast_retrieved_utc": "2026-08-14T22:33:46Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -15466,8 +15485,8 @@
         "status": "PICK",
         "result": null,
         "locked": true,
-        "locked_at_utc": "2026-08-14T22:50:20Z",
-        "timestamp": "2026-08-14T22:50:20Z",
+        "locked_at_utc": "2026-08-14T22:50:42Z",
+        "timestamp": "2026-08-14T22:50:42Z",
         "lead_time": "T-3h",
         "source": "strategy_forge",
         "our_prob_basis": "reference_side",
@@ -15598,6 +15617,23 @@
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         "premium_locked": true
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 78,
+        "wind_mph": 2,
+        "wind_class": "calm",
+        "wind_phrase": "there is no wind to speak of",
+        "wind_out_mph": 0.1,
+        "humidity_pct": 91,
+        "precip_prob": 9,
+        "carry_index": 1.04,
+        "notes": [],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-14T22:40:00Z",
+        "forecast_retrieved_utc": "2026-08-14T22:33:47Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -15670,15 +15706,15 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "The Dodgers are trying to avoid the sweep at UNIQLO Field at Dodger Stadium on Friday, having lost the first 1 games of the series.",
-            "The Dodgers are 73-49 and are 4-6 over their last ten; the Brewers are 75-47 and are 6-4 over their last ten. The season series is level at 2-2."
+            "It is Yoshinobu Yamamoto for the Dodgers against the visiting Brewers at UNIQLO Field at Dodger Stadium on Friday, with the visitors 1-0 up in the series. Robert Gasser (3-4, 4.57 ERA) goes for the Brewers. Gasser went 4 2/3 innings last time out, giving up 3 runs on 7 hits with 2 walks and 3 strikeouts in a 4-3 win against the Twins on Saturday. Yamamoto (11-7, 2.65 ERA) threw 5 2/3 shutout innings last time out, giving up 3 hits and 3 walks with 6 strikeouts in a 2-1 win at Arizona on Saturday.",
+            "The Dodgers are 73-49 and are 4-6 over their last ten; the Brewers are 75-47 and are 6-4 over their last ten. The Dodgers have scored 5.7 runs a game over their last fifteen, the Brewers 4.2. The season series is level at 2-2."
           ],
-          "text": "The Dodgers are trying to avoid the sweep at UNIQLO Field at Dodger Stadium on Friday, having lost the first 1 games of the series.\n\nThe Dodgers are 73-49 and are 4-6 over their last ten; the Brewers are 75-47 and are 6-4 over their last ten. The season series is level at 2-2.",
+          "text": "It is Yoshinobu Yamamoto for the Dodgers against the visiting Brewers at UNIQLO Field at Dodger Stadium on Friday, with the visitors 1-0 up in the series. Robert Gasser (3-4, 4.57 ERA) goes for the Brewers. Gasser went 4 2/3 innings last time out, giving up 3 runs on 7 hits with 2 walks and 3 strikeouts in a 4-3 win against the Twins on Saturday. Yamamoto (11-7, 2.65 ERA) threw 5 2/3 shutout innings last time out, giving up 3 hits and 3 walks with 6 strikeouts in a 2-1 win at Arizona on Saturday.\n\nThe Dodgers are 73-49 and are 4-6 over their last ten; the Brewers are 75-47 and are 6-4 over their last ten. The Dodgers have scored 5.7 runs a game over their last fifteen, the Brewers 4.2. The season series is level at 2-2.",
           "blurb": {
-            "text": "The Dodgers are trying to avoid the sweep at UNIQLO Field at Dodger Stadium on Friday, having lost the first 1 games of the series. The season series is level at 2-2.",
+            "text": "The Dodgers have scored 5.7 runs a game over their last fifteen, the Brewers 4.2. The season series is level at 2-2.",
             "record_line": "Over the 17 nights that chose it (Jul 27 to Aug 12) this rule went 113-37-6.",
             "record_stated": true,
-            "n_words": 32
+            "n_words": 22
           },
           "side": null,
           "has_pick": false,
@@ -15697,28 +15733,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
@@ -15802,26 +15838,6 @@
           "premium_redacted": true
         },
         "is_bet": false,
-        "game_case": {
-          "status": "ACTIVE",
-          "generator": "rule_voice_v2",
-          "identity": "matchup_facts/1.3",
-          "paragraphs": [
-            "The Rockies and the Giants meet at Oracle Park on Friday.",
-            "The Giants are 50-71 and are 3-7 over their last ten; the Rockies are 48-73 and have won 2 in a row. The Giants are 5-4 against the Rockies this season."
-          ],
-          "text": "The Rockies and the Giants meet at Oracle Park on Friday.\n\nThe Giants are 50-71 and are 3-7 over their last ten; the Rockies are 48-73 and have won 2 in a row. The Giants are 5-4 against the Rockies this season.",
-          "blurb": {
-            "text": "The Rockies and the Giants meet at Oracle Park on Friday. The Giants are 5-4 against the Rockies this season.",
-            "record_line": "Over the 17 nights that chose it (Jul 27 to Aug 12) this rule went 113-37-6.",
-            "record_stated": true,
-            "n_words": 20
-          },
-          "side": null,
-          "has_pick": false,
-          "derivation": "no side was handed to this generator, so nothing here argues one",
-          "n_support_facts": 0
-        },
         "premium_locked": true,
         "premium_note": "Premium \u2014 unlock to see the desk's call."
       },
@@ -15834,28 +15850,28 @@
         {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "wall": "T-6h",
+          "wall": "T-3h",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }

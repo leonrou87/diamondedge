@@ -1,63 +1,113 @@
 name: board-watchdog
-# ═══ THE OFF-MACHINE DEAD-MAN'S SWITCH (Leon, 2026-08-13) ═══
+# ═══ THE OFF-MACHINE DEAD-MAN'S SWITCH (Leon, 2026-08-13; hardened 2026-08-14) ═══
 # The Aug 10-13 outage proved the Mac cannot report its own paralysis: the TCC
 # wedge took launchd down wholesale, including anything that would have raised
-# the alarm. This runs on GitHub's machines, not Leon's: every 30 minutes it
-# reads the served board and emails kytepush@gmail.com if the board is stale
-# during game hours. If the Mac dies entirely, THIS still fires.
+# the alarm. This runs on GitHub's machines, not Leon's. If the Mac dies
+# entirely, THIS still fires.
+#
+# ── WHAT WAS WRONG WITH IT, MEASURED (2026-08-14) ────────────────────────────
+# 1. BLIND AT DAWN. Its window was `H_utc >= 15 || H_utc < 7` = 08:00-24:00 PT.
+#    The freeze is 03:10 PT; the engine's contract is a board by 06:00 PT. Both
+#    sat inside the excluded block, and 11 of its last 35 runs landed there.
+#    Replay Aug 11 and its first possible alert is 08:00 PT — hours late.
+# 2. FRESHNESS != CORRECTNESS. A board republished every 5 minutes carrying a
+#    pre-freeze generation passed it perfectly.
+# 3. IT PULLED 529 KB TO READ ONE TIMESTAMP, from the UNPINNED snap URL — whose
+#    stale-while-revalidate=900 entitles the edge to serve a copy older than the
+#    threshold being measured. Same check/repair mismatch that produced 28 false
+#    "REPAIR FAILED" alarms on the platform side (swept there in 474bc3a).
+# 4. ITS ALERT PATH HAD NEVER RUN. 35 runs, 35 successes, zero alerts emitted,
+#    and it went live AFTER all four bad mornings. It had protected nothing yet.
+#
+# The decision logic now lives in .github/scripts/board_contract_check.py so it
+# can be drilled on a laptop (.github/scripts/test_board_contract.py, 20
+# assertions). This file is plumbing only.
+#
+# RAIL: read-only. It holds SMTP credentials and nothing else — it cannot write
+# to Supabase and cannot repair. A dead-man's switch that can act on production
+# is a dead-man's switch that can break it.
 on:
   schedule:
-    - cron: "*/30 * * * *"
-  workflow_dispatch: {}
+    # THE CADENCE IS A LIE AND IS TREATED AS ONE. `*/30` is a request, not a
+    # promise: measured across 35 real runs the median gap was 65 min, the mean
+    # 66, the worst 138 (2026-08-14 01:15Z -> 03:34Z). So the morning gets its
+    # own dense entry — more requests means more chances GitHub honours one —
+    # and the threshold in the checker (90 min) is set against the observed
+    # cadence rather than the declared one.
+    - cron: "*/10 13-17 * * *"   # 06:00-11:00 PT — the contract window, densest
+    - cron: "*/30 * * * *"       # everything else
+    - cron: "17 20 * * 1"        # weekly canary: prove the mail path still works
+  workflow_dispatch:
+    inputs:
+      drill:
+        description: "Force a verdict to prove the alert path works (canary)"
+        required: false
+        default: "none"
+        type: choice
+        options: [none, stale, contract-broken, unreachable]
 
 jobs:
   check:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Check board freshness
+      - uses: actions/checkout@v4
+
+      # THE WEEKLY CANARY. An alarm that has never fired is a hypothesis. Monday
+      # 20:17 UTC forces a verdict so the SMTP path is exercised on a schedule
+      # and a broken secret is discovered by a drill instead of by an outage.
+      - name: Decide drill mode
+        id: mode
+        run: |
+          DRILL="${{ github.event.inputs.drill }}"
+          if [ -z "$DRILL" ]; then DRILL="none"; fi
+          if [ "${{ github.event.schedule }}" = "17 20 * * 1" ]; then
+            DRILL="stale"
+          fi
+          echo "drill=$DRILL" >> "$GITHUB_OUTPUT"
+          echo "drill mode: $DRILL"
+
+      - name: Check the morning contract
         id: fresh
         run: |
-          set -e
-          GEN=$(curl -s --max-time 20 "https://diamondedge.kytepush.com/api/snap/picks_unified_live" \
-            | python3 -c "import json,sys;print(json.load(sys.stdin).get('generated_utc',''))" || echo "")
-          echo "generated_utc=$GEN"
-          if [ -z "$GEN" ]; then echo "verdict=unreachable" >> "$GITHUB_OUTPUT"; exit 0; fi
-          AGE_MIN=$(python3 - "$GEN" <<'EOF'
-          import sys, datetime
-          s = sys.argv[1].replace("Z", "+00:00")
-          gen = datetime.datetime.fromisoformat(s)
-          now = datetime.datetime.now(datetime.timezone.utc)
-          print(int((now - gen).total_seconds() // 60))
-          EOF
-          )
-          echo "board age: ${AGE_MIN} min"
-          # Game hours, generous: 15:00-07:00 UTC (8am-midnight PT). Overnight
-          # the board legitimately sleeps until the 03:10 PT freeze.
-          H=$(date -u +%H)
-          IN_HOURS=0; { [ "$H" -ge 15 ] || [ "$H" -lt 7 ]; } && IN_HOURS=1
-          if [ "$IN_HOURS" = "1" ] && [ "$AGE_MIN" -gt 90 ]; then
-            echo "verdict=stale" >> "$GITHUB_OUTPUT"; echo "age=$AGE_MIN" >> "$GITHUB_OUTPUT"
-          else
-            echo "verdict=ok" >> "$GITHUB_OUTPUT"
-          fi
+          python3 .github/scripts/board_contract_check.py \
+            --drill "${{ steps.mode.outputs.drill }}" \
+            --github-output "$GITHUB_OUTPUT"
+
       - name: Alert the owner
-        if: steps.fresh.outputs.verdict == 'stale' || steps.fresh.outputs.verdict == 'unreachable'
+        if: steps.fresh.outputs.alert == 'true'
         env:
           GU: ${{ secrets.WATCHDOG_GMAIL_USER }}
           GP: ${{ secrets.WATCHDOG_GMAIL_PASS }}
           VERDICT: ${{ steps.fresh.outputs.verdict }}
-          AGE: ${{ steps.fresh.outputs.age }}
+          REASON: ${{ steps.fresh.outputs.reason }}
+          DRILL: ${{ steps.mode.outputs.drill }}
         run: |
           [ -n "$GU" ] && [ -n "$GP" ] || { echo "mail secrets unset — cannot alert"; exit 1; }
+          SUBJ="DiamondEdge ALERT: MORNING CONTRACT BROKEN"
+          if [ "$VERDICT" != "contract-broken" ]; then
+            SUBJ="DiamondEdge ALERT: board is $VERDICT"
+          fi
+          if [ "$DRILL" != "none" ]; then SUBJ="[DRILL] $SUBJ"; fi
           curl -s --max-time 30 --url "smtps://smtp.gmail.com:465" \
             --user "$GU:$GP" --mail-from "$GU" --mail-rcpt "$GU" -T - <<EOF
           From: DiamondEdge Watchdog (GitHub) <$GU>
           To: $GU
-          Subject: DiamondEdge ALERT: board is $VERDICT
+          Subject: $SUBJ
 
-          The served board at diamondedge.kytepush.com is $VERDICT${AGE:+ (${AGE} minutes old)} during game hours.
-          This alert comes from GitHub Actions — it fires even if the Mac is completely down.
-          Check the Mac: launchd fleet, publish_guard log, and the TCC runbook (multisport/TCC_LAUNDD_OUTAGE.md).
+          $REASON
+
+          WHAT THIS ALARM IS: the off-machine dead-man's switch. It runs on
+          GitHub's machines and reads diamondedge.kytepush.com from outside, so
+          it fires even if the Mac is completely down or wedged — the case the
+          machine itself can never report.
+
+          WHAT TO CHECK, in order:
+            1. Is the site serving a board at all?  https://diamondedge.kytepush.com
+            2. Is the Mac awake, and is launchd loaded?  launchctl list | grep diamondedge
+            3. ~/Library/Logs/diamondedge-sync/com.diamondedge.unifiedlive.log
+
+          If the subject says [DRILL] this is a scheduled test of this alarm's
+          own email path and nothing is wrong.
           EOF
-          echo "alert sent"
+          echo "alert sent (verdict=$VERDICT drill=$DRILL)"
