@@ -68,11 +68,19 @@ trap 'rm -f "$TMP" "$RESP"' EXIT
 # "when was this index last rebuilt" actually means.
 python3 - "$FILE" "$TMP" <<'PY'
 import datetime,json,os,sys
-# ═══ THE WRITE GATE ═══ every row on slate_snapshots is readable by anyone
-# holding the anon JWT in the site's JS bundle, so this upload is a
-# publication. The gate redacts by schema and REFUSES a key nobody has
-# registered; `set -e` turns a leak into a failed sync rather than a published
-# board. See ~/Desktop/sports-betting-platform/v4/serve/snapshot_gate.py.
+# ═══ THE WRITE GATE — AND IT DEGRADES, IT DOES NOT STOP (2026-08-14) ═══
+# Every row on slate_snapshots is readable by anyone holding the anon JWT in the
+# site's JS bundle, so this upload is a publication. The gate redacts by schema
+# (DEFAULT-DENY: a field no allowlist names is dropped before any scan) and
+# REFUSES a key nobody has registered.
+#
+# WHAT `set -e` NOW MEANS HERE. It used to mean "any gate complaint kills the
+# publish", which cost 24 hours of frozen board in five days across three
+# incidents in which THE PICKS WERE FINE. `gate_to_file` drops the smallest
+# thing that fails — one card, one block — publishes the rest, logs it loudly
+# and mails the owner. It raises, and therefore fails this script, ONLY when
+# there is genuinely nothing safe to serve. See
+# /Users/leonrou/Desktop/sports-betting-platform/v4/serve/snapshot_gate.py.
 sys.path.insert(0,"/Users/leonrou/Desktop/sports-betting-platform")
 from v4.serve import snapshot_gate as _GATE
 src=sys.argv[1]
@@ -80,8 +88,7 @@ payload=json.load(open(src))
 mtime=datetime.datetime.fromtimestamp(os.path.getmtime(src),datetime.timezone.utc)
 payload["generated_utc"]=mtime.isoformat()
 now=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
-json.dump(_GATE.gate_rows([{"key":"research_roadmap","payload":payload,"updated_at":now}],verbose=False),
-          open(sys.argv[2],"w"))
+_GATE.gate_to_file("research_roadmap",payload,sys.argv[2],updated_at=now)
 PY
 HTTP=$(curl -s -o "$RESP" -w "%{http_code}" \
   -X POST "$SUPABASE_PROJECT_URL/rest/v1/slate_snapshots?on_conflict=key" \
