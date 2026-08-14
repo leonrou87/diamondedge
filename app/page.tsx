@@ -9586,9 +9586,18 @@ export default function Home() {
          game still not-decidable AFTER its day's post moment is not "soon" — its
          pricing window was missed (the outage class) and no pick is coming today.
          Say so, quietly and honestly. */
+      /* …BUT A SEALED CARD IS NOT A PICKLESS ONE (regression caught on prod
+         2026-08-14: 13 of 14 tiles read NO PICK signed-out). A premium_locked
+         card HAS a decision — pick or pass — it is simply withheld, and the
+         reader must see the unlock affordance, not an obituary. Saying NO PICK
+         over sealed cards both hides the product and leaks pass-vs-pick, the
+         exact premium fact the 2026-08-10 ruling protects. Only a card with
+         nothing behind it can say the day produced nothing. */
+      const sealed = !!(g && (g.premium_locked
+        || (g.pick && (g.pick.premium_locked || g.pick.premium))));
       const day = (g && gameDateISO(g)) || slateDayISO();
       const pp = pickPostInfo(day, g);
-      if (pp && pp.posted) return "NO PICK";
+      if (!sealed && pp && pp.posted) return "NO PICK";
       const raw = picksEtaRaw(g);
       // a served string is used verbatim when it is short enough to be a tag; otherwise the tag
       // stays two words and the full sentence rides on the title/aria and the group header
