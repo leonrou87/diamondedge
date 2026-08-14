@@ -703,6 +703,16 @@ export default function Home() {
       // a graded or in-progress game is never pending, whatever anything else says
       const st = String(g.status || "").toLowerCase();
       if (st === "final" || st === "live") return false;
+      /* ═══ A SEALED CARD IS DECIDED, NOT PENDING (prod regression 2026-08-14) ═══
+         The whole board read PICKS SOON / NO PICK signed-out on a day the forge had
+         posted every game: the public payload redacts the side, so every test below
+         saw "no side" and answered "still coming". But `premium_locked` is the
+         server SAYING a decision exists and is withheld — the one fact the redaction
+         deliberately keeps public, because it is the upsell. Pending must mean "we
+         have not looked yet"; a sealed card has been looked at. Getting this wrong
+         hides the product from every signed-out reader, which is the business. */
+      if (g.premium_locked
+          || (g.pick && (g.pick.premium_locked || g.pick.premium))) return false;
       /* ═══ AN UNREAD STORE IS NOT A VERDICT (2026-08-09) ═══
          Every test below reads the PICK FEEDS — `pick.status`, `desk_status`, and
          datePicksPending(), which walks `betaLiveData.games`. Before those feeds land they
