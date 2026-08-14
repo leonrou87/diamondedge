@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-14T21:45:26Z",
+ "generated_utc": "2026-08-14T22:21:47Z",
  "by_game": {
   "822696": {
    "away": {
@@ -4125,7 +4125,8 @@
       "res": "W"
      }
     ],
-    "team": "MIA"
+    "team": "MIA",
+    "actual_starter": true
    },
    "home": {
     "id": 695505,
@@ -4242,7 +4243,8 @@
       "res": "W"
      }
     ],
-    "team": "CIN"
+    "team": "CIN",
+    "actual_starter": true
    }
   },
   "824643": {

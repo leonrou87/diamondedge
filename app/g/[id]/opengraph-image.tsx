@@ -8,24 +8,13 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 export const alt = "DiamondEdge game";
 
-const SPORT: Record<string, string> = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
+/* ONE GAME, NOT THE WHOLE BOARD — the identical direct-Supabase TTL read that
+   page.tsx carried, deleted for the same reason. See game-source.ts. The card
+   reads sport, status, start_time, the two abbrs and de_plays; `?game=` carries
+   all of them, verified against the live route. */
+import { getGame } from "./game-source";
 
-async function getGame(id: string) {
-  try {
-    const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!SUPA || !KEY) return null;
-    const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.pregame_picks&select=payload`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-      next: { revalidate: 300 },
-    });
-    const rows = await r.json();
-    const games = (rows && rows[0] && rows[0].payload && rows[0].payload.games) || [];
-    return games.find((g: any) => String(g.game_id) === String(id)) || null;
-  } catch {
-    return null;
-  }
-}
+const SPORT: Record<string, string> = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
 
 /* ═════════ THE SHARE CARD MAY SAY THAT WE HAVE A PICK. IT MAY NOT SAY WHAT IT IS. ═════════
    This card used to print "DiamondEdge Pick: OVER 8.5" and, under it, "Our number 9.4 ·

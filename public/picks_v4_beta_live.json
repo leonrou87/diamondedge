@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-14T21:40:48Z",
+  "generated_utc": "2026-08-14T22:16:57Z",
   "games": [
     {
       "game_id": "2026-08-14-St. Louis Cardinals-Chicago Cubs-824643",
@@ -156,6 +156,8 @@
           "best_book": "draftkings",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-14T22:16:55Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -178,6 +180,8 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-14T22:16:55Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -200,6 +204,8 @@
           "best_book": "betrivers",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-14T22:16:55Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -222,6 +228,8 @@
           "best_book": "betrivers",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-14T22:16:55Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -244,11 +252,19 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-14T22:16:55Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-14T22:16:55Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-14-Boston Red Sox-Pittsburgh Pirates-823346",
@@ -261,7 +277,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -352,6 +369,28 @@
           "pass_why": "ev_gate",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "betmgm",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
       "locked": false
@@ -366,7 +405,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -435,6 +475,28 @@
           "pass_why": "ev_gate",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "matchbook",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
       "locked": false
@@ -449,7 +511,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -511,6 +574,28 @@
             "cell_cleared_baselines": false,
             "bh_significant": false,
             "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
             "one_sided": true
           },
           "best_book": "lowvig",
@@ -533,7 +618,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -624,6 +710,28 @@
           "pass_why": "ev_gate",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.0,
+          "tier": "PASS",
+          "playable": false,
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "betus",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "ev_gate",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
       "locked": false
@@ -639,7 +747,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -722,6 +831,28 @@
             "cell_cleared_baselines": false,
             "bh_significant": false,
             "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pass_why": "junk_cell",
+          "premium_locked": true,
+          "premium_note": "Premium \u2014 unlock to see the desk's call."
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "tier": "Lean",
+          "playable": false,
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
             "one_sided": true
           },
           "best_book": "onexbet",

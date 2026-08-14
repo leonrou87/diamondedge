@@ -1,24 +1,11 @@
 import type { Metadata } from "next";
 import RedirectClient from "./redirect-client";
+/* ONE GAME, NOT THE WHOLE BOARD. This used to read
+   slate_snapshots?key=eq.pregame_picks&select=payload straight from Supabase on
+   a 300 s TTL — 286,840 gzipped bytes to name two teams. See game-source.ts. */
+import { getGame } from "./game-source";
 
 const SPORT: Record<string, string> = { mlb: "MLB", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
-
-async function getGame(id: string) {
-  try {
-    const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!SUPA || !KEY) return null;
-    const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.pregame_picks&select=payload`, {
-      headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
-      next: { revalidate: 300 },
-    });
-    const rows = await r.json();
-    const games = (rows && rows[0] && rows[0].payload && rows[0].payload.games) || [];
-    return games.find((g: any) => String(g.game_id) === String(id)) || null;
-  } catch {
-    return null;
-  }
-}
 
 // Per-game <title>/description; the og:image is supplied by opengraph-image.tsx in this segment.
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
