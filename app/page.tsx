@@ -522,7 +522,8 @@ export default function Home() {
        `mls` key, while the `soccer` key stays whatever the World Cup daemon serves. */
     const MS_TABS = new Set([...MS_SPORTS, "soccer"]);
     const msKey = (lg: string) => (lg === "soccer" ? "mls" : lg);
-    // The moment a game starts, named per sport — the pick wall is 16h before this.
+    // The moment a game starts, named per sport — the pick wall sits some hours before
+    // this, and HOW MANY comes off the served picks_post_contract, never a literal here.
     const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
@@ -711,6 +712,16 @@ export default function Home() {
          deliberately keeps public, because it is the upsell. Pending must mean "we
          have not looked yet"; a sealed card has been looked at. Getting this wrong
          hides the product from every signed-out reader, which is the business. */
+      /* ═══ …AND A LOCK WITH NOTHING BEHIND IT IS NOT A DECISION EITHER ═══
+         The mirror of the bug above, found on the live multisport boards the same day.
+         `redact_tracker_card` set `premium_locked: true` on EVERY ungraded card — a game
+         frozen with a call and a game five days out that nobody had looked at shipped the
+         same public shape. So this early return fired on both, and every future NFL/NBA/
+         NHL/WNBA/MLS game rendered with an UNLOCK affordance over a decision that did not
+         exist: the site selling a call we had not made. The platform now says
+         `premium_public: "pending"` on a card with nothing behind it (desk_policy
+         redact_tracker_card), and pending is what that means here. */
+      if (String(g.premium_public || "").toLowerCase() === "pending") return true;
       if (g.premium_locked
           || (g.pick && (g.pick.premium_locked || g.pick.premium))) return false;
       /* ═══ AN UNREAD STORE IS NOT A VERDICT (2026-08-09) ═══
@@ -9542,14 +9553,66 @@ export default function Home() {
        feed lands, so the chip could paint one time and then correct itself to another. That
        whole scan is gone.
 
-       The contract is fixed and simple (owner order 2026-08-11): the slate freezes and posts
-       at the 03:10 AM PT overnight run; a game's own wall is T-16h before its start, so only
-       a game starting after ~7:10 PM PT posts later than the freeze, at its own T-16h moment.
-       Both inputs are KNOWN at first paint — a constant and the game's start — so every
+       The contract is fixed and simple, and as of 2026-08-14 it is SERVED (see postContract
+       below): the day's RULE freezes at the 03:10 AM PT overnight run, and each game is then
+       decided at its own wall, `wall_hours` before its start. Under T-3h that means most of a
+       night's board posts during the afternoon, not at the freeze.
+       Both inputs are KNOWN at first paint — the served contract and the game's start — so every
        surface that states this time computes the same answer, renders it in the same paint as
        its container, and never corrects itself. picksEtaRaw (the served human STRING on the
        incoming tag) is untouched: the words stay served; the TIME is contract. */
-    const FREEZE_PT = { h: 3, m: 10 };
+    /* ═══ THE WALL IS SERVED DATA, NEVER A CONSTANT IN HERE (C-D, 2026-08-14) ═══
+       This file used to carry the contract as two literals — `FREEZE_PT = {h:3,m:10}` and
+       `ts - 16 * 3600 * 1000`. On 2026-08-14 the platform ended the T-16h era and went back
+       to T-3h (ms_picks WALL_HOURS 16→3). A backend revert cannot reach a number compiled
+       into a client bundle, so the next morning was already scheduled to lie: under T-3h a
+       7:10 PM game is decided at 4:10 PM, but this file computed its post moment as
+       max(03:10 PT, first_pitch − 16h) = 03:10 PT, watched 03:10 pass, and would have
+       rendered "Picks live — posted 3:10 AM PT" over a full slate of tiles reading NO PICK
+       at 6 AM. That is the 2026-08-14 regression reintroduced by a change that never
+       touched this repo.
+
+       The platform now stamps `picks_post_contract` onto every public payload from ONE
+       source (v4/serve/post_contract.py, the same constant ms_picks freezes at), carrying
+       the freeze, the wall in hours, a per-sport table and the ERA table so a card from a
+       past day states the wall THAT day was decided at rather than today's.
+
+       AND WHEN IT IS ABSENT WE SAY LESS, NOT MORE. An old cached payload has no contract;
+       the honest answer then is "we do not know when this posts", which renders as PICKS
+       SOON. `known` is what the NO-PICK predicate gates on, so a missing contract can cost
+       a reader a precise time and can never cost them a false obituary. */
+    function postContract(): any {
+      const pick = (d: any) => {
+        const c = d && d.picks_post_contract;
+        return (c && typeof c === "object" && !c.unavailable) ? c : null;
+      };
+      /* EVERY BOARD CARRIES IT, so whichever one has landed answers. The platform stamps
+         the same object from one source onto the unified, pregame, grid and tracker
+         schemas — there is no ordering to get wrong and no feed whose absence costs the
+         contract. First hit wins because they are all the same object. */
+      const c = pick(livePayload) || pick(payload) || pick(betaLiveData) || pick(betaData);
+      if (c) return c;
+      try {
+        for (const k of Object.keys(msData || {})) { const t = pick(msData[k]); if (t) return t; }
+      } catch {}
+      return null;
+    }
+    // Hours before first pitch that a game on `dateISO` is decided — era-aware, per sport,
+    // or null when the contract has not landed (never a guess).
+    function contractWallHours(dateISO?: string, sport?: any): number | null {
+      const c = postContract(); if (!c) return null;
+      const d = isISO(dateISO) ? String(dateISO).slice(0, 10) : todayISO();
+      for (const e of (Array.isArray(c.eras) ? c.eras : [])) {
+        if (e && typeof e.from === "string" && e.from <= d && (e.until == null || d < e.until)) {
+          const v = Number(e.wall_hours); if (isFinite(v) && v > 0) return v;
+        }
+      }
+      const s = String(sport || "").toLowerCase();
+      const bs = (c.by_sport && typeof c.by_sport === "object") ? c.by_sport : {};
+      const v = Number(s && bs[s] != null ? bs[s] : c.wall_hours);
+      return isFinite(v) && v > 0 ? v : null;
+    }
+    const FREEZE_PT = { h: 3, m: 10 };   // the fallback only — postContract() is the source
     // The UTC instant of `h:m America/Los_Angeles` on dateISO — DST-correct without a tz
     // library: guess at PDT, format the guess back into PT, and shift by the difference.
     function ptInstant(dateISO: string, h: number, m: number) {
@@ -9562,27 +9625,40 @@ export default function Home() {
       } catch {}
       return t;
     }
-    // The instant a given date's first pick posts (freeze, or the game's own later T-16h
+    // The instant a given date's first pick posts (the freeze, or the game's own later
     // wall), whether that instant has passed, and the time formatted the one way we say it.
     function pickPostInfo(dateISO: string, g?: any) {
       const d = isISO(dateISO) ? String(dateISO).slice(0, 10) : todayISO();
-      let post = ptInstant(d, FREEZE_PT.h, FREEZE_PT.m);
+      const c = postContract();
+      const fh = c && isFinite(Number(c.freeze_pt_h)) ? Number(c.freeze_pt_h) : FREEZE_PT.h;
+      const fm = c && isFinite(Number(c.freeze_pt_m)) ? Number(c.freeze_pt_m) : FREEZE_PT.m;
+      let post = ptInstant(d, fh, fm);
+      /* THE FREEZE AND THE WALL ARE TWO DIFFERENT INSTANTS, and conflating them is exactly
+         what broke. The freeze is when the DAY'S RULE locks — one moment, every game. The
+         wall is when THIS GAME is decided by it, and under T-3h that is hours later for a
+         night game. A pick posts at the later of the two. */
+      const wh = contractWallHours(d, g && g.sport);
       const ts = g ? firstPitchTs(g) : null;
-      if (ts != null && isFinite(post) && ts - 16 * 3600 * 1000 > post) post = ts - 16 * 3600 * 1000;
+      if (ts != null && wh != null && isFinite(post) && ts - wh * 3600 * 1000 > post) post = ts - wh * 3600 * 1000;
       const time = isFinite(post)
         ? `${new Date(post).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`
         : "3:10 AM PT";
-      return { post, time, posted: isFinite(post) && Date.now() >= post };
+      // `known` — did the SERVER tell us this game's wall? Only then may a surface conclude
+      // anything from the moment having passed. Without it we know when the rule locked and
+      // nothing about when this game gets read.
+      return { post, time, posted: isFinite(post) && Date.now() >= post, known: wh != null };
     }
     function picksEtaTime(g?: any, dateISO?: string) {
       /* A de_ms_v1 GAME'S WALL IS ITS OWN, NOT MLB'S — and it has no 03:10 freeze: the
-         multisport pipeline posts each pick at exactly T-16h before that game's start
-         (owner order 2026-08-10; was T-3h), so the time is computed from the game's own
-         start, never borrowed across sports. */
+         multisport pipeline posts each pick at that game's own wall before its start, so
+         the time is computed from the game's own start, never borrowed across sports. HOW
+         MANY HOURS that wall is comes off the served contract (`by_sport`), not a literal
+         in here: this line said 16 for four days after the platform went back to 3. */
       if (g && MS_TABS.has(String(g.sport || "").toLowerCase())) {
         const ts = firstPitchTs(g);
-        if (ts != null) {
-          const w = new Date(ts - 16 * 3600 * 1000);
+        const msWall = contractWallHours(gameDateISO(g), g.sport);
+        if (ts != null && msWall != null) {
+          const w = new Date(ts - msWall * 3600 * 1000);
           if (!isNaN(w.getTime()))
             return `${w.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`;
         }
@@ -9603,11 +9679,19 @@ export default function Home() {
          over sealed cards both hides the product and leaks pass-vs-pick, the
          exact premium fact the 2026-08-10 ruling protects. Only a card with
          nothing behind it can say the day produced nothing. */
+      /* …AND "NO PICK" MAY ONLY BE SAID ABOUT A WALL WE WERE TOLD (C-D, 2026-08-14).
+         `pp.posted` used to be computed against a wall hard-coded in this file. When the
+         platform moved the wall and this file did not, `posted` went true at 3:10 AM for
+         every game on the board and this line printed NO PICK over a slate that would not
+         be decided until the afternoon. It now gates on `pp.known` — the server having
+         actually stated this game's wall — so an unknown contract yields the honest
+         "PICKS SOON" rather than a confident obituary. The UI does not get to invent a
+         certainty the payload does not carry. */
       const sealed = !!(g && (g.premium_locked
         || (g.pick && (g.pick.premium_locked || g.pick.premium))));
       const day = (g && gameDateISO(g)) || slateDayISO();
       const pp = pickPostInfo(day, g);
-      if (!sealed && pp && pp.posted) return "NO PICK";
+      if (!sealed && pp && pp.posted && pp.known) return "NO PICK";
       const raw = picksEtaRaw(g);
       // a served string is used verbatim when it is short enough to be a tag; otherwise the tag
       // stays two words and the full sentence rides on the title/aria and the group header
@@ -11225,7 +11309,16 @@ export default function Home() {
          night. In season, the dated form returns untouched. */
       const offSeason = !!(d && (d.mode === "armed" || d.is_offseason));
       const gradedFrom = offSeason ? "graded in the open from opening night" : `graded from ${startLab}`;
-      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: every pick freezes the night before, at its T-16h wall, and grades here in the open. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
+      /* THE WALL SENTENCE IS NOT A LITERAL EITHER. This read "every pick freezes the night
+         before, at its T-16h wall" — which stopped being true on 2026-08-14 and would have
+         gone on telling readers so indefinitely. The number comes off the served contract;
+         with no contract we say the shape of the promise and not a figure we cannot stand
+         behind. */
+      const msWallH = contractWallHours(undefined, msKey(league));
+      const wallSentence = msWallH != null
+        ? `every pick freezes at its own wall, about ${msWallH} hour${msWallH === 1 ? "" : "s"} before the game starts, and grades here in the open`
+        : `every pick freezes at its own wall, before the game starts, and grades here in the open`;
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: ${esc(wallSentence)}. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
     function metaRow() {
       if (MS_TABS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
@@ -11405,19 +11498,23 @@ export default function Home() {
        — which is a cron description, not a product promise, and the chip's fixed
        "2:00 AM PT → 6:00 AM PT" string was wide enough to push the whole page into
        horizontal scroll at 375px. It now says the time, once, in words, and wraps. */
-    /* WHEN THE PICKS ACTUALLY LAND (2026-08-11: THE T-16h WALL — owner order).
-       Picks now post at each game's T-16h wall. For a normal slate every wall has already
-       passed by the 03:10 AM PT rule freeze, so the whole board posts overnight — "the
-       night before" in the reader's terms — and only a game starting after ~7 PM PT waits
-       for its own T-16h moment. The served `picks_eta` is per game
-       (schedule_forward.picks_eta, floor = the 03:10 freeze), so `games[0]` — the slate is
-       sorted by first pitch — is genuinely the first one, not a slate-wide guess.
-       (History: through 2026-08-10 the wall was T-3h and picks trickled in through the
-       day; those days' records and copy stand as served.) */
+    /* WHEN THE PICKS ACTUALLY LAND — READ, NEVER ASSUMED (rewritten 2026-08-14).
+       This comment used to assert the T-16h wall and conclude "the whole board posts
+       overnight". That conclusion was load-bearing: it is what made a 3:10 AM freeze look
+       like a promise about every game. The wall is now a SERVED number
+       (`picks_post_contract.wall_hours` via contractWallHours), and the two instants stay
+       separate — the day's RULE freezes at 03:10 AM PT, each GAME is decided at its own
+       wall. Under T-3h most of a night's board is decided in the afternoon, so a morning
+       reader is owed "picks post at 4:10 PM" and never "picks are live".
+       `games[0]` is genuinely the first game (the slate is sorted by first pitch), so its
+       wall is genuinely the first pick of the day — not a slate-wide guess.
+       (History: 2026-08-11..13 decided at T-16h; those days' records and copy stand as
+       served, and the contract's `eras` table is what lets a card from one of them state
+       the wall it was actually decided at.) */
     function futureNote(dispDate: string, full: boolean, games?: any[]) {
       /* THE CHIP HAS ONE SOURCE AND TWO TENSES (owner report, 2026-08-13). The time is
-         pickPostInfo — the 03:10 freeze constant, lifted only by the first game's own
-         T-16h wall — so it is the same answer on every paint and never pops in late with
+         pickPostInfo — the served freeze, lifted by the first game's own served wall — so
+         it is the same answer on every paint and never pops in late with
          a different value than it settles on. Before the post instant the chip promises
          ("Picks post · 3:10 AM PT"); after it, a board still wearing this banner means
          the reader's copy is a beat behind the publisher, so the chip stops sounding
@@ -11440,7 +11537,18 @@ export default function Home() {
       const sps = Array.from(new Set((games || []).map((g: any) => String(g.sport || "").toLowerCase()).filter(Boolean)));
       const spOne = sps.length === 1 ? sps[0] : (league !== "all" ? league : "");
       const noun = spOne ? (WALL_NOUN[spOne] || "start") : (sps.length > 1 ? "start" : "first pitch");
-      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts the night before — about sixteen hours ahead of its own ${esc(noun)}.</span></div>`;
+      /* THE SENTENCE MUST AGREE WITH THE CHIP BESIDE IT. This read "posts the night before
+         — about sixteen hours ahead of its own first pitch" as a literal, and on the first
+         paint after the platform went back to T-3h it sat directly beneath a chip reading
+         PICKS POST 7:10 AM PT, contradicting it in the same box. The hours come off the
+         served contract; with no contract the sentence keeps the shape of the promise and
+         drops the figure, because a wrong number is worse than no number. */
+      const wh = contractWallHours(noteDay, g0 && g0.sport);
+      const whWords: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
+      const when = wh == null ? `at its own wall, before its ${esc(noun)}`
+        : wh >= 12 ? `the night before — about ${whWords[wh] || `${wh} hours`} ahead of its own ${esc(noun)}`
+        : `about ${whWords[wh] || `${wh} hours`} before its own ${esc(noun)}`;
+      const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts ${when}.</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
     /* ═══════════ THE BOARD IS NOT REPAINTED WHILE YOU ARE SCROLLING ═══════════
