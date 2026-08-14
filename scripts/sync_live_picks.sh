@@ -11,6 +11,20 @@ STAMP="$DIR/scripts/.live_picks_sync.sha"
 [ -f "$FILE" ] || exit 0
 # creds: read from disk, never printed
 set -a; source "$HOME/.kytepush-platform.env"; set +a
+# ═══ THE MEMBERS' HALF OF THIS BOARD (2026-08-14) ═══
+# This key had NO sealed twin, and that was not cosmetic. `picks_v4_beta_live`
+# is in the client's PREMIUM_SHAPES (app/page.tsx:981), so an entitled reader
+# asks /api/premium for it on every board poll and got a 404 — and the client's
+# `premiumOk` flag is MODULE-WIDE (app/page.tsx:997): one 404 suppresses the
+# premium path for EVERY key for 120 s, so a member's next picks_unified_live
+# read silently fell through to the public, locked board.
+# It mattered more after the publish sprint inverted this schema to default-deny:
+# the public grid row is now 4 top-level keys, so the full grid exists for a
+# member ONLY through the sealed twin this script now writes.
+# shellcheck source=scripts/seal_lib.sh
+source "$DIR/scripts/seal_lib.sh"
+FULL_TWIN="$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_v4_beta_live.full.json"
+SEAL_STAMP="$DIR/scripts/.live_picks_seal.sha"
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # HEARTBEAT (2026-07-31). The payload has not changed, so there is nothing to
@@ -38,6 +52,14 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   else
     echo "$(date '+%F %T') LIVE PICKS HEARTBEAT FAILED http=$HB_HTTP $(head -c 200 /tmp/live_picks_heartbeat_resp.txt)" >&2
     exit 1
+  fi
+  # THE TWIN CAN MOVE WHEN THE PUBLIC BYTES DID NOT. The public row is now a
+  # 4-key allowlisted projection, so the full board can change materially
+  # while these bytes are identical — seal on this branch too. Non-fatal:
+  # members lose freshness, never the public board.
+  seal_full_guarded "$FULL_TWIN" picks_v4_beta_live "$SEAL_STAMP" || true
+  if [ "$SEAL_WROTE" = "1" ]; then
+    bash "$DIR/scripts/revalidate_edge.sh" picks_v4_beta_live || true
   fi
   exit 0
 fi
@@ -86,6 +108,9 @@ HTTP=$(curl -s -o /tmp/live_picks_sync_resp.txt -w "%{http_code}" \
   --data-binary "@$BODYFILE")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
+  # Seal the members' twin from the PRIVATE full board. Never fatal, and it
+  # never falls back to pushing the full board in the clear — see seal_lib.sh.
+  seal_full_guarded "$FULL_TWIN" picks_v4_beta_live "$SEAL_STAMP" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   bash "$DIR/scripts/revalidate_edge.sh" picks_v4_beta_live || true

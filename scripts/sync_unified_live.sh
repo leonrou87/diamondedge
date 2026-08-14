@@ -36,38 +36,10 @@ set -a; source "$HOME/.kytepush-platform.env"; set +a
 # DB statement; a changed twin seals no matter which branch the public sync
 # took. SEAL_WROTE=1 lets the heartbeat branch revalidate the edge tag so a
 # member sees the fresh board promptly instead of at /api/premium's 120 s net.
-SEAL_WROTE=0
-seal_full_guarded() {
-  local FULL="$1" KEY="$2" SEAL_STAMP="$3" SSHA
-  [ -f "$FULL" ] || return 0
-  SSHA=$(/opt/homebrew/bin/python3 - "$FULL" <<'PY'
-import hashlib, json, sys
-p = json.load(open(sys.argv[1]))
-for k in ("generated_utc", "generated_at"):
-    p.pop(k, None)
-print(hashlib.sha256(json.dumps(p, sort_keys=True).encode()).hexdigest())
-PY
-) || SSHA=""  # unreadable twin: fall through and let seal_premium.mjs say why
-  if [ -n "$SSHA" ] && [ -f "$SEAL_STAMP" ] && [ "$(cat "$SEAL_STAMP")" = "$SSHA" ]; then
-    echo "$(date '+%F %T') premium seal $KEY unchanged (sha=${SSHA:0:12}) — skipped"
-    return 0
-  fi
-  # NODE RESOLVER (2026-08-13): under launchd PATH is /usr/bin:/bin:... — bare
-  # `node` was "command not found" on EVERY launchd run, so the seal only ever
-  # succeeded when this script was run from a user shell. That is why the
-  # sealed rows sat at Aug 11 while the public board stayed current.
-  local NODE
-  NODE="$(command -v node || true)"
-  [ -n "$NODE" ] || NODE="$(ls -t "$HOME"/.nvm/versions/node/*/bin/node 2>/dev/null | head -1)"
-  [ -n "$NODE" ] || NODE="/opt/homebrew/bin/node"
-  if "$NODE" "$DIR/scripts/seal_premium.mjs" "$FULL" "$KEY"; then
-    [ -n "$SSHA" ] && echo "$SSHA" > "$SEAL_STAMP"
-    SEAL_WROTE=1
-    return 0
-  fi
-  echo "$(date '+%F %T') WARN premium seal failed (public board is published and correct)" >&2
-  return 1
-}
+# The seal helper lives in ONE place now — see scripts/seal_lib.sh for the
+# contract and the "members lose freshness, never the public board" rule.
+# shellcheck source=scripts/seal_lib.sh
+source "$DIR/scripts/seal_lib.sh"
 
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
