@@ -6,6 +6,12 @@
 # Runs from cron every 5 min; skips silently when the file hasn't changed.
 set -euo pipefail
 DIR="$HOME/Desktop/diamondedge"
+# ONE WRITER PER KEY — the launchd job and nightly_scrub.SYNC_SET both run
+# this exact script. See scripts/_sync_lock.sh for the 57014 it prevents.
+# shellcheck source=scripts/_sync_lock.sh
+. "$HOME/Desktop/diamondedge/scripts/_sync_lock.sh"
+sync_lock picks_v4_beta_live
+
 FILE="$DIR/public/picks_v4_beta_live.json"
 STAMP="$DIR/scripts/.live_picks_sync.sha"
 [ -f "$FILE" ] || exit 0
@@ -77,7 +83,11 @@ fi
 # a hard cliff with no warning shoulder, which is exactly how sync_unified_live
 # broke on 2026-07-31. `@file` streams it instead, so size stops being a cliff.
 BODYFILE=$(mktemp -t live_picks_sync_body)
-trap 'rm -f "$BODYFILE"' EXIT
+# …AND THE LOCK IS RELEASED HERE, NOT ONLY IN _sync_lock.sh. This script
+# sets its own EXIT trap, which REPLACES the one sync_lock installed —
+# proven by a leaked lock dir on the first concurrency test. Chained, so
+# a winner that exits cannot strand the key for the full stale window.
+trap 'rm -f "$BODYFILE"; _sync_lock_release' EXIT
 python3 - "$FILE" "$BODYFILE" <<'PY'
 import datetime,json,sys
 # ═══ THE WRITE GATE — AND IT DEGRADES, IT DOES NOT STOP (2026-08-14) ═══

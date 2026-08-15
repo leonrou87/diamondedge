@@ -5,6 +5,12 @@
 # the app reads Supabase first, static file as fallback. Payload is ~8MB so we stream from a file.
 set -euo pipefail
 DIR="$HOME/Desktop/diamondedge"
+# ONE WRITER PER KEY — the launchd job and nightly_scrub.SYNC_SET both run
+# this exact script. See scripts/_sync_lock.sh for the 57014 it prevents.
+# shellcheck source=scripts/_sync_lock.sh
+. "$HOME/Desktop/diamondedge/scripts/_sync_lock.sh"
+sync_lock picks_v4_beta
+
 FILE="$DIR/public/picks_v4_beta.json"
 STAMP="$DIR/scripts/.history_sync.sha"
 # BSD mktemp only substitutes X's at the END of the template, so
@@ -14,7 +20,11 @@ STAMP="$DIR/scripts/.history_sync.sha"
 # response body gets the same treatment for the same reason.
 TMP="$(mktemp "${TMPDIR:-/tmp}/history_sync_body.XXXXXX")"
 RESP="$(mktemp "${TMPDIR:-/tmp}/history_sync_resp.XXXXXX")"
-trap 'rm -f "$TMP" "$RESP"' EXIT
+# …AND THE LOCK IS RELEASED HERE, NOT ONLY IN _sync_lock.sh. This script
+# sets its own EXIT trap, which REPLACES the one sync_lock installed —
+# proven by a leaked lock dir on the first concurrency test. Chained, so
+# a winner that exits cannot strand the key for the full stale window.
+trap 'rm -f "$TMP" "$RESP"; _sync_lock_release' EXIT
 [ -f "$FILE" ] || exit 0
 set -a; source "$HOME/.kytepush-platform.env"; set +a
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)

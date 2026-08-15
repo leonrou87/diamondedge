@@ -6,10 +6,20 @@
 # static file as fallback. Mirrors sync_history.sh (streams from a file).
 set -euo pipefail
 DIR="$HOME/Desktop/diamondedge"
+# ONE WRITER PER KEY — the launchd job and nightly_scrub.SYNC_SET both run
+# this exact script. See scripts/_sync_lock.sh for the 57014 it prevents.
+# shellcheck source=scripts/_sync_lock.sh
+. "$HOME/Desktop/diamondedge/scripts/_sync_lock.sh"
+sync_lock picks_unified
+
 FILE="$DIR/public/picks_unified.json"
 STAMP="$DIR/scripts/.unified_history_sync.sha"
 TMP="$(mktemp "${TMPDIR:-/tmp}/unified_history_sync_body.XXXXXX")"
-trap 'rm -f "$TMP"' EXIT
+# …AND THE LOCK IS RELEASED HERE, NOT ONLY IN _sync_lock.sh. This script
+# sets its own EXIT trap, which REPLACES the one sync_lock installed —
+# proven by a leaked lock dir on the first concurrency test. Chained, so
+# a winner that exits cannot strand the key for the full stale window.
+trap 'rm -f "$TMP"; _sync_lock_release' EXIT
 [ -f "$FILE" ] || exit 0
 set -a; source "$HOME/.kytepush-platform.env"; set +a
 
