@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-14T23:31:17Z",
+  "generated_utc": "2026-08-15T00:11:27Z",
   "games": [
     {
       "game_id": "2026-08-14-St. Louis Cardinals-Chicago Cubs-824643",
@@ -1238,6 +1238,8 @@
           },
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-15T00:11:27Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -1260,6 +1262,8 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-15T00:11:27Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -1282,6 +1286,8 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-15T00:11:27Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -1304,6 +1310,8 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-15T00:11:27Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
@@ -1326,11 +1334,19 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-15T00:11:27Z",
           "premium_locked": true,
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-15T00:11:27Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-14-Kansas City Royals-Los Angeles Angels-823993",
@@ -1789,5 +1805,40 @@
       "status"
     ],
     "note": "Non-premium clients read the PUBLIC payload variant, where every premium field is ABSENT (not null, not masked) on any game carrying a live pick, and every free-text field that could name a side is replaced with the teaser. The record, the number of calls the desk made, and the analysts' personality content stay fully public. Nothing in the public variant contains the pick in any recoverable field \u2014 desk_policy.leak_scan() is the rail that proves it."
+  },
+  "picks_post_contract": {
+    "freeze_pt": "03:10",
+    "freeze_pt_h": 3,
+    "freeze_pt_m": 10,
+    "freeze_pt_label": "3:10 AM PT",
+    "freeze_utc": "2026-08-14T10:10:00Z",
+    "wall_hours": 3.0,
+    "wall_label": "T-3h",
+    "by_sport": {
+      "mlb": 3.0,
+      "nfl": 3.0,
+      "nba": 3.0,
+      "nhl": 3.0,
+      "wnba": 3.0,
+      "mls": 3.0,
+      "soccer": 3.0
+    },
+    "eras": [
+      {
+        "from": "2026-08-11",
+        "until": "2026-08-14",
+        "wall_hours": 16.0,
+        "note": "the T-16h era \u2014 ended 2026-08-14, it starved the rules of inputs and board volume collapsed 6, 5, 2, 0"
+      },
+      {
+        "from": "2026-08-14",
+        "until": null,
+        "wall_hours": 3.0,
+        "note": "T-3h: each game is decided about three hours before its own first pitch, once the analysts have read it and the market has settled"
+      }
+    ],
+    "for_date": "2026-08-14",
+    "source": "v4/serve/post_contract.py",
+    "posted_note": "The day's rule is frozen at 3:10 AM PT. Each game is then decided at its own wall \u2014 about 3 hours before that game's first pitch \u2014 so a night game's pick posts in the afternoon, not at the freeze."
   }
 }

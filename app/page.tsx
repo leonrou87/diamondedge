@@ -3813,14 +3813,72 @@ export default function Home() {
       if (line == null && price == null) return null;
       return { line, price, team, side };
     }
+    /* ═══════════ THE TRACKER CARD BEHIND A GAME PAGE (de_ms_v1, 2026-08-14) ═══════════
+       The detail sheet does NOT render the sport board's card. `openDetail` resolves from
+       the `pregame_picks` feed — on the tile click and on the ?g= deep link alike — and a
+       de_ms_v1 row in that feed carries NO market at all: `vegas_odds` is null on every
+       one of them. So the Odds tab of every NFL, WNBA and MLS game opened onto "No line
+       on this game yet … Nothing has been captured for this game so far" while the sport
+       board beside it, already loaded in this same page to draw the tile the reader just
+       tapped, was holding the total across eighteen books.
+
+       `v4GameFor` is exactly this join for MLB — it reaches into the v4 feeds for the
+       block the day payload lacks. This is its tracker sibling rather than a widening of
+       it: nothing that already reads `v4GameFor` changes behaviour, and this is consulted
+       only where a market is being looked for. */
+    function msCardFor(g: any) {
+      const gid = String((g && g.game_id) || "");
+      if (!gid) return null;
+      /* THE SPORT MUST AGREE, not just the id. MLB game_pks and ESPN event ids are
+         different namespaces and do not collide today (six digits against nine), but
+         "does not collide today" is not a rule — and the cost of a collision here would
+         be an MLB game quoting a football total. So the sport is part of the match. */
+      const sp = String((g && g.sport) || "").toLowerCase();
+      if (!sp) return null;
+      for (const k of Object.keys(msData || {})) {
+        const d = msData[k];
+        const hit = d && (d.games || []).find((x: any) =>
+          String((x && x.sport) || "").toLowerCase() === sp
+          && (String(x.game_id) === gid || String(x.espn_id) === gid));
+        if (hit) return hit;
+      }
+      return null;
+    }
     function pregameLine(g: any) {
       if (!g) return null;
       const vg = v4GameFor(g);
-      const rawSrc = [g, vg].filter(Boolean);
+      const rawSrc = [g, vg, msCardFor(g)].filter(Boolean);
       let served: any = null;
       for (const s of rawSrc) {
         const p = (s as any).pregame_line;
         if (p != null && (typeof p === "object" || typeof p === "number")) { served = p; break; }
+      }
+      /* ══ THE TRACKER BOARDS SPEAK A DIFFERENT SHAPE, AND THIS FUNCTION WAS DEAF TO IT
+            (NFL/WNBA/MLS, de_ms_v1 — 2026-08-14) ══
+         Their cards carry the market at the TOP LEVEL — `line`, with
+         `odds:{pregame_total, n_books, frozen_at_wall}` beside it — and their `pick`
+         is a STRING ("OVER 40.5", "PASS"), not the v4 object the derivation below
+         reads. So every source missed, pregameLine() returned null, and the Odds tab
+         printed "No line on this game yet … Nothing has been captured for this game
+         so far" over a card that was holding 39.5 across 18 books.
+
+         That is the SAME BUG the engine just fixed one layer in — the card had the
+         number and the thing rendering it never asked — and it hid the market on all
+         three tracker sports at once. It is also why a preseason reader looking for a
+         total found an empty pane while the payload beside it was correct.
+
+         MLB CANNOT BE TOUCHED BY THIS, by construction rather than by care: v4 games
+         carry no `odds` key at all, so the gate below can only fire on a tracker card.
+         And it runs LAST, so a served pregame_line always wins. */
+      if (served == null) {
+        for (const s of rawSrc) {
+          const o = (s as any).odds;
+          if (!o || typeof o !== "object") continue;
+          const ln = _fin(o.pregame_total != null ? o.pregame_total : (s as any).line);
+          if (ln == null) continue;
+          served = { total: ln, source: "de_ms_v1" };
+          break;
+        }
       }
       const pk = (g && g.pick) || (vg && vg.pick) || null;
       const sp = spreadBlockFor(g);
@@ -13868,6 +13926,19 @@ export default function Home() {
         const p = (s as any).pregame_line;
         if (p && typeof p === "object") return p;
       }
+      /* The tracker boards carry the same facts under `odds` — see the long note in
+         pregameLine(). Only two of them exist on that schema: how many books were
+         read, and whether the number is FROZEN (the card is past its wall, so this is
+         the number the pick will be graded at) or still LIVE (pre-wall, and it can
+         still move). There is no archived open on these cards, so `total_open` stays
+         null and the footer simply never claims one — an absent field is not a zero. */
+      for (const s of [g, vg, msCardFor(g)].filter(Boolean)) {
+        const o = (s as any).odds;
+        if (!o || typeof o !== "object") continue;
+        if (_fin(o.pregame_total != null ? o.pregame_total : (s as any).line) == null) continue;
+        return { n_books: _fin(o.n_books), total_open: null,
+                 _ms: true, frozen_at_wall: o.frozen_at_wall === true };
+      }
       return null;
     }
     function oddsPane(g: any, lead: any, leadLocked: boolean) {
@@ -13891,8 +13962,17 @@ export default function Home() {
       const nBooks = raw ? _fin(raw.n_books) : null;
       const book = pg && pg.book ? bookName(pg.book) : "";
       const hasWalls = totalWalls(g).length >= 2;
+      /* A NUMBER THAT CAN STILL MOVE IS NOT "THE LINE WE'RE GRADED AT". On the tracker
+         boards a card before its own wall carries the LIVE market (frozen_at_wall
+         false) — real, current, but not yet the graded number, because this game gets
+         priced at its own wall a few hours out. Calling it the graded line would
+         promise a lock that has not happened, and would be quietly contradicted when
+         the wall freezes a different total. So the heading says which of the two it
+         is. Every other board is unaffected: `_ms` is only set by the tracker branch
+         of pregameLineRaw(), and a frozen tracker card reads exactly as before. */
+      const msLive = !!(raw && (raw as any)._ms === true && (raw as any).frozen_at_wall !== true);
       return tot == null ? "" : `<div class="oline">
-        <div class="oline-k">The line we're graded at</div>
+        <div class="oline-k">${msLive ? "The market's number right now" : "The line we're graded at"}</div>
         <div class="oline-main">
           <span class="oline-tot"><b>${esc(lineStr(tot))}</b><i>total</i></span>
           ${over != null || under != null ? `<span class="oline-px">
@@ -13910,6 +13990,10 @@ export default function Home() {
           hasWalls ? "" :
             open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
           nBooks != null ? `${Math.round(nBooks)} books read` : "",
+          // Say WHY it can still move, once, under the number it qualifies —
+          // the same fact the heading carries, stated as the reason rather
+          // than repeated as a label.
+          msLive ? `not locked yet — this game prices at its own wall` : "",
           // "best price at X" sat above a table whose every row named a
           // different book; naming what this one is about tells them apart.
           // The CHECK goes with it, because the chart's caption prints a
@@ -14082,6 +14166,33 @@ export default function Home() {
             if (picksPending(g)) {
               return `<div class="callcard pass pending"><div class="cc-k">${pickLabel(g)}</div>
               <p class="cc-passwhy">${esc(picksEtaLong(g))} When the pick posts it locks — no pick on this site is ever quietly edited.</p></div>`;
+            }
+            /* ══ AND A SEALED CARD IS NOT A PASS EITHER — it is a decision we are
+                  WITHHOLDING, and this surface was answering on its behalf ══
+               `picksPending()` returns FALSE for a premium_locked card, by design and
+               correctly (2245ccf: a sealed card is decided, not pending — the tile must
+               show UNLOCK, not PICKS SOON). But that made this the `else`, so the moment
+               a sealed game went live the preview printed, in the DiamondEdge Pick slot,
+               to a signed-out reader: "We checked the spread, the total and the moneyline
+               … none of them offered a real advantage." Two things wrong with that, and
+               the second is the serious one:
+                 · the client INVENTED a verdict the payload deliberately withholds —
+                   `pick`, `stars` and `why` are ABSENT on an ungraded card, and a
+                   sentence asserting we passed is that same fact reconstructed;
+                 · it is a coin-flip lie. On DEN@ATL we had in fact passed, so it read
+                   true; on the very next sealed card carrying a real OVER it would have
+                   told a free reader we had no bet — hiding the product AND leaking
+                   pass-vs-pick, the one premium fact the redaction exists to protect.
+               So a server-sealed card gets the unlock affordance, which is the honest
+               answer: a decision exists, and it is behind the paywall. (The predicate is
+               the server's own `premium_locked` — the same expression `picksPending` and
+               `picksEtaShort` each compute inline; three copies now, and they should
+               converge on one resolver the next time this file is opened for that.) */
+            if (g && (g.premium_locked === true
+                      || (g.pick && (g.pick.premium_locked || g.pick.premium)))) {
+              return `<div class="callcard pass locked"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy">This game is decided and the call is frozen — it locked at this game's own wall, before ${esc(WALL_NOUN[String(sp || "").toLowerCase()] || "the start")}, and it is part of DiamondEdge Premium until the game grades.</p>
+              <div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div></div>`;
             }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
             const why = judged.length

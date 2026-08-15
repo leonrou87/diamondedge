@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-14T23:35:45Z",
+  "generated_utc": "2026-08-15T00:15:53Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -8698,7 +8698,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-14T23:36:01Z",
+      "updated": "2026-08-15T00:16:09Z",
       "order": [
         "vega",
         "atlas",
@@ -14811,10 +14811,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Right-hander Michael King takes the ball for the Padres at Progressive Field on Friday, against the Guardians. Gavin Williams (11-6, 3.55 ERA) starts for the Guardians. Williams went 5 2/3 innings last time out, giving up 2 runs on 3 hits with 2 walks and 7 strikeouts in a 6-3 loss at Chicago on Saturday. King (7-8, 3.37 ERA) gave up 1 run on 3 hits over 6 innings last time out in a 3-2 win against the Astros on Saturday.",
+            "Right-hander Michael King takes the ball for the Padres at Progressive Field on Friday, against the Guardians. Gavin Williams (2-2 with a 3.00 ERA over his last 8 starts) starts for the Guardians. Williams went 5 2/3 innings last time out, giving up 2 runs on 3 hits with 2 walks and 7 strikeouts in a 6-3 loss at Chicago on Saturday. King (2-2 with a 3.45 ERA over his last 8 starts) gave up 1 run on 3 hits over 6 innings last time out in a 3-2 win against the Astros on Saturday.",
             "The Guardians are 59-63 and are 3-7 over their last ten; the Padres are 65-57 and have won 5 in a row. The Guardians have scored 3.9 runs a game over their last fifteen, the Padres 4.2."
           ],
-          "text": "Right-hander Michael King takes the ball for the Padres at Progressive Field on Friday, against the Guardians. Gavin Williams (11-6, 3.55 ERA) starts for the Guardians. Williams went 5 2/3 innings last time out, giving up 2 runs on 3 hits with 2 walks and 7 strikeouts in a 6-3 loss at Chicago on Saturday. King (7-8, 3.37 ERA) gave up 1 run on 3 hits over 6 innings last time out in a 3-2 win against the Astros on Saturday.\n\nThe Guardians are 59-63 and are 3-7 over their last ten; the Padres are 65-57 and have won 5 in a row. The Guardians have scored 3.9 runs a game over their last fifteen, the Padres 4.2.",
+          "text": "Right-hander Michael King takes the ball for the Padres at Progressive Field on Friday, against the Guardians. Gavin Williams (2-2 with a 3.00 ERA over his last 8 starts) starts for the Guardians. Williams went 5 2/3 innings last time out, giving up 2 runs on 3 hits with 2 walks and 7 strikeouts in a 6-3 loss at Chicago on Saturday. King (2-2 with a 3.45 ERA over his last 8 starts) gave up 1 run on 3 hits over 6 innings last time out in a 3-2 win against the Astros on Saturday.\n\nThe Guardians are 59-63 and are 3-7 over their last ten; the Padres are 65-57 and have won 5 in a row. The Guardians have scored 3.9 runs a game over their last fifteen, the Padres 4.2.",
           "blurb": {
             "text": "Right-hander Michael King takes the ball for the Padres at Progressive Field on Friday, against the Guardians. The Guardians have scored 3.9 runs a game over their last fifteen, the Padres 4.2.",
             "record_line": "Over the 17 nights that chose it (Jul 27 to Aug 12) this rule went 113-37-6.",
@@ -15191,7 +15191,7 @@
       "pick": {
         "status": "PASS",
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-14T10:06:23Z",
         "timestamp": "2026-08-14T10:06:23Z",
         "lead_time": "T-3h",
@@ -15771,6 +15771,25 @@
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         "premium_locked": true
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 72,
+        "wind_mph": 8,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 5.5,
+        "humidity_pct": 69,
+        "precip_prob": 0,
+        "carry_index": 1.05,
+        "notes": [
+          "the wind is blowing out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-14T23:10:00Z",
+        "forecast_retrieved_utc": "2026-08-14T23:04:21Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -15888,6 +15907,25 @@
           "premium_note": "Premium \u2014 unlock to see the desk's call."
         },
         "premium_locked": true
+      },
+      "weather": {
+        "status": "ACTIVE",
+        "temp_f": 61,
+        "wind_mph": 13,
+        "wind_class": "out",
+        "wind_phrase": "the wind is blowing out toward centre field",
+        "wind_out_mph": 12.7,
+        "humidity_pct": 87,
+        "precip_prob": 0,
+        "carry_index": 1.01,
+        "notes": [
+          "the wind is blowing hard out to centre field"
+        ],
+        "wall": "T-3h",
+        "wall_utc": "2026-08-14T23:15:00Z",
+        "forecast_retrieved_utc": "2026-08-14T23:04:22Z",
+        "source": "forecast",
+        "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
       }
     },
     {
@@ -16561,5 +16599,40 @@
       "status"
     ],
     "note": "Non-premium clients read the PUBLIC payload variant, where every premium field is ABSENT (not null, not masked) on any game carrying a live pick, and every free-text field that could name a side is replaced with the teaser. The record, the number of calls the desk made, and the analysts' personality content stay fully public. Nothing in the public variant contains the pick in any recoverable field \u2014 desk_policy.leak_scan() is the rail that proves it."
+  },
+  "picks_post_contract": {
+    "freeze_pt": "03:10",
+    "freeze_pt_h": 3,
+    "freeze_pt_m": 10,
+    "freeze_pt_label": "3:10 AM PT",
+    "freeze_utc": "2026-08-14T10:10:00Z",
+    "wall_hours": 3.0,
+    "wall_label": "T-3h",
+    "by_sport": {
+      "mlb": 3.0,
+      "nfl": 3.0,
+      "nba": 3.0,
+      "nhl": 3.0,
+      "wnba": 3.0,
+      "mls": 3.0,
+      "soccer": 3.0
+    },
+    "eras": [
+      {
+        "from": "2026-08-11",
+        "until": "2026-08-14",
+        "wall_hours": 16.0,
+        "note": "the T-16h era \u2014 ended 2026-08-14, it starved the rules of inputs and board volume collapsed 6, 5, 2, 0"
+      },
+      {
+        "from": "2026-08-14",
+        "until": null,
+        "wall_hours": 3.0,
+        "note": "T-3h: each game is decided about three hours before its own first pitch, once the analysts have read it and the market has settled"
+      }
+    ],
+    "for_date": "2026-08-14",
+    "source": "v4/serve/post_contract.py",
+    "posted_note": "The day's rule is frozen at 3:10 AM PT. Each game is then decided at its own wall \u2014 about 3 hours before that game's first pitch \u2014 so a night game's pick posts in the afternoon, not at the freeze."
   }
 }
