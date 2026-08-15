@@ -75,7 +75,7 @@ table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
 .rec-t th{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--ink4);text-align:right;padding:12px 14px;
   border-bottom:1px solid var(--line2);white-space:nowrap}
-.rec-t th:first-child,.rec-t th.rule{text-align:left}
+.rec-t th:first-child,.rec-t th.rule,.rec-t th.prov-h{text-align:left}
 .rec-t td{padding:11px 14px;border-bottom:1px solid var(--line3);text-align:right;
   color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
 .rec-t td:first-child{text-align:left;color:var(--ink);font-weight:600;white-space:nowrap}
@@ -87,6 +87,38 @@ table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
 .rec-t td.rule{text-align:left;white-space:normal;color:var(--ink3);font-size:13px;
   line-height:1.45;min-width:220px;font-weight:400}
 .rec-t tr.mth td{font-weight:700}
+
+/* ── THE PROVENANCE SPLIT ───────────────────────────────────────────────────
+   Row headers, not data cells: "Rule stamped before first pitch" LABELS its row,
+   so it is a <th scope="row">. That means undoing the column-header treatment
+   (10px uppercase, right-aligned) which .rec-t th otherwise applies to it. */
+.rec-h3{font-family:var(--disp);font-weight:800;font-size:17px;letter-spacing:-.01em;
+  color:var(--ink);margin:30px 0 0}
+.rec-t th.prov-k{font-family:inherit;font-size:14px;font-weight:650;
+  letter-spacing:0;text-transform:none;color:var(--ink);text-align:left;
+  white-space:normal;border-bottom:1px solid var(--line3);padding:11px 14px;min-width:190px}
+.rec-prov tbody tr:last-child th.prov-k{border-bottom:0}
+/* The totals row is the headline restated as a check, so it reads as a rule-off
+   rather than as a third finding. */
+.rec-t tr.prov-tot th.prov-k,.rec-t tr.prov-tot td{border-top:2px solid var(--line2);
+  color:var(--ink3);font-weight:700}
+.rec-t tr.prov-tot .num{color:var(--ink3)}
+
+/* THE DOT IS DECORATION. Every place it appears, the word "stamped" or "re-run"
+   is beside it and carries the meaning — so the dot is aria-hidden and colour is
+   never the only channel. Sized in em so it tracks the text it sits in. */
+.prov-dot{display:inline-block;width:.5em;height:.5em;border-radius:50%;
+  margin-right:.45em;vertical-align:.06em;flex-shrink:0}
+.prov-dot.locked{background:var(--a0)}
+.prov-dot.replay{background:var(--ink4)}
+.rec-t td.prov-cell{text-align:left;color:var(--ink3);font-size:13px;font-weight:500}
+
+/* Links inside body copy state their own colour — there is deliberately no
+   blanket .rec-page a rule (see the note at the top of this file). */
+.rec-p a{color:var(--ink);text-decoration:underline;text-underline-offset:2px;
+  text-decoration-thickness:1px}
+.rec-p a:hover{text-decoration-thickness:2px}
+.rec-lede a{color:var(--ink);text-decoration:underline;text-underline-offset:2px}
 
 /* ── STREAK ROW ─────────────────────────────────────────────────────────── */
 .rec-streaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
@@ -128,4 +160,14 @@ table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
   .rec-t td.rule{display:none}
   .rec-t th.rule{display:none}
   table.rec-t{min-width:0}
+  /* THE PROVENANCE TABLE IS THE POINT OF THE PAGE, so on a phone the row label
+     gives up its width to the numbers rather than pushing the record and the
+     units off the right edge. It wraps to two lines; nothing is hidden, and the
+     container still scrolls if a longer label ever needs it. */
+  .rec-t th.prov-k{min-width:0;padding:10px 10px;font-size:13px;line-height:1.35}
+  /* .rec-t th is nowrap, so the COLUMN header sets the column's floor width and
+     no amount of shrinking the row headers below it does anything. */
+  .rec-t th.prov-h{white-space:normal;min-width:0}
+  .rec-prov th,.rec-prov td{padding-left:9px;padding-right:9px}
+  .rec-t td.prov-cell{padding-left:9px;padding-right:9px}
 }

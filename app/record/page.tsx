@@ -32,6 +32,25 @@ import "./record.css";
    pass/pick fact about any live board anywhere in it — the paywall and the leak
    gate are not merely respected here, they are out of scope by construction.
 
+   WHICH NIGHTS WERE CALLED IN ADVANCE (added 2026-08-14). The payload stamps
+   every night in record.daily with `basis` — was the rule written into the
+   append-only as-served ledger before first pitch (`served_locked`), or was the
+   nightly process re-run for that night afterwards (`process_replay`)? Measured
+   on the live payload the day this section was built: 50 picks over 7 stamped
+   nights at 21-22-7 and −2.21u, against 145 picks over 25 re-run nights at
+   73-68-4 and +4.34u. Every unit of profit in the headline sits in the re-run
+   half, and until now no surface on the site said so — while this page's own
+   lede said the opposite ("no strategy replayed over days it did not actually
+   play") and its night table captioned a column "the rule that was frozen
+   before that night's first game" over 25 rows where it was not.
+
+   The headline stays ONE record: that is the owner's standing ruling ("display
+   treats them as one record") and this page does not relitigate it. What it does
+   is print the split underneath, both subsets footing back to the headline
+   exactly, with the weaker guarantee named rather than blurred. A reader who
+   discovers this on their own never trusts the product again; a product that
+   says it first is the only kind worth paying for.
+
    THE TWO DERIVED NUMBERS. Everything on the page is served except a Wilson
    interval and a flat-price counterfactual, both computed from the served
    win/loss counts and both shown WITH their method stated in the copy. They are
@@ -81,6 +100,13 @@ function dayLabel(iso?: string) {
   const [y, m, d] = iso.slice(0, 10).split("-").map(Number);
   const t = new Date(Date.UTC(y, m - 1, d));
   return `${DOW[t.getUTCDay()]}, ${MON[m - 1]} ${d}`;
+}
+/* "Aug 10" — for lists of dates, where dayLabel's weekday prefix turns
+   "Mon, Aug 10, Tue, Aug 11" into a run of commas nobody can parse. */
+function shortDate(iso?: string) {
+  if (!iso || iso.length < 10) return iso || "";
+  const [, m, d] = iso.slice(0, 10).split("-").map(Number);
+  return `${MON[m - 1]} ${d}`;
 }
 function longDate(iso?: string) {
   if (!iso || iso.length < 10) return iso || "";
@@ -137,6 +163,45 @@ function wilson95(win: number, loss: number) {
 const BREAKEVEN_110 = 110 / 210; // 0.5238…
 function flat110Units(win: number, loss: number) {
   return win * (100 / 110) - loss;
+}
+
+/* ── THE PROVENANCE SPLIT ───────────────────────────────────────────────────
+   Sum a set of nights the same way the headline sums all of them: one row per
+   night, wins/losses/pushes/units added straight. Nothing is re-graded and no
+   pick moves — this is the SAME arithmetic over a subset, which is why the two
+   subsets foot back to the headline exactly (verified on the live payload:
+   50 + 145 = 195, 21-22-7 plus 73-68-4 = 94-90-11).
+
+   Units are summed from the served per-night figures, so the total can differ
+   from the served headline by a rounding hair (measured: 0.002u across 32
+   nights). The page prints subset units to 2dp, where that is invisible; it
+   never re-prints the HEADLINE from this sum. */
+function sumNights(rows: DayRow[]) {
+  let n = 0, win = 0, loss = 0, push = 0, units = 0;
+  for (const d of rows) {
+    n += d.n ?? 0; win += d.win ?? 0; loss += d.loss ?? 0;
+    push += d.push ?? 0; units += d.units ?? 0;
+  }
+  const decided = win + loss;
+  return {
+    nights: rows.length, n, win, loss, push, units, decided,
+    /* HYPHENS, because the served record strings use hyphens. A subset printed
+       "21–22–7" beside a headline printed "94-90-11" reads as two different
+       kinds of number on the same page. */
+    record: `${win}-${loss}-${push}`,
+    hit: decided > 0 ? win / decided : null,
+    roi: n > 0 ? units / n : null,
+  };
+}
+
+/* A night counts as CALLED IN ADVANCE only on the strict test: the payload's own
+   note defines walk-forward as "if and only if its strategy was stamped into the
+   as-served ledger before that day's first pitch", and that is what `basis`
+   carries. `walk_forward` accepts the selector's weaker self-report; it is used
+   below only to disclose the four nights where the two tests disagree, never to
+   move a night into the stronger bucket. */
+function wasLockedInAdvance(d: DayRow) {
+  return d.basis === "served_locked" || d.basis === "served_archive";
 }
 
 /* ════════════════════════════════════════════════════════════════════════════ */
@@ -203,6 +268,33 @@ export default async function RecordPage() {
      mind twelve times and the record counted every night straight through. */
   const ruleCount = new Set(days.map((d) => d.strategy?.label).filter(Boolean)).size;
 
+  /* ── HOW EACH NIGHT GOT HERE ──────────────────────────────────────────────
+     The split the site has never shown. `stamped` are the nights whose rule was
+     written into the append-only as-served ledger before first pitch; `replayed`
+     are the nights the nightly process was re-run for afterwards, each behind
+     its own asserted per-night fence. They partition the same rows the table
+     below prints, so they foot to the headline by construction rather than by
+     agreement — asserted at render time in `provFoots`, and if it ever stops
+     being true the section removes itself rather than print a second record. */
+  const stamped = days.filter(wasLockedInAdvance);
+  const replayed = days.filter((d) => !wasLockedInAdvance(d));
+  const provStamped = sumNights(stamped);
+  const provReplayed = sumNights(replayed);
+  const provFoots =
+    provStamped.n + provReplayed.n === (h.n ?? -1)
+    && provStamped.win + provReplayed.win === win
+    && provStamped.loss + provReplayed.loss === loss
+    && provStamped.push + provReplayed.push === push;
+  const showProvenance = provFoots && stamped.length > 0 && replayed.length > 0;
+
+  /* THE NIGHTS THE TWO TESTS DISAGREE ON. `walk_forward` (the selector's own
+     timestamp) says the rule was chosen before the slate; `basis` (the as-served
+     ledger) has no stamp for them. They are counted as replayed above, on the
+     stricter evidence. This is the counterfactual, printed so the reader can see
+     what the other choice would have produced instead of trusting ours. */
+  const disputed = replayed.filter((d) => d.walk_forward === true);
+  const provStampedLoose = sumNights(stamped.concat(disputed));
+
   return (
     <main className="rec-page">
       {mast}
@@ -212,10 +304,13 @@ export default async function RecordPage() {
         <h1 className="rec-h1">Every pick, graded in public.</h1>
         <p className="rec-lede">
           This is the whole ledger: <b>every pick DiamondEdge has served since {longDate(h.start)}</b>,
-          graded at the price and the line it was served at. Nothing re-graded, nothing restated,
-          and no strategy replayed over days it did not actually play. The losing nights are on
-          this page at the same size as the winning ones, because a record you can only read the
-          good half of is an advertisement.
+          graded at the price and the line it was served at. Nothing re-graded and nothing
+          restated. The losing nights are on this page at the same size as the winning ones,
+          because a record you can only read the good half of is an advertisement
+          {showProvenance ? (
+            <> — and so is a record that does not tell you which of its nights were called
+              in advance. <a href="#how-it-got-here">Ours does, below</a>.</>
+          ) : "."}
         </p>
       </div>
 
@@ -296,6 +391,130 @@ export default async function RecordPage() {
         </div>
       </section>
 
+      {/* ── HOW EACH NIGHT GOT HERE ── the split nobody publishes ── */}
+      {showProvenance && (
+        <section className="rec-sec" id="how-it-got-here">
+          <h2 className="rec-h2">Which of these nights were called in advance</h2>
+          <p className="rec-p">
+            A record only means something if the call came first. Not all of this one did. The
+            data behind this page stamps every night with how it got here, and the honest thing
+            to do with that stamp is print it.
+          </p>
+          <p className="rec-p">
+            Every night below was graded identically — one row per game, at the price and line
+            that night&rsquo;s ticket carried. What differs is <b>when the rule that made those
+            picks was fixed</b>.
+          </p>
+
+          <div className="rec-tw">
+            <table className="rec-t rec-prov">
+              <thead>
+                <tr>
+                  <th scope="col" className="prov-h">How the night was fixed</th>
+                  <th scope="col">Nights</th>
+                  <th scope="col">Picks</th>
+                  <th scope="col">Record</th>
+                  <th scope="col">Hit</th>
+                  <th scope="col">Units</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row" className="prov-k">
+                    <span className="prov-dot locked" aria-hidden="true" />
+                    Rule stamped before first pitch
+                  </th>
+                  <td className="num">{provStamped.nights}</td>
+                  <td className="num">{provStamped.n}</td>
+                  <td className="num">{provStamped.record}</td>
+                  <td className="num">{pct(provStamped.hit)}</td>
+                  <td className={`num u ${unitCls(provStamped.units)}`}>{unitTxt(provStamped.units)}</td>
+                </tr>
+                <tr>
+                  <th scope="row" className="prov-k">
+                    <span className="prov-dot replay" aria-hidden="true" />
+                    Process re-run afterwards
+                  </th>
+                  <td className="num">{provReplayed.nights}</td>
+                  <td className="num">{provReplayed.n}</td>
+                  <td className="num">{provReplayed.record}</td>
+                  <td className="num">{pct(provReplayed.hit)}</td>
+                  <td className={`num u ${unitCls(provReplayed.units)}`}>{unitTxt(provReplayed.units)}</td>
+                </tr>
+                <tr className="prov-tot">
+                  <th scope="row" className="prov-k">The record above</th>
+                  <td className="num">{h.n_days}</td>
+                  <td className="num">{h.n}</td>
+                  <td className="num">{h.record}</td>
+                  <td className="num">{pct(hitRate)}</td>
+                  <td className={`num u ${unitCls(h.units)}`}>{unitTxt(h.units)}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div className="rec-caveat">
+            <p className="rec-p">
+              <b>
+                Read the two rows against each other: the profit in this record is in the
+                re-run half.
+              </b>{" "}
+              The {provStamped.n} picks on nights whose rule was stamped before the first game
+              are <b>{provStamped.record}</b>, {unitTxt(provStamped.units)}. The{" "}
+              {provReplayed.n} picks on re-run nights are {provReplayed.record},{" "}
+              {unitTxt(provReplayed.units)}. Both are in the headline, because both were graded
+              honestly — but only one of them is evidence that this desk calls games before they
+              are played, and it is currently the losing one.
+            </p>
+          </div>
+
+          <h3 className="rec-h3">What &ldquo;re-run afterwards&rdquo; does and does not mean</h3>
+          <p className="rec-p">
+            It is not a rule picked because it won and then run backwards over the season. For
+            each night, the selection is re-derived from a window that <b>ends strictly before
+            that night</b>, that fence is checked per night rather than assumed, and the night&rsquo;s
+            games are graded against whatever rule the search produced. Nothing dated on or after
+            a night can reach into its own selection.
+          </p>
+          <p className="rec-p">
+            What it cannot show is that the desk would have <i>run</i> that rule live. The
+            selector doing the re-running was built later, with those nights&rsquo; results already
+            in the world. That gap is the entire difference between the two rows, it is not
+            something a fence can close, and it is why they are printed apart instead of averaged
+            into one comfortable number.
+          </p>
+
+          {disputed.length > 0 && (
+            <p className="rec-p small">
+              <b>
+                {disputed.length === 1
+                  ? "One of those nights could have been counted either way."
+                  : `${disputed.length} of those nights could have been counted either way.`}
+              </b>{" "}
+              {disputed
+                .slice()
+                .sort((a, b) => String(a.date).localeCompare(String(b.date)))
+                .map((d) => shortDate(d.date))
+                .reduce((s, x, i, a) =>
+                  i === 0 ? x : i === a.length - 1 ? `${s} and ${x}` : `${s}, ${x}`, "")}{" "}
+              {disputed.length === 1 ? "is" : "are"} a closer call: the selector&rsquo;s own store
+              says their rule was chosen hours before first pitch, but the as-served ledger
+              carries no stamp for them. They are
+              counted as re-run above, because the as-served ledger is the evidence that survives
+              a change of selector version and the selector&rsquo;s own store is not. Counting them
+              the other way would make the called-in-advance side {provStampedLoose.n} picks at{" "}
+              {provStampedLoose.record}, {unitTxt(provStampedLoose.units)} — worse, not better.
+              Both numbers are here so that nobody has to take our word for which one we chose.
+            </p>
+          )}
+          <p className="rec-p small">
+            The two rows above are the same rows as the night-by-night table further down, summed
+            the same way the headline sums them, and they add back to it exactly — {provStamped.n}{" "}
+            + {provReplayed.n} = {h.n} picks. No pick is counted twice and none is left out.
+          </p>
+        </section>
+      )}
+
       {/* ── MONTHS ── */}
       {months.length > 0 && (
         <section className="rec-sec">
@@ -366,16 +585,28 @@ export default async function RecordPage() {
         <section className="rec-sec">
           <h2 className="rec-h2">Every night, in order</h2>
           <p className="rec-p">
-            One row per night the board posted picks, newest first. The last column is the rule that
-            was frozen before that night&rsquo;s first game — it changed {ruleCount} times across
-            these {days.length} nights, and the record counts every one of them straight through. A
-            product that quietly restarts its record when the model changes is not keeping a record.
+            One row per night the board posted picks, newest first. The last column is the rule
+            that was in force for that night — it changed {ruleCount} times across these{" "}
+            {days.length} nights, and the record counts every one of them straight through. A
+            product that quietly restarts its record when the model changes is not keeping a
+            record.
           </p>
+          {showProvenance && (
+            <p className="rec-p small">
+              The mark beside each night is the one from the section above:{" "}
+              <span className="prov-dot locked" aria-hidden="true" />
+              <b>stamped</b> means that night&rsquo;s rule was written down before its first game;{" "}
+              <span className="prov-dot replay" aria-hidden="true" />
+              <b>re-run</b> means the process was replayed for it afterwards behind its own
+              fence. {provStamped.nights} nights and {replayed.length} nights respectively.
+            </p>
+          )}
           <div className="rec-tw">
             <table className="rec-t">
               <thead>
                 <tr>
                   <th scope="col">Night</th>
+                  {showProvenance && <th scope="col">Called</th>}
                   <th scope="col">Picks</th>
                   <th scope="col">Record</th>
                   <th scope="col">Units</th>
@@ -386,6 +617,17 @@ export default async function RecordPage() {
                 {days.map((d) => (
                   <tr key={d.date}>
                     <td>{dayLabel(d.date)}</td>
+                    {showProvenance && (
+                      /* The word carries the meaning; the dot is decoration beside it, so a
+                         reader who cannot see colour loses nothing. */
+                      <td className="prov-cell">
+                        <span
+                          className={`prov-dot ${wasLockedInAdvance(d) ? "locked" : "replay"}`}
+                          aria-hidden="true"
+                        />
+                        {wasLockedInAdvance(d) ? "stamped" : "re-run"}
+                      </td>
+                    )}
                     <td className="num">{d.n}</td>
                     <td className="num">{d.record}</td>
                     <td className={`num u ${unitCls(d.units)}`}>{unitTxt(d.units)}</td>
@@ -401,7 +643,25 @@ export default async function RecordPage() {
       {/* ── BASIS ── served verbatim ── */}
       <section className="rec-sec">
         <h2 className="rec-h2">What counts, and what does not</h2>
+        {/* SERVED VERBATIM, AND THEN READ HONESTLY. The basis line is the engine's own
+            words and this page does not rewrite them. But one clause in it — that no
+            strategy is replayed over days it did not play — is easy to read as a claim
+            this record does not make, so the sentence after it says which claim it is.
+            It is true as written: the replay never takes ONE rule and runs it backwards
+            over the season; each night is graded under a rule re-derived for that night
+            alone. It is not a statement about when the rule was fixed, and that is the
+            question the section above answers. */}
         {h.basis && <p className="rec-p">{h.basis}</p>}
+        {showProvenance && (
+          <p className="rec-p">
+            One clause there is worth pinning down. &ldquo;No strategy replayed over days it did
+            not play&rdquo; means the record is never one favourite rule run backwards over the
+            season — each night is graded under a rule derived for that night and nothing else.
+            It is not a claim that every night&rsquo;s rule was fixed before the games; on{" "}
+            {provReplayed.nights} of these {h.n_days} nights it was not, and{" "}
+            <a href="#how-it-got-here">the split is above</a>.
+          </p>
+        )}
         <p className="rec-p">
           A pick is frozen before the game — side, line and price — and it is graded against that
           frozen ticket whatever the number moves to afterwards. Picks are counted one row per game.

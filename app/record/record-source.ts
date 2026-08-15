@@ -65,6 +65,43 @@ export type MonthRow = {
   record?: string; hit_rate?: number | null;
 };
 
+/* ── THE PROVENANCE STAMPS ──────────────────────────────────────────────────
+   `basis` and `walk_forward` are fields OF record.daily, which the copy policy
+   marks story_safe — so reading them here widens nothing. They were simply never
+   carried, and the page that exists to prove the record was therefore blind to
+   the one fact a sceptic asks first: WAS THE RULE FIXED BEFORE THE GAMES?
+
+   Measured on the live payload, 2026-08-14: of the 195 graded picks in the
+   headline, 145 sit on nights stamped `process_replay` and 50 on nights stamped
+   `served_locked`. The replayed nights are +4.34u; the locked nights are −2.21u.
+   Every unit of profit in the public figure is in the replayed half, and no
+   surface on the site said so.
+
+   WHAT EACH VALUE MEANS (v4/serve/unified_model.py, the PROCESS REPLAY block):
+
+     served_locked   the night's strategy was stamped into the append-only
+                     as-served ledger BEFORE that day's first pitch. The strong
+                     guarantee: the call demonstrably came first.
+     process_replay  the nightly process was RE-RUN for that night, selecting
+                     from a window ending strictly before it, with that fence
+                     asserted per night rather than assumed. No look-ahead
+                     inside any night — but the selector doing the re-running
+                     was built afterwards, so it cannot show the desk would have
+                     run that rule live.
+     served_archive  pre-span days from the hash-pinned archive. Not present in
+                     today's payload; typed so an appearance renders rather than
+                     silently falling into the replay bucket.
+
+   `walk_forward` answers the same question off WEAKER evidence — it accepts the
+   selector's own `selected_at_utc`, and that store is write-once per (date,
+   VERSION), so a version bump re-derives past dates and overwrites the proof.
+   The payload's own note gives the strict definition ("if and only if its
+   strategy was stamped into the as-served ledger"), which is `basis`. Both are
+   carried because the page prints both numbers rather than choosing the
+   flattering one — and on this record neither is flattering.
+   ─────────────────────────────────────────────────────────────────────────── */
+export type DayBasis = "served_locked" | "process_replay" | "served_archive";
+
 export type DayRow = {
   n?: number; win?: number; loss?: number; push?: number;
   date?: string; units?: number; roi?: number | null;
@@ -73,6 +110,8 @@ export type DayRow = {
   counts_in_record?: boolean;
   no_action?: boolean;
   no_action_reason?: string | null;
+  basis?: DayBasis | string | null;
+  walk_forward?: boolean;
   strategy?: { label?: string; plain_english_rule?: string; status?: string } | null;
 };
 
