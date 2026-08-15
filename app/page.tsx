@@ -1969,7 +1969,6 @@ export default function Home() {
        because the bytes are already gone from the public payload either way. */
     let serverPremium: boolean | null = null;
     let sessionConfigured = false;
-    let sessionMockCheckout = false;   // is the owner-gated mock checkout live server-side?
     const isPremium = () => (serverPremium != null ? serverPremium : (() => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } })());
     const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
     async function refreshSession() {
@@ -1980,7 +1979,6 @@ export default function Home() {
         const was = serverPremium;
         serverPremium = !!j.premium;
         sessionConfigured = !!j.configured;
-        sessionMockCheckout = !!j.mock;
         setPremium(serverPremium);
         /* A CHANGE OF ENTITLEMENT CHANGES WHICH PAYLOAD WE SHOULD BE HOLDING,
            not merely how it is drawn — so it is a reload of the data, never a
@@ -2003,21 +2001,17 @@ export default function Home() {
       try { await fetch("/api/session", { method: "DELETE" }); } catch {}
       serverPremium = false; setPremium(false);
     }
-    /* THE MOCK CHECKOUT. Payment stays a stub — this mints the SAME server session
-       Stripe's webhook will, but only when the owner has switched it on
-       (DE_ALLOW_MOCK_CHECKOUT=1). Off ⇒ 403 mock_disabled, and the button says so
-       honestly. Never sets a local flag on its own: entitlement is the cookie. */
-    async function mockCheckout(): Promise<{ ok: boolean; reason?: string }> {
-      try {
-        const r = await fetch("/api/session", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ mock: true }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); track("upgrade", "mock"); return { ok: true }; }
-        return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
-      } catch { return { ok: false, reason: "network" }; }
-    }
+    /* THE MOCK CHECKOUT IS GONE (2026-08-14). It POSTed {mock:true} and, when the
+       owner had DE_ALLOW_MOCK_CHECKOUT=1 set — which production did — the server
+       minted a real 30-day premium cookie. That was the honest way to demo an
+       unlock before a gateway existed. It stopped being that the moment the Whop
+       rail landed and the flag stayed on: the "Subscribe" button on a screen
+       showing a card form was handing every visitor the paid product for $0.
+       Measured on production before removal: POST {"mock":true} → 200 {"premium":
+       true}, and that cookie pulled /api/premium/picks_unified_live 200 with the
+       night's three live picks in the clear, where anonymous gets 402.
+       The client no longer has a path to it and the route no longer honours it.
+       The owner's supported way in is unchanged and stronger: DE_PREMIUM_CODES. */
     /* ENTITLEMENT JUST CHANGED, SO THE BOARD IS DIFFERENT BYTES — the picks are
        not in the public payload, only in the premium one (and vice-versa on
        sign-out). Rather than a full-page reload, drop every cached feed, clear
@@ -17784,11 +17778,36 @@ export default function Home() {
       if (termsAccepted()) { next(); return; }
       openTermsSheet(true, next);
     }
+    /* ═══ THE PLAN IS ONE FACT, AND IT IS THE ONE THE STORE CHARGES ═══
+       2026-08-14. Every price on this app said $9.99. The live plan
+       (whop.com/kytepush/diamondedge-premium, plan_GAW69XAsuOKPR) charges
+       $12.99/month after a 3-day free trial — read off the store itself, which is
+       also what app/api/session/route.ts has said in prose since the Whop rail
+       landed. Six surfaces quoted the wrong number to a reader about to pay, and
+       none of them could reach the store at all: `whop` appeared nowhere in this
+       file. A price is a promise; quoting one the checkout will not honour is the
+       same class of error as quoting a record the ledger cannot produce.
+       So: ONE object. Every price, every trial claim and the checkout door read
+       it, and when the owner moves the plan there is exactly one line to change. */
+    const PREMIUM_PLAN = {
+      price: "$12.99",
+      per: "/ month",
+      trialDays: 3,
+      /* The plan's own checkout page — one tap from the CTA, no store browsing in
+         between. Verified live: 200, titled DiamondEdge Premium, $12.99. */
+      checkout: "https://whop.com/checkout/plan_GAW69XAsuOKPR/",
+      /* Where a member manages the subscription they actually bought — payment
+         method, receipts and cancellation all live with the biller, not here. */
+      hub: "https://whop.com/orders/",
+    };
+    const trialTxt = PREMIUM_PLAN.trialDays > 0
+      ? `${PREMIUM_PLAN.trialDays} days free, then ${PREMIUM_PLAN.price} a month. Cancel anytime.`
+      : `${PREMIUM_PLAN.price} a month. Cancel anytime.`;
     const PLAN_COPY: any = {
       premium: {
         k: "DiamondEdge Premium",
-        price: "$9.99",
-        per: "/ month",
+        price: PREMIUM_PLAN.price,
+        per: PREMIUM_PLAN.per,
         body: "Every DiamondEdge Pick unlocked — the side, the line, the price we froze it at, and the full reasoning on every game.",
       },
       free: {
@@ -17907,54 +17926,54 @@ export default function Home() {
       bindClick("acct-signout", () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); });
     }
     /* ═══ MANAGE SUBSCRIPTION ═══
-       THE HONEST STATE OF THIS SCREEN: there is no billing backend. Entitlement is a single
-       localStorage flag (`de_premium`) and the checkout on renderSubscribe() is a stub. So
-       this screen is built in full — plan, price, renewal date, payment method, the change
-       and cancel routes — and the two actions that would move real money are wired to a
-       waitlist/contact route rather than pretending to succeed. Each one carries the exact
-       wire-in point for the real gateway. A UI that lies about having charged you is worse
-       than one that says what it is. */
+       WHAT THIS SCREEN INVENTED (fixed 2026-08-14): a renewal date. `new Date()` plus one
+       month, rendered as "Renews September 14" — a specific, checkable, false statement of
+       fact to someone who is being billed. It did not come from a biller; nothing on this
+       device knows when a Whop subscription renews. It sat one row under "Status Active",
+       which made it read like the same kind of fact.
+       Two more of the same family went with it. "Cancel subscription" ended the LOCAL
+       session and said "Premium turned off" — a member who tapped it would have been billed
+       again on schedule, having been told they were done. And "Payment method / Card, Apple
+       Pay, Google Pay, PayPal" enumerated wallets this app does not operate and routed back
+       to the old stub checkout.
+       WHAT IT SAYS NOW: only what it knows — the plan and its price, that access is live on
+       this device, and the address on the account. Everything a biller owns (renewal date,
+       card, receipts, cancellation) is one clearly-labelled door to Whop, which is the only
+       thing that can actually do any of it. The local control that DOES work keeps its own
+       row, named for what it really does: lock this device, not stop the billing. */
     function renderManagePlan() {
       const view = $("account-view");
       if (!view) return;
       const a = getAccount() || {};
-      const renew = (() => {
-        const d = new Date(); d.setMonth(d.getMonth() + 1);
-        return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
-      })();
       view.innerHTML = `
         <div class="acct-page manage">
           <button class="acct-back gp-back" id="mg-close" aria-label="Back">${backChevron}</button>
           <header class="mg-hero">
             <div class="mg-k">DiamondEdge Premium</div>
             <div class="mg-state"><span class="mg-dot" aria-hidden="true"></span>Active</div>
-            <div class="sub-price"><span class="amt">${esc(PLAN_COPY.premium.price)}</span><span class="per">${esc(PLAN_COPY.premium.per)}</span></div>
+            <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
           </header>
           <section class="acct-card">
             <div class="acct-card-k">Subscription</div>
-            <div class="mg-row"><span>Status</span><b>Active</b></div>
-            <div class="mg-row"><span>Renews</span><b>${esc(renew)}</b></div>
-            <div class="mg-row"><span>Billed to</span><b>${esc(a.email || "your account")}</b></div>
+            <div class="mg-row"><span>Plan</span><b>Premium · ${esc(PREMIUM_PLAN.price)}${esc(PREMIUM_PLAN.per)}</b></div>
+            <div class="mg-row"><span>Access on this device</span><b>Unlocked</b></div>
+            <div class="mg-row"><span>Signed in as</span><b>${esc(a.email || "your account")}</b></div>
           </section>
           <section class="acct-card">
-            <div class="acct-card-k">Payment</div>
-            <button class="acct-link" id="mg-method">Payment method<span class="al-sub">Card, Apple Pay, Google Pay, PayPal</span><em>→</em></button>
-            <button class="acct-link" id="mg-receipts">Receipts<span class="al-sub">Every charge on this account</span><em>→</em></button>
+            <div class="acct-card-k">Billing</div>
+            <a class="acct-link" id="mg-whop" href="${esc(PREMIUM_PLAN.hub)}" target="_blank" rel="noopener noreferrer">Manage on Whop<span class="al-sub">Renewal date, payment method, receipts, cancel</span><em>↗</em></a>
           </section>
-          <button class="mg-cancel" id="mg-cancel">Cancel subscription</button>
-          <div class="acct-foot">Cancelling keeps your access until ${esc(renew)}. The record stays free either way.</div>
+          <button class="mg-cancel" id="mg-cancel">Lock premium on this device</button>
+          <div class="acct-foot">This signs this device out of premium — it does not cancel your subscription. Cancel with the biller on Whop. The record stays free either way.</div>
         </div>`;
       bindClick("mg-close", () => acctExit());
-      // BILLING-PORTAL WIRE-IN POINT: both of these become a Stripe Billing Portal session.
-      bindClick("mg-method", () => { accountMode = "subscribe"; pushAcctEntry(); renderSubscribe(); });
-      bindClick("mg-receipts", () => toast("Receipts arrive by email at the address on this account"));
-      // CANCEL WIRE-IN POINT: DELETE the subscription through the gateway. It must reach the
-      // SERVER SESSION — dropping the local flag alone leaves the HttpOnly cookie in place and
-      // the board stays unlocked, because entitlement is the cookie now, not the flag. So this
-      // ends the session (DELETE /api/session) and re-locks every surface in place.
+      /* THE LOCAL LOCK, NAMED HONESTLY. It clears the HttpOnly cookie (dropping the local
+         flag alone would leave the session in place and the board unlocked) and re-locks
+         every surface where it stands. What it cannot do — and no longer claims to do — is
+         stop a charge: that lives with Whop, and the row above is the door to it. */
       bindClick("mg-cancel", async () => {
         await endSession();               // clears the server cookie + serverPremium
-        toast("Premium turned off — the record stays free either way");
+        toast("Premium locked on this device — cancel billing on Whop");
         accountMode = "menu";
         renderAccount();
         await entitlementRefresh();        // re-pull the now-public board and repaint every surface
@@ -18140,10 +18159,25 @@ export default function Home() {
       const soc = view.querySelector(".sgn-socials"); if (soc) soc.remove();
       bindClick("sgn-again", () => renderSignIn(), { optional: "only in the magic-link sent state" });
     }
-    // SUBSCRIPTION / PAYMENT: Credit Card + Apple Pay + PayPal + Google Pay as STUBS. On
-    // "subscribe" it sets the de_premium entitlement with a success animation. NO real
-    // Stripe/Apple Pay — documented wire-in points. The real record is the sell.
-    let payMethod = "card";
+    /* ═══ SUBSCRIPTION — A REAL DOOR, NOT A DRAWN ONE (rebuilt 2026-08-14) ═══
+       WHAT THIS SCREEN WAS: a card-number field with a 4242-4242 placeholder, an
+       Expiry and a CVC, Apple Pay / Google Pay / PayPal tabs, and a "Subscribe —
+       $9.99/mo" button — every one of them inert — above a paragraph admitting
+       "Card payments are not switched on yet." A reader who wanted to buy was
+       shown the wrong price, typed a card number into a field that went nowhere,
+       and arrived at a dead end. Meanwhile the actual store had been live for
+       four days and this file did not contain the word `whop`.
+       WHAT IT IS NOW: the price the store charges, the trial the store gives, and
+       one button that opens the store's own checkout. Whop takes the card — which
+       is the honest arrangement anyway: DiamondEdge should never be the thing
+       holding a card number, and a fake field asking for one is worse than no
+       field at all. The membership key from the receipt redeems in the box below,
+       through the same /api/session rail that has been the real entitlement since
+       f471569. Two steps, both of which work.
+       THE PAYMENT-METHOD CHOOSER IS GONE, not hidden: it chose between four
+       renderings of the same stub, and Whop's own checkout is where a buyer picks
+       how to pay. Enumerating wallets we do not operate would be another claim
+       this app cannot keep. `payMethod` went with it. */
     function renderSubscribe() {
       const view = $("account-view");
       if (!view) return;
@@ -18156,30 +18190,10 @@ export default function Home() {
          Dead reads of a rival source are how a rival source comes back: the next edit that
          wants a number finds one already in scope. Deleted, so there is nothing to find. */
       const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
-      const method = (id: string, label: string, mark: string) =>
-        `<button class="pay-m ${payMethod === id ? "on" : ""}" data-pm="${id}"><span class="pm-mark">${mark}</span><span class="pm-l">${esc(label)}</span><span class="pm-r" aria-hidden="true"></span></button>`;
-      const cardMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 9.5h19"/></svg>`;
-      const appleMark = PROVIDER_MARK.apple;
-      const gpayMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#4285F4" d="M12 10.2v3.7h5.1a4.4 4.4 0 0 1-1.9 2.9v2.4h3a9.2 9.2 0 0 0 2.8-6.9c0-.7-.06-1.3-.17-2.1z"/><path fill="#34A853" d="M12 21c2.5 0 4.6-.83 6.2-2.25l-3-2.35c-.83.56-1.9.9-3.2.9-2.45 0-4.5-1.65-5.25-3.87H3.6v2.42A9.4 9.4 0 0 0 12 21z"/><path fill="#FBBC04" d="M6.75 13.43a5.6 5.6 0 0 1 0-3.57V7.44H3.6a9.4 9.4 0 0 0 0 8.42z"/><path fill="#EA4335" d="M12 6.55c1.38 0 2.6.48 3.57 1.4l2.66-2.66A9.15 9.15 0 0 0 12 3a9.4 9.4 0 0 0-8.4 4.44l3.15 2.42C7.5 8.2 9.55 6.55 12 6.55z"/></svg>`;
-      const paypalMark = `<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#003087" d="M7.6 20.5l.5-3.1H5.4L7.8 3.8h6.1c2.7 0 4.5 1.4 4 4.1-.5 3.1-2.8 4.5-5.7 4.5H9.9l-.7 4.4z"/><path fill="#009CDE" d="M9.6 12.4h2.3c2.9 0 5.2-1.4 5.7-4.5.1-.5.1-.9.1-1.3 1 .6 1.5 1.7 1.2 3.4-.5 3.1-2.8 4.5-5.7 4.5h-1.7l-.7 4.4-.3 1.6H7.6l.5-3.1z"/></svg>`;
-      // The active method's detail form (all inert — a real gateway replaces each).
-      let detail = "";
-      if (payMethod === "card") {
-        detail = `<div class="pay-detail">
-          <label class="pay-fld"><span>Card number</span><input inputmode="numeric" placeholder="4242 4242 4242 4242" aria-label="Card number"></label>
-          <div class="pay-fld-row">
-            <label class="pay-fld"><span>Expiry</span><input placeholder="MM / YY" aria-label="Expiry"></label>
-            <label class="pay-fld"><span>CVC</span><input inputmode="numeric" placeholder="123" aria-label="CVC"></label>
-          </div>
-          <div class="pay-secure">${lockSvg} Secure checkout</div>
-        </div>`;
-      } else if (payMethod === "apple") {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${appleMark}<b>Apple Pay</b></div><p>Tap Subscribe to confirm with Face ID or Touch ID.</p></div>`;
-      } else if (payMethod === "gpay") {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${gpayMark}<b>Google Pay</b></div><p>Tap Subscribe to confirm with your Google wallet.</p></div>`;
-      } else {
-        detail = `<div class="pay-detail wallet"><div class="pw-line">${paypalMark}<b>PayPal</b></div><p>Tap Subscribe to check out with PayPal.</p></div>`;
-      }
+      /* The two steps, numbered, because they happen in two places and a reader
+         who does not know that will buy on Whop and then close the tab. */
+      const step = (n: string, t: string, s: string) =>
+        `<div class="sub-step"><span class="ss-n" aria-hidden="true">${n}</span><div><b>${t}</b><span>${s}</span></div></div>`;
       view.innerHTML = `
         <div class="acct-page subscribe">
           <button class="acct-back gp-back" id="sub-close" aria-label="Back">${backChevron}</button>
@@ -18187,7 +18201,8 @@ export default function Home() {
             <div class="sub-dia" aria-hidden="true"></div>
             <div class="sub-k">DiamondEdge Premium</div>
             <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
-            <div class="sub-price"><span class="amt">$9.99</span><span class="per">/ month</span></div>
+            <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
+            <div class="sub-trial">${esc(trialTxt)}</div>
             <!-- THE PRICE QUOTES THE RECORD, NOT A BACKTEST (2026-08-09). This sold the pick
                  on "58.1% across 886 graded picks since 2022" — recipeHistory(), the IN-SAMPLE
                  backtest, and the very figure just deleted from the share card for being a
@@ -18198,8 +18213,16 @@ export default function Home() {
               const r = headlineRecordBlock();
               if (!r || !r.wl) return "every pick we publish, graded in the open";
               const since = r.since ? stratDateTxt(r.since).replace(/,\s*\d{4}$/, "") : "";
-              return `<b>${esc(r.wl)}</b>${r.hit != null ? ` (<b>${stratPct(r.hit)}</b>)` : ""}${since ? ` since ${esc(since)}` : ""}, graded in the open`;
-            })()}. Cancel anytime.</p>
+              /* A RATE NEVER SHIPS WITHOUT ITS SAMPLE (2026-08-14). This read
+                 "94–90–11 (51.1%) since Jul 1" — a hit rate with no n, on the one
+                 screen where a reader is deciding whether to believe it. The Desk
+                 hero has carried "195 picks graded" beside the rate since it was
+                 built; the sell quoted the same block and dropped that figure. It
+                 comes from the same headlineRecordBlock(), so the two can never
+                 drift, and a small sample now reads as a small sample here too. */
+              const nTxt = r.n ? ` across <b>${esc(String(r.n))}</b> graded picks` : "";
+              return `<b>${esc(r.wl)}</b>${r.hit != null ? ` (<b>${stratPct(r.hit)}</b>)` : ""}${nTxt}${since ? ` since ${esc(since)}` : ""}, graded in the open`;
+            })()}.</p>
           </div>
           <!-- THE SELL, LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were two
                paywalls selling the same $9.99 with the same four stats, and which one a
@@ -18220,20 +18243,18 @@ export default function Home() {
             ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free readers; you just get the calls too.")}
             ${perk("Ad-free", "No partner offers on the board, the odds pages or the news. Premium is the picks and nothing else.")}
           </div>
-          <div class="pay-methods">
-            <div class="pay-k">Pay with</div>
-            ${method("card", "Credit or debit card", cardMark)}
-            ${method("apple", "Apple Pay", appleMark)}
-            ${method("gpay", "Google Pay", gpayMark)}
-            ${method("paypal", "PayPal", paypalMark)}
+          <div class="sub-steps">
+            <div class="pay-k">How it works</div>
+            ${step("1", "Subscribe on Whop", `Our store takes the payment — ${esc(trialTxt.replace(/\.$/, ""))}.`)}
+            ${step("2", "Paste your key here", "Your receipt carries a membership key. Drop it in the box below and every pick unlocks on this device.")}
           </div>
-          ${detail}
-          <button class="sub-cta" id="sub-go">${payMethod === "apple" ? " Pay — Subscribe" : payMethod === "gpay" ? "Subscribe with Google Pay" : payMethod === "paypal" ? "Subscribe with PayPal" : "Subscribe — $9.99/mo"}</button>
+          <a class="sub-cta" id="sub-go" href="${esc(PREMIUM_PLAN.checkout)}" target="_blank" rel="noopener noreferrer">${PREMIUM_PLAN.trialDays > 0 ? `Start ${esc(String(PREMIUM_PLAN.trialDays))}-day free trial` : `Subscribe — ${esc(PREMIUM_PLAN.price)}${esc(PREMIUM_PLAN.per)}`}<span class="sub-cta-ext" aria-hidden="true">↗</span></a>
+          <div class="sub-secure">${lockSvg} Checkout and billing are handled by Whop. DiamondEdge never sees your card.</div>
           <div class="sub-code">
-            <div class="sub-code-k">Already a member?</div>
-            <p class="sub-code-p">Card payments are not switched on yet. Members have an access code — it unlocks every pick on this device.</p>
+            <div class="sub-code-k">Already subscribed?</div>
+            <p class="sub-code-p">Paste the membership key from your Whop receipt — or the access code from your welcome email. Either one unlocks every pick on this device.</p>
             <div class="sub-code-row">
-              <input id="sub-code" class="sub-code-in" type="text" inputmode="text" autocomplete="one-time-code" spellcheck="false" placeholder="Access code" aria-label="Member access code">
+              <input id="sub-code" class="sub-code-in" type="text" inputmode="text" autocomplete="one-time-code" spellcheck="false" placeholder="Membership key or access code" aria-label="Membership key or access code">
               <button class="sub-code-btn" id="sub-code-go">Unlock</button>
             </div>
             <p class="sub-code-note" id="sub-code-note" role="status"></p>
@@ -18242,7 +18263,6 @@ export default function Home() {
           <div class="sub-honest">Premium unlocks the pick side, line, price and the full reasoning on every game.</div>
           ${termsMini("sub-terms")}
         </div>`;
-      view.querySelectorAll(".pay-m").forEach((b: any) => (b.onclick = () => { payMethod = b.dataset.pm; renderSubscribe(); }));
       bindClick("sub-close", () => acctExit());
       bindClick("sub-skip", () => acctExit());
       bindClick("sub-terms", () => openTermsSheet());
@@ -18259,13 +18279,19 @@ export default function Home() {
         const el: any = $("sub-code");
         const code = el && el.value ? String(el.value).trim() : "";
         const note = $("sub-code-note");
-        if (!code) { if (note) note.textContent = "Enter the code from your welcome email."; return; }
+        if (!code) { if (note) note.textContent = "Paste the membership key from your Whop receipt."; return; }
         if (note) note.textContent = "Checking…";
         const r = await redeemAccessCode(code);
         if (!r.ok) {
-          if (note) note.textContent = r.reason === "unconfigured"
-            ? "Member access is not switched on yet. The record stays free in the meantime."
-            : "That code was not recognised.";
+          /* A BILLING OUTAGE IS NOT A BAD KEY. `whop_unavailable` is the route's
+             503 — Whop answered 5xx or timed out — and it used to land a paying
+             member on "That code was not recognised", which is the one thing we
+             know it does not mean. Three failures, three sentences. */
+          if (note) note.textContent =
+            r.reason === "unconfigured" ? "Member access is not switched on yet. The record stays free in the meantime."
+            : r.reason === "whop_unavailable" ? "Couldn't reach the billing service just now — your key is fine, try again in a minute."
+            : r.reason === "network" ? "Couldn't reach us — check your connection and try again."
+            : "That key wasn't recognised. Check the membership key on your Whop receipt.";
           return;
         }
         if (note) note.textContent = "Unlocking…";
@@ -18277,39 +18303,35 @@ export default function Home() {
         await unlockRefresh();
         accountMode = "menu"; renderAccount();
       }, { optional: "only on the subscribe screen" });
-      bindClick("sub-go", () => requireTerms(async () => {
-        /* STRIPE / APPLE PAY / PAYPAL WIRE-IN POINT: run the selected gateway here. On a
-           confirmed charge (webhook/callback), mint the /api/session cookie — a LOCAL flag
-           unlocks NOTHING now, by design: a free reader's payload does not contain the picks.
-           2026-08-10: until a gateway is wired the "Subscribe" success is the owner-gated MOCK
-           CHECKOUT — it mints the real session server-side (DE_ALLOW_MOCK_CHECKOUT=1) so the
-           board genuinely unlocks. When the owner has NOT switched it on it fails closed, and
-           this button says so honestly instead of claiming an unlock it cannot deliver. */
-        const note = $("sub-code-note");
-        const r = await mockCheckout();
-        if (!r.ok) {
-          if (note) note.textContent =
-            "Card payments are not switched on yet — use your member access code below to unlock.";
-          const codeWrap = view.querySelector(".sub-code");
-          if (codeWrap) { codeWrap.classList.add("flash"); setTimeout(() => codeWrap.classList.remove("flash"), 1400); }
-          const codeEl: any = $("sub-code"); if (codeEl) { try { codeEl.focus(); } catch {} }
-          return;
-        }
-        refreshAccountButton();
-        const d = document.createElement("div");
-        d.className = "up-done";
-        d.setAttribute("role", "status");
-        d.innerHTML = `<div class="ud-inner"><div class="ud-dia"></div><h3>You're in.</h3><p>Premium unlocked — every pick, every why.</p></div>`;
-        document.body.appendChild(d);
-        // THE BOARD UNLOCKS FOR REAL, IN PLACE — the session is minted, the feeds re-pull
-        // through /api/premium, every surface flips. No full-page reload.
-        await unlockRefresh();
-        setTimeout(() => {
-          d.remove();
-          accountMode = "menu";
-          renderAccount();
-        }, REDUCE ? 300 : 1600);
-      }));
+      /* ═══ THE CHECKOUT DOOR ═══
+         The CTA is a real <a href> to the plan's own Whop checkout, so it behaves
+         like a link: it opens in a new tab, it survives a middle-click, and it
+         works even if this handler never runs. The handler adds two things and
+         takes nothing away.
+         (1) THE ACKNOWLEDGMENT STILL GATES THE MONEY. Every money flow on this app
+             gates on the terms being accepted, and a hand-off to a store where a
+             card is about to be charged is a money flow. Not yet accepted ⇒ the
+             click is cancelled, the full text opens with its accept box, and the
+             store opens once it is ticked — from THAT tap, which is a user gesture
+             of its own. If a popup blocker still refuses (the accept handler runs
+             on a short delay, and some blockers count that as breaking the chain)
+             we navigate this tab instead: a reader who agreed and tapped must end
+             up at the checkout either way, never at a silently dead button.
+         (2) IT COUNTS. Reaching the store is the last step of the funnel this app
+             can see — track() queues it onto the existing batched beacon, no extra
+             request. It is not a purchase and is not recorded as one; Whop is the
+             only thing that knows whether money moved. */
+      const openCheckout = () => {
+        track("upgrade", "whop_checkout");
+        let w: any = null;
+        try { w = window.open(PREMIUM_PLAN.checkout, "_blank", "noopener"); } catch { w = null; }
+        if (!w) { try { location.href = PREMIUM_PLAN.checkout; } catch {} }
+      };
+      bindClick("sub-go", (e: any) => {
+        if (termsAccepted()) return;          // the anchor's own navigation carries it
+        if (e && typeof e.preventDefault === "function") e.preventDefault();
+        openTermsSheet(true, openCheckout);
+      });
     }
 
     // ===================== HEADER / SHELL =====================
@@ -21143,7 +21165,7 @@ export default function Home() {
           ${entitled() ? "" : `<section class="dp-cta">
             <div class="dp-cta-h">Get every pick, the moment it's published.</div>
             <div class="dp-cta-s">The record on this page is public. The calls behind it are Premium.</div>
-            <button class="acct-cta" id="dp-premium">Go Premium — $9.99/month</button>
+            <button class="acct-cta" id="dp-premium">Go Premium — ${esc(PREMIUM_PLAN.price)}/month</button>
           </section>`}
         </section>`;
       bindDeskTaps();

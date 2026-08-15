@@ -47,16 +47,26 @@ const SECRET = process.env.DE_SESSION_SECRET || "";
    in a log line, not in an error. */
 const CODES = (process.env.DE_PREMIUM_CODES || "")
   .split(",").map((s) => s.trim()).filter(Boolean);
-/* THE MOCK CHECKOUT, OWNER-GATED (2026-08-10). Payment is a documented stub —
-   there is no real card flow and Leon's standing rule is that it stays mocked.
-   But "tap Subscribe → the board unlocks" is the thing a member sees, and with
-   no gateway wired that success has to come from somewhere real or it is a lie.
-   So the mock "Subscribe" mints THIS cookie — the same one Stripe's webhook will
-   — but ONLY when the owner turns it on with DE_ALLOW_MOCK_CHECKOUT=1. Off (the
-   default) it fails closed and the card button honestly points at the access
-   code, so the picks are never handed to anyone who merely taps a stub. It still
-   needs DE_SESSION_SECRET to sign anything: no secret, nothing is entitled. */
-const ALLOW_MOCK = process.env.DE_ALLOW_MOCK_CHECKOUT === "1";
+/* ═══ THE MOCK CHECKOUT IS RETIRED — IT HAD BECOME THE PAYWALL'S OPEN DOOR ═══
+   2026-08-14. It was written on 2026-08-10 for a good reason: there was no
+   gateway, and "tap Subscribe → the board unlocks" had to come from somewhere
+   real or the button was a lie. It was owner-gated behind DE_ALLOW_MOCK_CHECKOUT
+   =1 and it failed closed by default.
+   On production that flag was ON, and the Whop rail had landed underneath it the
+   same day. So the gate had a second key that cost nothing: POST {"mock":true}
+   minted a signed 30-day premium cookie for anybody who asked. Measured before
+   removal, against https://diamondedge.kytepush.com — GET /api/session reported
+   {"mock":true}; POST {"mock":true} returned 200 {"ok":true,"premium":true} and
+   set de_session; that cookie fetched /api/premium/picks_unified_live 200 with
+   the night's live picks (side, line, stars) in the clear, against 402 for an
+   anonymous caller. A visitor did not need the API: the "Subscribe" button was
+   wired to it, under a card form that took no card.
+   No caller is left — the client's mockCheckout() went in the same change, and
+   nothing in either repo reads the `mock` field or DE_ALLOW_MOCK_CHECKOUT. The
+   env var is now inert; it can be deleted in Vercel at the owner's convenience,
+   and setting it again does nothing. The two ways to be entitled are the two
+   real ones: an owner code from DE_PREMIUM_CODES, or a Whop membership key.
+   A paywall may only ever get stronger. */
 
 /* ═══ WHOP — THE REAL PAYMENT RAIL (2026-08-10) ═══
    The store is live at whop.com/kytepush/diamondedge-premium ($12.99/mo, 3-day
@@ -192,18 +202,17 @@ export async function GET() {
          instead of silently behaving as though every reader is a free one for
          a reason nobody can see. */
       configured: !!SECRET && CODES.length > 0,
-      /* Whether the owner-gated mock checkout is live — the card "Subscribe"
-         button only promises an unlock when this is true; otherwise it points
-         at the access code and says card payments are not switched on yet. */
-      mock: !!SECRET && ALLOW_MOCK,
+      /* `mock` used to ride here — whether the owner-gated stub checkout was
+         live. There is no stub checkout now, so there is nothing to report and
+         nothing for a client to branch on. */
       since: s ? new Date((s.exp - MAX_AGE_S) * 1000).toISOString() : null,
     },
     { headers: { "Cache-Control": "private, no-store" } },
   );
 }
 
-/** POST {code} — redeem an access code. POST {mock:true} — the owner-gated mock
-    checkout. DELETE — sign out. */
+/** POST {code} — redeem an owner access code or a Whop membership key. That is
+    the only way in. DELETE — sign out. */
 export async function POST(req: Request) {
   const noStore = { "Cache-Control": "private, no-store" };
   let body: any = null;
@@ -213,24 +222,11 @@ export async function POST(req: Request) {
     /* fall through — a malformed body and a wrong code get the same answer,
        because telling them apart is free information about the credential. */
   }
-  // ── THE MOCK CHECKOUT ──────────────────────────────────────────────────
-  // Fails closed twice: needs a secret to sign, and needs the owner to have
-  // explicitly enabled it. Either missing ⇒ nothing is entitled.
-  if (body && body.mock === true) {
-    if (!SECRET || !ALLOW_MOCK) {
-      return NextResponse.json(
-        { ok: false, reason: "mock_disabled" },
-        { status: 403, headers: noStore },
-      );
-    }
-    const exp = Math.floor(Date.now() / 1000) + MAX_AGE_S;
-    const c = await cookies();
-    c.set(COOKIE, mint({ sub: randomUUID(), tier: "premium", exp }), {
-      httpOnly: true, secure: true, sameSite: "lax", path: "/", maxAge: MAX_AGE_S,
-    });
-    try { const uid = await readUid(); if (uid) await markPremium(uid, "mock"); } catch {}
-    return NextResponse.json({ ok: true, premium: true }, { headers: noStore });
-  }
+  /* ── THE MOCK CHECKOUT'S BRANCH ────────────────────────────────────────
+     Deleted, not disabled. A {"mock":true} body now falls straight through to
+     the code path below, where it has no `code` and is answered 401 like any
+     other credential-less request — the same answer a wrong code gets, which is
+     the point: this endpoint does not tell a caller which of its doors exist. */
   if (!SECRET || (!CODES.length && !WHOP_KEY)) {
     return NextResponse.json(
       { ok: false, reason: "unconfigured" },

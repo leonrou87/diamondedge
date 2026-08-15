@@ -2343,29 +2343,36 @@ details.more .more-body{padding-top:12px}
 .sub-price{margin-top:8px}.sub-price .amt{font-family:var(--disp);font-weight:700;font-size:42px;color:var(--ink);letter-spacing:-.01em}
 .sub-price .per{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:15px;color:var(--ink3);margin-left:4px}
 .sub-sell{font-size:14px;line-height:1.6;color:var(--ink2);margin-top:8px;max-width:420px;margin-left:auto;margin-right:auto}.sub-sell b{color:var(--ink)}
-.pay-methods{margin-top:6px}
-.pay-k,.pay-fld span{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
-.pay-k{margin:0 2px 8px}
-.pay-m{display:flex;align-items:center;gap:11px;width:100%;border:1.5px solid var(--line);background:var(--glass-hi);border-radius:13px;padding:12px 14px;cursor:pointer;margin-bottom:8px;transition:border .2s ease,background .2s ease}
-.pay-m:hover{border-color:var(--line)}
-.pay-m.on{border-color:var(--acc);background:linear-gradient(135deg,rgba(var(--bluec),.08),rgba(var(--rimc),.09))}
-.pm-mark{display:inline-grid;place-items:center;width:24px;height:22px;flex-shrink:0;color:var(--ink)}.pm-mark svg{width:22px;height:20px}
-/* the card icon is the only stroked mark; the rest are filled brand marks */
-.pay-m[data-pm="card"] .pm-mark svg{fill:none;stroke:currentColor;stroke-width:1.6}
-.pm-l{font-family:var(--disp);font-weight:600;font-size:15px;color:var(--ink)}
-.pm-r{margin-left:auto;width:18px;height:18px;border-radius:50%;border:2px solid var(--line);flex-shrink:0;transition:.2s ease}
-.pay-m.on .pm-r{border-color:var(--acc);background:radial-gradient(circle,var(--acc) 0 40%,transparent 46%)}
-.pay-detail{background:var(--glass-hi);border:1px solid var(--glass-brd);border-radius:14px;box-shadow:var(--glass-shadow);padding:14px 15px;margin-top:4px}
-.pay-fld{display:block;margin-bottom:10px}.pay-fld span{display:block;margin-bottom:5px}
-.pay-fld input{width:100%;border:1px solid var(--line);background:var(--paper);border-radius:11px;padding:11px 13px;font-family:var(--mono);font-size:15px;color:var(--ink);outline:none;transition:border .2s ease,box-shadow .2s ease}
-.pay-fld input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(var(--bluec),.13)}
-.pay-fld-row{display:flex;gap:10px}.pay-fld-row .pay-fld{flex:1}
+/* THE FAKE CARD FORM'S STYLES LEFT WITH IT (2026-08-14). `.pay-m` / `.pm-*` /
+   `.pay-detail` / `.pay-fld*` dressed a four-way payment-method chooser and a
+   card-number field that were inert from the day they were written; the real
+   checkout is Whop's. `.pay-k` and `.pay-secure` stay — the new two-step block
+   and the "billing is handled by Whop" line still wear them. A handful of shared
+   selectors elsewhere in this file still list the removed classes among others;
+   they simply match nothing now, and rewriting them would touch live rules. */
+.pay-k{font-family:var(--disp);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin:0 2px 8px}
 .pay-secure{display:flex;align-items:flex-start;gap:6px;font-size:12px;line-height:1.5;color:var(--ink3);margin-top:2px}
 .pay-secure svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;flex-shrink:0;margin-top:1px}
-.pay-detail.wallet .pw-line{display:flex;align-items:center;gap:9px;font-family:var(--disp);font-weight:700;font-size:16px;color:var(--ink)}.pw-line svg{width:22px;height:22px}
-.pay-detail.wallet p{font-size:13px;line-height:1.55;color:var(--ink2);margin-top:8px}.pay-detail.wallet em{font-style:normal;color:var(--ink3)}
-.sub-cta{display:block;width:100%;margin-top:14px;border:0;border-radius:15px;padding:15px;background:linear-gradient(135deg,var(--a4),var(--a3));color:var(--a0);font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 26px rgba(var(--goldc),.35),inset 0 1px 0 rgba(var(--rimc),.11);transition:transform .18s var(--spring),filter .18s ease}
+/* The plan's terms, directly under the number, so the trial and the renewal price
+   are read together and neither can arrive as a surprise on the statement. */
+.sub-trial{font-family:var(--sans);font-size:13px;line-height:1.5;color:var(--ink3);margin-top:6px}
+/* Two steps, because the purchase and the unlock happen in two different places. */
+.sub-steps{margin-top:14px}
+.sub-step{display:flex;align-items:flex-start;gap:11px;padding:10px 12px;border:1px solid var(--glass-brd);background:var(--glass-hi);border-radius:13px;margin-bottom:8px}
+/* The step numeral is INK ON PAPER, not gold on gold. In the light theme --a3/--a4
+   are dark golds and --a0 is near-black, so a numeral in the brand pair is barely
+   readable at 12px; this pair inverts cleanly in both themes at any size. */
+.sub-step .ss-n{flex:0 0 auto;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--ink);color:var(--paper);font-family:var(--disp);font-weight:800;font-size:12px;line-height:1}
+.sub-step b{display:block;font-family:var(--disp);font-weight:700;font-size:14px;color:var(--ink)}
+.sub-step span{display:block;font-family:var(--sans);font-size:12.5px;line-height:1.5;color:var(--ink3);margin-top:2px}
+/* THE CTA IS AN <a> NOW, not a <button> — it opens the store's own checkout, so it
+   has to behave like a link (new tab, middle-click, works with JS asleep). These
+   three declarations are everything a link needs to keep the button's look. */
+.sub-cta{display:block;width:100%;margin-top:14px;border:0;border-radius:15px;padding:15px;background:linear-gradient(135deg,var(--a4),var(--a3));color:var(--a0);font-family:var(--disp);font-weight:700;font-size:16px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;box-shadow:0 8px 26px rgba(var(--goldc),.35),inset 0 1px 0 rgba(var(--rimc),.11);transition:transform .18s var(--spring),filter .18s ease;text-align:center;text-decoration:none;box-sizing:border-box}
 .sub-cta:hover{filter:brightness(1.04)}.sub-cta:active{transform:scale(.97)}
+.sub-cta .sub-cta-ext{margin-left:7px;font-size:14px;opacity:.8}
+.sub-secure{display:flex;align-items:flex-start;justify-content:center;gap:6px;font-size:12px;line-height:1.5;color:var(--ink3);margin-top:9px;padding:0 6px;text-align:center}
+.sub-secure svg{width:12px;height:12px;fill:none;stroke:currentColor;stroke-width:2;flex-shrink:0;margin-top:3px}
 .sub-skip{display:block;width:100%;margin-top:9px;border:0;background:transparent;padding:10px;font-family:var(--disp);font-weight:600;font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);cursor:pointer}
 .sub-honest{font-size:12px;line-height:1.5;color:var(--ink3);margin-top:14px;text-align:center;padding:0 6px}
 
