@@ -316,8 +316,28 @@ function safetyNetFor(key: string, t: { s: number }) {
 }
 /* With a version in the key the entry is already correct by construction, so
    this exists only to stop a generation nobody reads any more from living
-   forever. Six hours caps a frozen-manifest scenario at four re-reads a day. */
-const VERSIONED_REVALIDATE_S = 21600;
+   forever.
+
+   RAISED 6h -> 24h (2026-08-15, measured). This timer buys nothing but memory
+   reclaim — a new generation is a different cache entry, and freshness is the
+   manifest's job alone (30 s region net + 10 s CDN + the publisher's tag drop).
+   But every expiry it does cause is a re-read of the WHOLE row, and on
+   `picks_unified` the whole row is 10.97 MB. Measured on the 24h window that
+   night: 28 payload reads/day of that one key = 2.31 GB/month = 46% of the
+   entire 5 GB free allowance, against roughly ONE real publish a day. It was
+   the single largest term left on the bill and the only reason the egress rail
+   was still FAILing (SINGLE_KEY_FAIL_FRAC: one key over 25% of the plan on its
+   own is a bug, not growth).
+
+   Six hours was chosen when this was one lever among several; the cost of a
+   generation lingering is bytes of cache, and the cost of it expiring early is
+   11 MB off a 5 GB monthly allowance. Those are not the same order of
+   magnitude, and the timer should be sized to the expensive side.
+
+   NOT a freshness change: a publish rotates the key immediately, and if the
+   manifest cannot name a version the request never reaches this constant —
+   `safetyNetFor` keeps its 300 s floor for that path, unchanged. */
+const VERSIONED_REVALIDATE_S = 86400;
 /* The version probe is a freshness clock of its own, so its floor is tighter —
    and it costs ~1 KB, so a tight floor is affordable in a way the payload's is
    not. */
