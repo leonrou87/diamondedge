@@ -18194,6 +18194,30 @@ export default function Home() {
          who does not know that will buy on Whop and then close the tab. */
       const step = (n: string, t: string, s: string) =>
         `<div class="sub-step"><span class="ss-n" aria-hidden="true">${n}</span><div><b>${t}</b><span>${s}</span></div></div>`;
+      /* ═══ TWO NOTES THAT USED TO BE <!-- HTML COMMENTS --> INSIDE THIS TEMPLATE ═══
+         Moved out of the markup on 2026-08-14 for a reason worth stating: an HTML
+         comment in an innerHTML string is not a code comment. It is shipped, byte
+         for byte, into every reader's DOM and into view-source — and one of these
+         two still carried "$9.99", four hours after every visible price on the app
+         had been corrected to $12.99. A dead price hiding in the page is exactly
+         how a corrected number comes back. Notes about the code belong in the code.
+
+         THE PRICE QUOTES THE RECORD, NOT A BACKTEST (2026-08-09). The sell block
+         below once sold the pick on "58.1% across 886 graded picks since 2022" —
+         recipeHistory(), the IN-SAMPLE backtest, and the very figure deleted from
+         the share card for being a number no record surface could produce. The one
+         place a reader is about to pay is the last place to quote a different
+         record from the one on the Desk, so it reads headlineRecordBlock() like
+         every other statement of it.
+
+         THE PERKS WERE LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were
+         two paywalls selling the same subscription with the same four stats, and
+         which one a reader got depended on where they tapped: openUnlock() sent
+         them to the Upgrade view, acct-upgrade sent them straight here. The perks
+         belong with the price, and the price belongs with the checkout, so there is
+         one screen. Its stats come from the record: the Upgrade hero had opened
+         with a hardcoded "≈55%" and "56.9% · 239 picks", the same invented literals
+         the share card carried until that pass. */
       view.innerHTML = `
         <div class="acct-page subscribe">
           <button class="acct-back gp-back" id="sub-close" aria-label="Back">${backChevron}</button>
@@ -18203,12 +18227,6 @@ export default function Home() {
             <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
             <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
             <div class="sub-trial">${esc(trialTxt)}</div>
-            <!-- THE PRICE QUOTES THE RECORD, NOT A BACKTEST (2026-08-09). This sold the pick
-                 on "58.1% across 886 graded picks since 2022" — recipeHistory(), the IN-SAMPLE
-                 backtest, and the very figure just deleted from the share card for being a
-                 number no record surface could produce. The one place a reader is about to
-                 pay is the last place to quote a different record from the one on the Desk,
-                 so it reads headlineRecordBlock() like every other statement of it. -->
             <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind ${(() => {
               const r = headlineRecordBlock();
               if (!r || !r.wl) return "every pick we publish, graded in the open";
@@ -18224,15 +18242,6 @@ export default function Home() {
               return `<b>${esc(r.wl)}</b>${r.hit != null ? ` (<b>${stratPct(r.hit)}</b>)` : ""}${nTxt}${since ? ` since ${esc(since)}` : ""}, graded in the open`;
             })()}.</p>
           </div>
-          <!-- THE SELL, LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were two
-               paywalls selling the same $9.99 with the same four stats, and which one a
-               reader got depended on where they tapped: openUnlock() sent them to the
-               Upgrade view, acct-upgrade sent them straight here. The perks belong with the
-               price, and the price belongs with the payment methods, so there is one.
-               ITS STATS NOW COME FROM THE RECORD. The Upgrade hero opened with a hardcoded
-               "≈55%" and "56.9% · 239 picks" — the same invented literals the share card
-               carried until this pass. A sell that quotes a number the record cannot
-               produce is the one place it matters most that they agree. -->
           <div class="up-perks">
             ${/* The sub-sell headline directly above already says "Every Strong ◆◆◆ and
                   Good ◆◆ pick, unlocked" — this perk repeated it verbatim two inches down.
