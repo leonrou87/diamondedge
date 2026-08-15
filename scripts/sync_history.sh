@@ -31,8 +31,27 @@ SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 # FRESHNESS GUARD — warn loudly if the history is missing recent days (archive may be broken)
 LATEST=$(python3 -c "import json,collections; d=json.load(open('$FILE')); ds=sorted(g.get('date') for g in d.get('games',[])); print(ds[-1] if ds else '')" 2>/dev/null)
 YEST=$(date -v-1d '+%Y-%m-%d' 2>/dev/null || date -d yesterday '+%Y-%m-%d' 2>/dev/null)
+# STDERR ONLY ONCE THE SELF-HEAL WAS ACTUALLY DUE (2026-08-15). This warning
+# names its own remedy — "self-heal runs overnight" — and then wrote itself to
+# stderr every ten minutes WHILE THAT WAS STILL PENDING: 77 lines in
+# com.diamondedge.historypicks.err today, every one of them between 00:0x and
+# 02:11 local, and none after the overnight run caught up. A job telling its
+# error log that a scheduled repair has not happened yet, before the hour that
+# repair is scheduled for, is the same defect the reconciliation rail was fixed
+# for on 2026-08-15 (it mailed the owner at 07:15Z about a board that could not
+# yet contain yesterday). The archive is rebuilt by the 02:00 local overnight
+# run, so 03:00 is that promise plus an hour of slack — the same number
+# v4/serve/unified_model.HANDOFF_GRACE_H uses for the same deadline.
+#
+# NOTHING IS HIDDEN: before the deadline it still prints, every run, on stdout,
+# saying it is waiting. After it, it is stderr and it is a genuine WARN.
 if [ -n "$LATEST" ] && [ -n "$YEST" ] && [ "$LATEST" \< "$YEST" ]; then
-  echo "$(date '+%F %T') WARN: history latest=$LATEST < yesterday=$YEST — archive may be stale (self-heal runs overnight)" >&2
+  HR=$(date '+%H')
+  if [ "$((10#$HR))" -lt 3 ]; then
+    echo "$(date '+%F %T') history latest=$LATEST < yesterday=$YEST — waiting for the 02:00 overnight self-heal (not yet due; this is stdout on purpose)"
+  else
+    echo "$(date '+%F %T') WARN: history latest=$LATEST < yesterday=$YEST — archive may be stale and the 02:00 self-heal has already been due for $((10#$HR - 2))h" >&2
+  fi
 fi
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # HEARTBEAT (2026-07-31). The payload has not changed, so there is nothing to

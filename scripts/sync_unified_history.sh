@@ -37,8 +37,17 @@ SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 # FRESHNESS GUARD — warn loudly if the unified history is missing recent days
 LATEST=$(python3 -c "import json; d=json.load(open('$FILE')); ds=sorted(g.get('date') for g in d.get('games',[])); print(ds[-1] if ds else '')" 2>/dev/null)
 YEST=$(date -v-1d '+%Y-%m-%d' 2>/dev/null || date -d yesterday '+%Y-%m-%d' 2>/dev/null)
+# See the same guard in sync_history.sh for why the hour matters: before the
+# 02:00 overnight self-heal has been due, "yesterday is not in the archive yet"
+# is the pipeline working, not an error, and writing it to stderr every ten
+# minutes is how a healthy job fills the file that is supposed to mean trouble.
 if [ -n "$LATEST" ] && [ -n "$YEST" ] && [ "$LATEST" \< "$YEST" ]; then
-  echo "$(date '+%F %T') WARN: unified history latest=$LATEST < yesterday=$YEST — archive may be stale (self-heal runs overnight)" >&2
+  HR=$(date '+%H')
+  if [ "$((10#$HR))" -lt 3 ]; then
+    echo "$(date '+%F %T') unified history latest=$LATEST < yesterday=$YEST — waiting for the 02:00 overnight self-heal (not yet due; this is stdout on purpose)"
+  else
+    echo "$(date '+%F %T') WARN: unified history latest=$LATEST < yesterday=$YEST — archive may be stale and the 02:00 self-heal has already been due for $((10#$HR - 2))h" >&2
+  fi
 fi
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # HEARTBEAT (2026-07-31). The payload has not changed, so there is nothing to

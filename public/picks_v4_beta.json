@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-15T09:16:59Z",
+  "generated_utc": "2026-08-15T13:13:37Z",
   "games": [
     {
       "game_id": "2026-03-25-New York Yankees-San Francisco Giants-823244",
@@ -109,7 +109,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.57,
+          "score": 1.56,
           "playable": false,
           "lean": {
             "side": "under",
@@ -318,7 +318,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -2655,7 +2655,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.31,
+          "score": 1.3,
           "playable": false,
           "lean": {
             "side": "under",
@@ -3662,7 +3662,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.55,
+          "score": 1.54,
           "playable": false,
           "lean": {
             "side": "under",
@@ -5296,7 +5296,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.5,
+          "score": 1.49,
           "playable": false,
           "lean": {
             "side": "under",
@@ -6303,7 +6303,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.98,
+          "score": 0.97,
           "playable": false,
           "lean": {
             "side": "under",
@@ -7006,7 +7006,7 @@
           "tier": "Strong",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -8298,7 +8298,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.75,
+          "score": 1.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -11110,7 +11110,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -11186,7 +11186,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -12725,7 +12725,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -14492,7 +14492,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.7,
+          "score": 1.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -15499,7 +15499,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.44,
+          "score": 1.43,
           "playable": false,
           "lean": {
             "side": "under",
@@ -16544,7 +16544,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.58,
+          "score": 0.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -17019,7 +17019,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.68,
+          "score": 1.67,
           "playable": false,
           "lean": {
             "side": "under",
@@ -18767,7 +18767,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -19641,7 +19641,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.65,
+          "score": 1.64,
           "playable": false,
           "lean": {
             "side": "under",
@@ -20021,7 +20021,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -20572,7 +20572,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.66,
+          "score": 1.65,
           "playable": false,
           "lean": {
             "side": "under",
@@ -20857,7 +20857,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -23916,7 +23916,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.75,
+          "score": 1.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -24790,7 +24790,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -27108,7 +27108,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -29958,7 +29958,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.56,
+          "score": 1.55,
           "playable": false,
           "lean": {
             "side": "under",
@@ -30965,7 +30965,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.56,
+          "score": 1.55,
           "playable": false,
           "lean": {
             "side": "under",
@@ -32352,7 +32352,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.48,
+          "score": 1.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -34746,7 +34746,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.4,
+          "score": 1.39,
           "playable": false,
           "lean": {
             "side": "under",
@@ -36532,7 +36532,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.65,
+          "score": 1.64,
           "playable": false,
           "lean": {
             "side": "under",
@@ -37805,7 +37805,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -41187,7 +41187,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -41396,7 +41396,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -41605,7 +41605,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -42859,7 +42859,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -43315,7 +43315,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.49,
+          "score": 1.48,
           "playable": false,
           "lean": {
             "side": "under",
@@ -43448,7 +43448,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.51,
+          "score": 1.5,
           "playable": false,
           "lean": {
             "side": "under",
@@ -43866,7 +43866,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.8,
+          "score": 1.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -45348,7 +45348,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.16,
+          "score": 1.15,
           "playable": false,
           "lean": {
             "side": "under",
@@ -46107,7 +46107,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.52,
+          "score": 1.51,
           "playable": false,
           "lean": {
             "side": "under",
@@ -46278,7 +46278,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.46,
+          "score": 1.45,
           "playable": false,
           "lean": {
             "side": "under",
@@ -48425,7 +48425,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.75,
+          "score": 0.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -50895,7 +50895,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.08,
+          "score": 1.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -50971,7 +50971,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -51731,7 +51731,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.11,
+          "score": 1.1,
           "playable": false,
           "lean": {
             "side": "under",
@@ -52320,7 +52320,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -52358,7 +52358,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.99,
+          "score": 0.98,
           "playable": false,
           "lean": {
             "side": "under",
@@ -52909,7 +52909,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.42,
+          "score": 1.41,
           "playable": false,
           "lean": {
             "side": "under",
@@ -53631,7 +53631,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -54809,7 +54809,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.08,
+          "score": 1.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -55949,7 +55949,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -55987,7 +55987,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -56918,7 +56918,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.1,
+          "score": 1.09,
           "playable": false,
           "lean": {
             "side": "under",
@@ -58001,7 +58001,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.31,
+          "score": 0.3,
           "playable": false,
           "lean": {
             "side": "under",
@@ -61497,7 +61497,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -61535,7 +61535,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -61782,7 +61782,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.48,
+          "score": 1.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -61915,7 +61915,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -64556,7 +64556,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -65316,7 +65316,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -66798,7 +66798,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.0,
+          "score": 0.99,
           "playable": false,
           "lean": {
             "side": "under",
@@ -69724,7 +69724,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.18,
+          "score": 1.17,
           "playable": false,
           "lean": {
             "side": "under",
@@ -70997,7 +70997,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -71339,7 +71339,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.21,
+          "score": 1.2,
           "playable": false,
           "lean": {
             "side": "under",
@@ -72517,7 +72517,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.27,
+          "score": 1.26,
           "playable": false,
           "lean": {
             "side": "under",
@@ -72555,7 +72555,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.48,
+          "score": 1.47,
           "playable": false,
           "lean": {
             "side": "under",
@@ -74208,7 +74208,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.07,
+          "score": 0.06,
           "playable": false,
           "lean": {
             "side": "under",
@@ -74493,7 +74493,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -76374,7 +76374,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -76678,7 +76678,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.61,
+          "score": 1.6,
           "playable": false,
           "lean": {
             "side": "under",
@@ -77552,7 +77552,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.97,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "under",
@@ -78141,7 +78141,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.53,
+          "score": 1.52,
           "playable": false,
           "lean": {
             "side": "over",
@@ -78179,7 +78179,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -78939,7 +78939,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -80744,7 +80744,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "over",
@@ -81960,7 +81960,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -82036,7 +82036,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -85057,7 +85057,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -85722,7 +85722,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.25,
+          "score": 1.24,
           "playable": false,
           "lean": {
             "side": "under",
@@ -91194,7 +91194,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.02,
+          "score": 1.01,
           "playable": false,
           "lean": {
             "side": "under",
@@ -92334,7 +92334,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.04,
+          "score": 1.03,
           "playable": false,
           "lean": {
             "side": "under",
@@ -92714,7 +92714,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -93094,7 +93094,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.51,
+          "score": 1.5,
           "playable": false,
           "lean": {
             "side": "under",
@@ -94310,7 +94310,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -97293,7 +97293,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.17,
+          "score": 1.16,
           "playable": false,
           "lean": {
             "side": "under",
@@ -99763,7 +99763,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -101378,7 +101378,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -102271,7 +102271,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.46,
+          "score": 1.45,
           "playable": false,
           "lean": {
             "side": "under",
@@ -103183,7 +103183,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.5,
+          "score": 1.49,
           "playable": false,
           "lean": {
             "side": "under",
@@ -106128,7 +106128,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -107971,7 +107971,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.31,
+          "score": 0.3,
           "playable": false,
           "lean": {
             "side": "under",
@@ -108351,7 +108351,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -108826,7 +108826,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.37,
+          "score": 1.36,
           "playable": false,
           "lean": {
             "side": "under",
@@ -111201,7 +111201,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.96,
+          "score": 0.95,
           "playable": false,
           "lean": {
             "side": "under",
@@ -112265,7 +112265,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.3,
+          "score": 0.29,
           "playable": false,
           "lean": {
             "side": "under",
@@ -113063,7 +113063,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.65,
+          "score": 0.64,
           "playable": false,
           "lean": {
             "side": "under",
@@ -114735,7 +114735,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.64,
+          "score": 0.63,
           "playable": false,
           "lean": {
             "side": "under",
@@ -115609,7 +115609,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -116445,7 +116445,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.75,
+          "score": 0.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -116787,7 +116787,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.91,
+          "score": 0.9,
           "playable": false,
           "lean": {
             "side": "under",
@@ -117376,7 +117376,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.55,
+          "score": 1.54,
           "playable": false,
           "lean": {
             "side": "over",
@@ -117452,7 +117452,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -117908,7 +117908,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -118421,7 +118421,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.53,
+          "score": 0.52,
           "playable": false,
           "lean": {
             "side": "under",
@@ -118801,7 +118801,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.23,
+          "score": 1.22,
           "playable": false,
           "lean": {
             "side": "under",
@@ -120055,7 +120055,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.93,
+          "score": 0.92,
           "playable": false,
           "lean": {
             "side": "under",
@@ -120473,7 +120473,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -121461,7 +121461,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -121575,7 +121575,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.03,
+          "score": 1.02,
           "playable": false,
           "lean": {
             "side": "under",
@@ -124425,7 +124425,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.69,
+          "score": 1.68,
           "playable": false,
           "lean": {
             "side": "under",
@@ -126230,7 +126230,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.12,
+          "score": 1.11,
           "playable": false,
           "lean": {
             "side": "under",
@@ -127788,7 +127788,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -131740,7 +131740,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -132500,7 +132500,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.71,
+          "score": 0.7,
           "playable": false,
           "lean": {
             "side": "under",
@@ -133336,7 +133336,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.43,
+          "score": 1.42,
           "playable": false,
           "lean": {
             "side": "under",
@@ -133374,7 +133374,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.16,
+          "score": 1.15,
           "playable": false,
           "lean": {
             "side": "under",
@@ -134134,7 +134134,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.85,
+          "score": 0.84,
           "playable": false,
           "lean": {
             "side": "under",
@@ -137060,7 +137060,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -137402,7 +137402,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.42,
+          "score": 1.41,
           "playable": false,
           "lean": {
             "side": "under",
@@ -139758,7 +139758,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -141430,7 +141430,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.75,
+          "score": 0.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -142133,7 +142133,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.32,
+          "score": 1.31,
           "playable": false,
           "lean": {
             "side": "under",
@@ -143102,7 +143102,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.16,
+          "score": 1.15,
           "playable": false,
           "lean": {
             "side": "under",
@@ -144527,7 +144527,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "under",
@@ -146009,7 +146009,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.82,
+          "score": 0.81,
           "playable": false,
           "lean": {
             "side": "under",
@@ -146180,7 +146180,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.78,
+          "score": 0.77,
           "playable": false,
           "lean": {
             "side": "under",
@@ -146959,7 +146959,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.76,
+          "score": 0.75,
           "playable": false,
           "lean": {
             "side": "under",
@@ -147719,7 +147719,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -147852,7 +147852,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.55,
+          "score": 0.54,
           "playable": false,
           "lean": {
             "side": "under",
@@ -148688,7 +148688,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.87,
+          "score": 0.86,
           "playable": false,
           "lean": {
             "side": "under",
@@ -149581,7 +149581,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -149790,7 +149790,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.69,
+          "score": 0.68,
           "playable": false,
           "lean": {
             "side": "under",
@@ -150284,7 +150284,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "under",
@@ -153096,7 +153096,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -154996,7 +154996,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -155281,7 +155281,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.23,
+          "score": 1.22,
           "playable": false,
           "lean": {
             "side": "under",
@@ -156896,7 +156896,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.08,
+          "score": 1.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -158169,7 +158169,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.52,
+          "score": 0.51,
           "playable": false,
           "lean": {
             "side": "under",
@@ -158245,7 +158245,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.73,
+          "score": 1.72,
           "playable": false,
           "lean": {
             "side": "under",
@@ -160430,7 +160430,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.2,
+          "score": 1.19,
           "playable": false,
           "lean": {
             "side": "under",
@@ -160601,7 +160601,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -161988,7 +161988,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.34,
+          "score": 1.33,
           "playable": false,
           "lean": {
             "side": "under",
@@ -162026,7 +162026,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.9,
+          "score": 0.89,
           "playable": false,
           "lean": {
             "side": "under",
@@ -163071,7 +163071,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.82,
+          "score": 1.83,
           "playable": false,
           "lean": {
             "side": "under",
@@ -163527,7 +163527,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.89,
+          "score": 0.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -164743,7 +164743,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.39,
+          "score": 1.38,
           "playable": false,
           "lean": {
             "side": "under",
@@ -165009,7 +165009,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "over",
@@ -166396,7 +166396,7 @@
           "tier": "Lean",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "under",
@@ -166605,7 +166605,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.7,
+          "score": 1.69,
           "playable": false,
           "lean": {
             "side": "under",
@@ -166947,7 +166947,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.75,
+          "score": 0.74,
           "playable": false,
           "lean": {
             "side": "under",
@@ -167574,7 +167574,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "under",
@@ -169379,7 +169379,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.46,
+          "score": 0.45,
           "playable": false,
           "lean": {
             "side": "under",
@@ -171260,7 +171260,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.13,
+          "score": 1.12,
           "playable": false,
           "lean": {
             "side": "under",
@@ -171298,7 +171298,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.02,
+          "score": 1.01,
           "playable": false,
           "lean": {
             "side": "under",
@@ -171336,7 +171336,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.02,
+          "score": 1.01,
           "playable": false,
           "lean": {
             "side": "under",
@@ -176371,7 +176371,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.58,
+          "score": 0.57,
           "playable": false,
           "lean": {
             "side": "under",
@@ -179297,7 +179297,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.24,
+          "score": 1.23,
           "playable": false,
           "lean": {
             "side": "under",
@@ -181102,7 +181102,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.37,
+          "score": 0.36,
           "playable": false,
           "lean": {
             "side": "under",
@@ -184446,7 +184446,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.95,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "under",
@@ -184826,7 +184826,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "over",
@@ -185681,7 +185681,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.97,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "over",
@@ -187486,7 +187486,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.74,
+          "score": 0.75,
           "playable": false,
           "lean": {
             "side": "under",
@@ -196986,7 +196986,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.99,
+          "score": 0.98,
           "playable": false,
           "lean": {
             "side": "over",
@@ -198658,7 +198658,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.61,
+          "score": 0.6,
           "playable": false,
           "lean": {
             "side": "under",
@@ -200425,7 +200425,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.73,
+          "score": 1.72,
           "playable": false,
           "lean": {
             "side": "under",
@@ -203617,7 +203617,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -204757,7 +204757,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -205289,7 +205289,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.06,
+          "score": 1.05,
           "playable": false,
           "lean": {
             "side": "over",
@@ -206695,7 +206695,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -207531,7 +207531,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.88,
+          "score": 0.87,
           "playable": false,
           "lean": {
             "side": "over",
@@ -209583,7 +209583,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.89,
+          "score": 0.88,
           "playable": false,
           "lean": {
             "side": "over",
@@ -209735,7 +209735,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.21,
+          "score": 1.2,
           "playable": false,
           "lean": {
             "side": "over",
@@ -209944,7 +209944,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.22,
+          "score": 1.21,
           "playable": false,
           "lean": {
             "side": "under",
@@ -211464,7 +211464,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.05,
+          "score": 1.04,
           "playable": false,
           "lean": {
             "side": "over",
@@ -211806,7 +211806,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.3,
+          "score": 0.29,
           "playable": false,
           "lean": {
             "side": "under",
@@ -213782,7 +213782,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -213858,7 +213858,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.84,
+          "score": 0.83,
           "playable": false,
           "lean": {
             "side": "over",
@@ -214200,7 +214200,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.28,
+          "score": 0.29,
           "playable": false,
           "lean": {
             "side": "over",
@@ -216214,7 +216214,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -217050,7 +217050,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.74,
+          "score": 0.73,
           "playable": false,
           "lean": {
             "side": "under",
@@ -219577,7 +219577,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.28,
+          "score": 0.27,
           "playable": false,
           "lean": {
             "side": "under",
@@ -222807,7 +222807,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.15,
+          "score": 0.14,
           "playable": false,
           "lean": {
             "side": "over",
@@ -223320,7 +223320,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.19,
+          "score": 1.18,
           "playable": false,
           "lean": {
             "side": "over",
@@ -227861,7 +227861,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.95,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "over",
@@ -230160,7 +230160,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "under",
@@ -243479,7 +243479,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.24,
+          "score": 0.23,
           "playable": false,
           "lean": {
             "side": "over",
@@ -243973,7 +243973,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.8,
+          "score": 0.79,
           "playable": false,
           "lean": {
             "side": "over",
@@ -244904,7 +244904,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.68,
+          "score": 1.67,
           "playable": false,
           "lean": {
             "side": "over",
@@ -247507,7 +247507,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.23,
+          "score": 1.22,
           "playable": false,
           "lean": {
             "side": "under",
@@ -249939,7 +249939,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.24,
+          "score": 1.23,
           "playable": false,
           "lean": {
             "side": "over",
@@ -251345,7 +251345,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.42,
+          "score": 0.41,
           "playable": false,
           "lean": {
             "side": "over",
@@ -251402,7 +251402,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.02,
+          "score": 1.01,
           "playable": false,
           "lean": {
             "side": "over",
@@ -252713,7 +252713,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.45,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -252998,7 +252998,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -253492,7 +253492,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.53,
+          "score": 0.52,
           "playable": false,
           "lean": {
             "side": "over",
@@ -253625,7 +253625,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -254765,7 +254765,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.04,
+          "score": 1.03,
           "playable": false,
           "lean": {
             "side": "over",
@@ -255392,7 +255392,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.43,
+          "score": 0.42,
           "playable": false,
           "lean": {
             "side": "over",
@@ -255468,7 +255468,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.73,
+          "score": 0.72,
           "playable": false,
           "lean": {
             "side": "under",
@@ -256019,7 +256019,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.29,
+          "score": 1.28,
           "playable": false,
           "lean": {
             "side": "over",
@@ -256950,7 +256950,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.6,
+          "score": 1.59,
           "playable": false,
           "lean": {
             "side": "over",
@@ -258964,7 +258964,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "over",
@@ -260807,7 +260807,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.66,
+          "score": 1.65,
           "playable": false,
           "lean": {
             "side": "over",
@@ -262061,7 +262061,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.78,
+          "score": 1.77,
           "playable": false,
           "lean": {
             "side": "over",
@@ -262194,7 +262194,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.92,
+          "score": 0.91,
           "playable": false,
           "lean": {
             "side": "over",
@@ -265158,7 +265158,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.35,
+          "score": 1.34,
           "playable": false,
           "lean": {
             "side": "over",
@@ -266111,7 +266111,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.51,
+          "score": 0.5,
           "playable": false,
           "lean": {
             "side": "over",
@@ -266388,7 +266388,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.7,
+          "score": 0.69,
           "playable": false,
           "lean": {
             "side": "over",
@@ -266589,7 +266589,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.36,
+          "score": 1.35,
           "playable": false,
           "lean": {
             "side": "over",
@@ -266714,7 +266714,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "over",
@@ -267355,7 +267355,7 @@
           "tier": "Good",
           "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
           "stars": 1,
-          "score": 1.87,
+          "score": 1.88,
           "playable": false,
           "lean": {
             "side": "over",
@@ -268974,7 +268974,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.22,
+          "score": 1.21,
           "playable": false,
           "lean": {
             "side": "over",
@@ -269740,7 +269740,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.86,
+          "score": 0.85,
           "playable": false,
           "lean": {
             "side": "over",
@@ -269941,7 +269941,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.85,
+          "score": 0.84,
           "playable": false,
           "lean": {
             "side": "over",
@@ -270017,7 +270017,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.06,
+          "score": 0.07,
           "playable": false,
           "lean": {
             "side": "over",
@@ -270870,7 +270870,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.37,
+          "score": 1.36,
           "playable": false,
           "lean": {
             "side": "over",
@@ -273216,7 +273216,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.95,
+          "score": 0.96,
           "playable": false,
           "lean": {
             "side": "over",
@@ -274714,7 +274714,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.78,
+          "score": 1.77,
           "playable": false,
           "lean": {
             "side": "over",
@@ -277871,7 +277871,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.06,
+          "score": 1.05,
           "playable": false,
           "lean": {
             "side": "over",
@@ -277947,7 +277947,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.68,
+          "score": 1.67,
           "playable": false,
           "lean": {
             "side": "over",
@@ -279213,7 +279213,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.23,
+          "score": 1.22,
           "playable": false,
           "lean": {
             "side": "over",
@@ -279981,7 +279981,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.11,
+          "score": 1.12,
           "playable": false,
           "lean": {
             "side": "over",
@@ -280019,7 +280019,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -281095,7 +281095,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "over",
@@ -285070,7 +285070,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.36,
+          "score": 1.35,
           "playable": false,
           "lean": {
             "side": "over",
@@ -285357,7 +285357,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.35,
+          "score": 0.34,
           "playable": false,
           "lean": {
             "side": "over",
@@ -285395,7 +285395,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.51,
+          "score": 1.5,
           "playable": false,
           "lean": {
             "side": "over",
@@ -286028,7 +286028,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.3,
+          "score": 1.29,
           "playable": false,
           "lean": {
             "side": "over",
@@ -290751,7 +290751,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.43,
+          "score": 0.42,
           "playable": false,
           "lean": {
             "side": "over",
@@ -294646,7 +294646,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.12,
+          "score": 0.11,
           "playable": false,
           "lean": {
             "side": "under",
@@ -299006,7 +299006,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.47,
+          "score": 1.46,
           "playable": false,
           "lean": {
             "side": "over",
@@ -299369,7 +299369,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.06,
+          "score": 0.07,
           "playable": false,
           "lean": {
             "side": "under",
@@ -303015,7 +303015,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.73,
+          "score": 0.72,
           "playable": false,
           "lean": {
             "side": "over",
@@ -304627,7 +304627,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.07,
+          "score": 1.06,
           "playable": false,
           "lean": {
             "side": "under",
@@ -313206,7 +313206,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -316165,7 +316165,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.33,
+          "score": 1.32,
           "playable": false,
           "lean": {
             "side": "over",
@@ -316912,7 +316912,7 @@
           "tier": "Lean",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.63,
+          "score": 1.62,
           "playable": false,
           "lean": {
             "side": "over",
@@ -319714,7 +319714,7 @@
           "tier": "Good",
           "star_tier": "Pass (price-only edge \u2014 no model conviction: |our_prob \u2212 market| < 0.01)",
           "stars": 1,
-          "score": 1.59,
+          "score": 1.58,
           "playable": false,
           "lean": {
             "side": "under",
@@ -322229,7 +322229,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.15,
+          "score": 1.14,
           "playable": false,
           "lean": {
             "side": "under",
@@ -323343,7 +323343,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.63,
+          "score": 0.62,
           "playable": false,
           "lean": {
             "side": "under",
@@ -323558,7 +323558,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.57,
+          "score": 1.56,
           "playable": false,
           "lean": {
             "side": "over",
@@ -324380,7 +324380,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.4,
+          "score": 1.39,
           "playable": false,
           "lean": {
             "side": "over",
@@ -327707,7 +327707,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.71,
+          "score": 0.7,
           "playable": false,
           "lean": {
             "side": "under",
@@ -329675,7 +329675,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.55,
+          "score": 0.54,
           "playable": false,
           "lean": {
             "side": "over",
@@ -331835,7 +331835,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.57,
+          "score": 1.56,
           "playable": false,
           "lean": {
             "side": "over",
@@ -333982,7 +333982,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.79,
+          "score": 0.78,
           "playable": false,
           "lean": {
             "side": "under",
@@ -339315,7 +339315,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.79,
+          "score": 0.78,
           "playable": false,
           "lean": {
             "side": "under",
@@ -339491,7 +339491,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.94,
+          "score": 0.93,
           "playable": false,
           "lean": {
             "side": "over",
@@ -341623,7 +341623,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.56,
+          "score": 1.55,
           "playable": false,
           "lean": {
             "side": "under",
@@ -343842,7 +343842,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.46,
+          "score": 1.45,
           "playable": false,
           "lean": {
             "side": "under",
@@ -346776,7 +346776,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.21,
+          "score": 0.2,
           "playable": false,
           "lean": {
             "side": "over",
@@ -346854,7 +346854,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.58,
+          "score": 1.57,
           "playable": false,
           "lean": {
             "side": "over",
@@ -353640,7 +353640,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.06,
+          "score": 1.05,
           "playable": false,
           "lean": {
             "side": "under",
@@ -357035,7 +357035,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.46,
+          "score": 0.45,
           "playable": false,
           "lean": {
             "side": "over",
@@ -359468,7 +359468,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.24,
+          "score": 1.23,
           "playable": false,
           "lean": {
             "side": "under",
@@ -359606,7 +359606,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.57,
+          "score": 1.56,
           "playable": false,
           "lean": {
             "side": "over",
@@ -360293,7 +360293,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.99,
+          "score": 0.98,
           "playable": false,
           "lean": {
             "side": "over",
@@ -360745,7 +360745,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.87,
+          "score": 0.86,
           "playable": false,
           "lean": {
             "side": "over",
@@ -361268,7 +361268,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.16,
+          "score": 1.15,
           "playable": false,
           "lean": {
             "side": "under",
@@ -361711,7 +361711,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.68,
+          "score": 1.67,
           "playable": false,
           "lean": {
             "side": "over",
@@ -362910,7 +362910,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 0.39,
+          "score": 0.38,
           "playable": false,
           "lean": {
             "side": "over",
@@ -363431,7 +363431,7 @@
           "tier": "PASS",
           "star_tier": "Pass (-EV / no real price)",
           "stars": 1,
-          "score": 1.48,
+          "score": 1.47,
           "playable": false,
           "lean": {
             "side": "under",
