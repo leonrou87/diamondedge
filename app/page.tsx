@@ -2238,7 +2238,40 @@ export default function Home() {
     };
     // Free mode locks the SIDE/LINE of every official pick. Records, schedules, final scores
     // and analyst context stay visible; the actual side and line are the Premium product.
-    const entitled = () => isSignedIn() && isPremium();
+    /* ═══ OPEN ACCESS: DO NOT HIDE WHAT WE WERE HANDED ═══
+       2026-08-14, owner: "everyone gets premium picks without being logged in
+       for now." The server half is done — DE_OPEN_ACCESS=1 publishes the board
+       whole, so an anonymous reader's payload carries real sides. But the
+       client kept drawing locks over them, which is the worst of both worlds:
+       the pick is in the bytes anyone can read, and the reader is still asked
+       to pay to see it.
+       The test is the payload itself, not a flag we could get out of sync with:
+       if an UNGRADED card on the loaded board carries a side, redaction is off
+       and there is nothing left to gate. Re-evaluated per board load (cached
+       per payload stamp) so re-sealing the board re-locks the UI by itself. */
+    let _openSeen: any = { stamp: "", open: false };
+    function openAccessBoard(): boolean {
+      try {
+        const srcs: any[] = [];
+        for (const get of [() => betaLiveData, () => livePayload, () => betaData]) {
+          try { const v = get(); if (v) srcs.push(v); } catch { /* not initialised yet */ }
+        }
+        if (!srcs.length) return false;
+        const stamp = srcs.map((s) => String(s.generated_utc || s.generated_at || "")).join("|");
+        if (_openSeen.stamp === stamp && stamp) return _openSeen.open;
+        let open = false;
+        outer: for (const src of srcs) {
+          for (const g of (src.games || [])) {
+            const p = g && g.pick;
+            if (!p || p.result) continue;          // graded cards are public anyway
+            if (p.side) { open = true; break outer; }
+          }
+        }
+        _openSeen = { stamp, open };
+        return open;
+      } catch { return false; }
+    }
+    const entitled = () => openAccessBoard() || (isSignedIn() && isPremium());
     const unlockCtaTxt = () => (isSignedIn() ? "Unlock" : "Sign in to unlock");
     const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
     // Every locked surface routes here: signed-out → the sign-in gateway; free member → Premium.
