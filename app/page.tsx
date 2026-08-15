@@ -10861,6 +10861,26 @@ export default function Home() {
     // The day's chosen approach. The rich adaptive block first; the day ledger's own compact
     // strategy block is the fallback, so the bar survives a payload that carries one and not
     // the other. Returns null when NOTHING is served — and null means the bar does not render.
+    /* THE FALLBACK WAS THE THIRD COPY OF THE RULE, AND IT WAS UNREDACTED
+       (2026-08-14). `record.daily[]` carries a per-night `strategy` block, and
+       until today the server shipped the row for the night still being bet with
+       `plain_english_rule` — tonight's whole decision procedure — in the PUBLIC
+       payload. It survived the leak gate because `record` is public in full by
+       contract and exempt by name from the audit; the exemption is right about
+       every FINISHED night and was wrong about the one still open. Closed at
+       source in desk_policy.public_payload, and the rail now scans open-date
+       rows, so the payload cannot carry it again.
+
+       THIS GUARD IS THE SECOND LOCK, and it is not redundant. The two branches
+       below read four DIFFERENT payloads, one of which is a cached copy that
+       may predate the server fix by up to its TTL — and the first branch
+       already yields to this one whenever `adaptive_strategy_by_date` is
+       missing, which is exactly the shape an older or trimmed payload has. A
+       client that would render tonight's rule the moment a stale payload
+       arrives is a client that leaks; `dayRuleLocked` is the same test the Desk
+       card uses, so an open night falls through to the upsell here too.
+       A settled night is untouched — its rule is the record and the strongest
+       thing this product has to say. */
     function dayStrategyBlock(dateISO: string) {
       const s = adaptiveDayStrategy(dateISO);
       if (s && s.status !== "ERROR" && (s.label || s.plain_english_rule)) return s;
@@ -10870,9 +10890,49 @@ export default function Home() {
         const rows = Array.isArray(daily) ? daily : [];
         const row = rows.find((r: any) => r && String(r.date || "") === dateISO);
         const st = row && row.strategy;
-        if (st && typeof st === "object" && st.status !== "ERROR" && (st.label || st.plain_english_rule)) return st;
+        if (st && typeof st === "object" && st.status !== "ERROR" && (st.label || st.plain_english_rule)) {
+          if (!dayRuleLocked(st, dateISO)) return st;
+          /* Locked: hand back the block MINUS the two fields that argue the
+             side, so the bar still renders its name, window and record — the
+             evidence the lock sells against — and `dayRuleLocked` still reads
+             true on it downstream. */
+          const { plain_english_rule, summary_line, reason, rule_key, ...rest } = st;
+          return { ...rest, premium_locked: true };
+        }
       }
       return null;
+    }
+    /* ═══════ DOES THIS BOARD HAVE A CONVICTION LADDER, OR ONE TIER? ═══════
+       The subscribe screen used to open "Every Strong ◆◆◆ and Good ◆◆ pick,
+       unlocked" — a sentence that tells a buyer some calls are stronger than
+       others and that both grades are included. Measured on the served ledger
+       on 2026-08-14: all 36 forge picks since 2026-08-09 carry stars=3 and the
+       same tier string, and the payload says so itself — `tier_basis`: "One
+       rule chose every pick on this board and it makes no distinction between
+       them… There is no per-pick conviction to report." Selling a ladder the
+       engine does not build is the checkout describing a product that stopped
+       existing, which is the same defect class as the price it quoted before
+       2026-08-14.
+
+       `tier_basis` is the payload's own statement and it is on the day-block
+       PUBLIC allowlist, so a signed-out reader sees it (verified on
+       production) — it survives `redact_day_strategy` while the rule does not.
+       It is emitted only by a single-rule board: absent on 2026-08-06 (the
+       desk's tiered era), present every day from 2026-08-09. So the sell reads
+       the engine rather than a literal, and the ladder sentence returns on its
+       own the day a tiered selector chooses the board again.
+
+       FAILS TOWARD THE WEAKER CLAIM. When no day block has arrived there is no
+       evidence of a ladder, so this returns false and the sell says the plainer
+       true thing. A sales sentence must never be the fallback. */
+    function boardSellsTiers(): boolean {
+      const d = new Date();
+      for (let i = 0; i < 7; i++) {
+        const iso = new Date(d.getTime() - i * 864e5).toISOString().slice(0, 10);
+        const s: any = adaptiveDayStrategy(iso);
+        if (s && typeof s === "object" && (s.tier_basis || s.label)) return !s.tier_basis;
+      }
+      return false;
     }
     /* ═══════ THE DAY'S RECORD, COUNTED OFF THE BOARD THE READER IS LOOKING AT ═══════
        Leon: "the record of DiamondEdge picks should always be shown in real time on a given
@@ -18344,7 +18404,7 @@ export default function Home() {
             <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
             <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
             <div class="sub-trial">${esc(trialTxt)}</div>
-            <p class="sub-sell">Every Strong ◆◆◆ and Good ◆◆ pick, unlocked — the exact calls behind ${(() => {
+            <p class="sub-sell">${boardSellsTiers() ? "Every Strong ◆◆◆ and Good ◆◆ pick, unlocked" : "Every pick on the board, unlocked"} — the exact calls behind ${(() => {
               const r = headlineRecordBlock();
               if (!r || !r.wl) return "every pick we publish, graded in the open";
               const since = r.since ? stratDateTxt(r.since).replace(/,\s*\d{4}$/, "") : "";
@@ -18364,10 +18424,47 @@ export default function Home() {
                   Good ◆◆ pick, unlocked" — this perk repeated it verbatim two inches down.
                   The perk now leads with what its own body actually promises. */""}
             ${perk("The exact call, frozen before the game", "The side, the line and the price — never re-written after the fact.")}
-            ${perk("The why, in plain English", "Two or three sentences a first-time reader can follow: the model's number, the line it beats, and what the desk disagreed about.")}
-            ${perk("Live reads and score overlay", "Fresh scores every minute during games, with each pick's progress toward its line.")}
-            ${perk("The full record, cut every way", "Deep results by league, price, pick type and theme — wins and losses alike. It's the same record we show free readers; you just get the calls too.")}
-            ${perk("Ad-free", "No partner offers on the board, the odds pages or the news. Premium is the picks and nothing else.")}
+            ${/* "THE MODEL'S NUMBER, THE LINE IT BEATS, AND WHAT THE DESK
+                  DISAGREED ABOUT" — three things the product stopped producing
+                  and this screen kept selling (2026-08-14). One frozen rule
+                  chooses the board now; there is no model number behind a
+                  forge pick, and the four analysts were deliberately removed
+                  from the game page because they no longer make the call. The
+                  same teaser on the game card was rewritten for exactly this
+                  reason on 2026-08-09 ("machinery vocabulary, on the very
+                  surface whose generated prose `rule_voice._check_voice`
+                  REFUSES for containing those words") — the checkout was the
+                  copy of it nobody re-read. It now promises what is actually
+                  behind the lock, in the words the write-up itself uses. */""}
+            ${perk("The why, in plain English", "The day's rule in the search's own words, and the written case for this game against it — what it saw, and what it wanted before it would call a side.")}
+            ${/* Scores are free for everyone on this app and always will be, so
+                  the perk names the half that is actually gated. */""}
+            ${perk("Each pick tracked live", "Once a game starts, its own call's progress toward the line, updated with the score.")}
+            ${perk("Why we passed, game by game", "Most of the board is a pass — the reason we are not on a game unlocks with the picks.")}
+            ${/* THE RECORD IS NOT A PERK. This slot read "Deep results by
+                  league, price, pick type and theme… It's the same record we
+                  show free readers" — a benefit that names itself free in its
+                  own second sentence. `premium_contract.public` lists `record`
+                  first, /record is a public page, and the Desk is open. What
+                  is gated is the calls INSIDE it, which the first perk already
+                  sells, so the slot says the true and better thing instead.
+                  Nor is its replacement drafted from "every graded pick stays
+                  up, win or lose" — that is the brand, and it is FREE: a
+                  settled card returns from `redact_card` untouched, so a
+                  signed-out reader already sees every finished call with its
+                  side, line, price and result. The sub-sell above says it once,
+                  as the reason to believe the record, which is its real job.
+                  FOUR TRUE PERKS BEAT FIVE WITH A FILLER — a paid list padded
+                  with things the free tier already has is how a reader decides
+                  the rest of the list is padding too. */""}
+            ${/* AD-FREE SHIPS DARK WITH THE SLOTS IT DESCRIBES. Measured
+                  2026-08-14: both AD_PARTNERS entries carry url "#", so
+                  adLivePartners() is empty and adSlot() returns "" for every
+                  reader — a free reader sees no ads either. Selling the
+                  removal of something nobody is shown is a fabricated
+                  difference. The perk lights up when the affiliate links do,
+                  on the same condition as the slots themselves. */""}
+            ${adLivePartners().length ? perk("Ad-free", "No partner offers on the board, the odds pages or the news. Premium is the picks and nothing else.") : ""}
           </div>
           <div class="sub-steps">
             <div class="pay-k">How it works</div>
