@@ -36,7 +36,23 @@ on:
     # cadence rather than the declared one.
     - cron: "*/10 13-17 * * *"   # 06:00-11:00 PT — the contract window, densest
     - cron: "*/30 * * * *"       # everything else
-    - cron: "17 20 * * 1"        # weekly canary: prove the mail path still works
+    # THE WEEKLY DRILL CRON IS GONE (2026-08-15). It was `17 20 * * 1`, and it
+    # guaranteed the owner exactly one email every Monday 20:17 UTC forever, by
+    # design, whether or not anything was wrong. That is the definition of an
+    # alarm that cannot mean anything, and it had never been counted in any
+    # tally of "what mails him" because it was filed as a test rather than as an
+    # alert. It still arrives in the same inbox.
+    #
+    # THE DRILL'S PURPOSE SURVIVES WITHOUT THE CRON. What it protected against
+    # is a silently broken SMTP secret. But this path is not idle — it is the
+    # send used by every real alert — and a broken secret now fails the "Alert
+    # the owner" step, which fails the workflow run, which GitHub reports
+    # through its OWN notification channel. That is strictly better than a
+    # weekly self-test: it cannot share a failure mode with the thing it is
+    # testing, and it costs zero mail when everything is fine.
+    #
+    # The drill itself is untouched and one click away: Actions -> this
+    # workflow -> Run workflow -> drill: stale.
   workflow_dispatch:
     inputs:
       drill:
@@ -61,9 +77,6 @@ jobs:
         run: |
           DRILL="${{ github.event.inputs.drill }}"
           if [ -z "$DRILL" ]; then DRILL="none"; fi
-          if [ "${{ github.event.schedule }}" = "17 20 * * 1" ]; then
-            DRILL="stale"
-          fi
           echo "drill=$DRILL" >> "$GITHUB_OUTPUT"
           echo "drill mode: $DRILL"
 
@@ -89,7 +102,10 @@ jobs:
             SUBJ="DiamondEdge ALERT: board is $VERDICT"
           fi
           if [ "$DRILL" != "none" ]; then SUBJ="[DRILL] $SUBJ"; fi
-          curl -s --max-time 30 --url "smtps://smtp.gmail.com:465" \
+          # `-sS` and no `|| true`: a send that fails must FAIL THE STEP. That
+          # failed run is now the only drill this alarm needs — GitHub reports
+          # it through a channel that cannot share a failure mode with our SMTP.
+          curl -sS --max-time 30 --url "smtps://smtp.gmail.com:465" \
             --user "$GU:$GP" --mail-from "$GU" --mail-rcpt "$GU" -T - <<EOF
           From: DiamondEdge Watchdog (GitHub) <$GU>
           To: $GU
