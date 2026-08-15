@@ -27,11 +27,28 @@
 # back to pushing the full board in the clear. Members lose freshness; the
 # public board is already published and correct. Every caller invokes this
 # with `|| true` for that reason.
+#
+# ═══ OPEN ACCESS SKIPS THE SEAL ENTIRELY (2026-08-15) ═══
+# With DE_OPEN_ACCESS=1 the platform publishes every public variant WHOLE, so
+# the sealed twin is a second copy of a board the public route already gives
+# away. /api/premium now answers 402 `open_access` without reading it, which
+# means nothing on the internet can open a sealed row — and a row nobody can
+# read is not worth a node process, an upsert, or a seal-failure line in the
+# log every ten minutes (29 of them on 2026-08-14 alone). So: skip.
+#
+# The stamp file is deliberately NOT cleared. If open access is turned off, the
+# next cycle hashes the twin, finds the stamp stale the moment content moves,
+# and seals again with no manual step. Nothing here is deleted; the sealer, the
+# key and the route all still work the day the paywall comes back.
 SEAL_WROTE=0
 
 seal_full_guarded() {
   local FULL="$1" KEY="$2" SEAL_STAMP="$3" SSHA
   [ -f "$FULL" ] || return 0
+  if [ "${DE_OPEN_ACCESS:-0}" = "1" ]; then
+    echo "$(date '+%F %T') premium seal $KEY skipped — DE_OPEN_ACCESS=1 (the public board is the full board; nothing can open a sealed row)"
+    return 0
+  fi
   # Hash the CONTENT, not the bytes: the twin is rewritten every cycle and only
   # `generated_utc` moves, so hashing the file would re-upsert a multi-MB
   # identical sealed row every few minutes and pay for it in egress.

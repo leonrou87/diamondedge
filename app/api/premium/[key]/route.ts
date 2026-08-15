@@ -76,6 +76,30 @@ const SUPA = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
 const SEAL_KEY_HEX = process.env.DE_PREMIUM_SEAL_KEY || "";
 
+/* ── OPEN ACCESS: THE PAYWALL IS OFF, SO THE SEALED HALF IS DEAD WEIGHT ──────
+   (2026-08-15) The platform publishes with DE_OPEN_ACCESS=1, which makes
+   `desk_policy` emit every public variant WHOLE — no redaction, picks and all.
+   The sealed twin is then byte-for-byte the same board the public route already
+   serves to everybody, and this route's only remaining effect is to pull a
+   multi-megabyte ciphertext row out of Supabase to hand a member something they
+   already have.
+
+   MEASURED, 24h of edge_logs, 2026-08-15: 99 sealed payload reads a day across
+   picks_unified__sealed / picks_unified_live__sealed / pregame_picks__sealed
+   and the de_ms_v1 twins — 1.92 GB/month, 38% of the ENTIRE 5 GB free-plan
+   allowance, spent on a duplicate of the free board. That single term is most
+   of why the egress rail has never once been green.
+
+   So while open access is on, the gate answers `premium_required` BEFORE it
+   touches the network. page.tsx treats a 402 as an answer rather than a failure
+   (`serverPremium = false`, then stop asking) and falls through to the public
+   board, which under open access is the full board — so no reader loses a
+   single pick. Set DE_OPEN_ACCESS=0 on Vercel and the paywall is back on the
+   next request: the seal key, the closed key list, the decryptor, the session
+   check and the sealer are all still here, untouched. Nothing was deleted; one
+   switch decides whether the second copy is worth paying for. */
+const OPEN_ACCESS = process.env.DE_OPEN_ACCESS === "1";
+
 /* The keys that have a sealed premium twin. A closed list for the same reason
    /api/snap has one: this is a proxy, and a proxy with an open key space is an
    index of everything behind it. */
@@ -145,7 +169,25 @@ export async function GET(
 
   /* THE GATE IS FIRST AND THERE IS NOTHING BEFORE IT. Not a key lookup, not a
      cache read — an unentitled caller must not even be able to learn from
-     timing whether a sealed row for this key exists. */
+     timing whether a sealed row for this key exists.
+
+     Open access is checked ahead of even that, and it is not an exception to
+     the rule: when the public board is unredacted there is no secret left for
+     timing to leak, and the whole point is to answer without a network read.
+     The reply is the SAME 402 shape an unentitled caller gets, so the client
+     needs no new branch. */
+  if (OPEN_ACCESS) {
+    return NextResponse.json(
+      {
+        error: "premium_required",
+        reason: "open_access",
+        upgrade: "/#account",
+        message: "Every pick is currently free — the public board is the "
+          + "full board. There is nothing behind this route right now.",
+      },
+      { status: 402, headers },
+    );
+  }
   const session = await entitledRequest();
   if (!session) {
     return NextResponse.json(
