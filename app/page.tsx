@@ -15559,8 +15559,14 @@ export default function Home() {
     /* SHARING THE RECORD QUOTES THE RECORD. shareTagline() reads headlineRecordBlock(),
        the same accessor the hero above it uses, so the clipboard and the screen cannot
        disagree — they used to, by 84-77-9 (52.2%) against 28-20-3 (58.3%). */
+    /* AND IT NOW SHARES THE RECORD'S OWN URL (2026-08-14). This sent `origin + pathname`,
+       i.e. the SPA root — so "share the record" pasted a link that unfurls as a loading
+       state and opens on whatever tab the app boots to. Whoever received it had to be told
+       where to look. /record is a server-rendered page carrying the whole graded ledger in
+       its markup: the recipient reads the thing the message claims, before any JavaScript
+       runs, and a `?g=` deep link in the sender's address bar can no longer ride along. */
     async function shareRecord() {
-      const url = (() => { try { const u = new URL(location.href); u.searchParams.delete("g"); return u.origin + u.pathname; } catch { return location.href; } })();
+      const url = (() => { try { return new URL(location.href).origin + "/record"; } catch { return "https://diamondedge.kytepush.com/record"; } })();
       const txt = shareTagline();
       if ((navigator as any).share) { try { await (navigator as any).share({ title: "DiamondEdge — the record", text: txt, url }); return; } catch {} }
       try { await navigator.clipboard.writeText(`${txt} ${url}`); toast("Record copied to clipboard"); } catch { toast(url); }
@@ -21078,6 +21084,13 @@ export default function Home() {
                    already calling the first two. So the 14-day widget was a button whose only
                    job was to open a page whose first screen was that same widget again. -->
               ${recordScopes()}
+              <!-- THE RECORD HAS AN ADDRESS NOW (2026-08-14). Everything above this line is
+                   a tab inside one document: real, but unlinkable, unquotable and invisible
+                   to anything that does not run JavaScript. /record is the same ledger as a
+                   server-rendered page — the honest reading of the sample, the months, both
+                   streak directions, and every night with the rule that was frozen for it.
+                   A plain <a>, not a router push: it is a different document on purpose. -->
+              <a class="dp-recbtn quiet" href="/record">The full public record ↗</a>
               <button class="dp-recbtn quiet" id="dp-share">Share the record ↗</button>
             </div>
           </header>

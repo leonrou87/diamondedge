@@ -1,0 +1,131 @@
+/* ════════════════════════════════════════════════════════════════════════════
+   /record — THE PUBLIC LEDGER.
+
+   Scoped under .rec-page so nothing here can reach the app at /. Every colour,
+   face and hairline is a token already defined in globals.css (which layout.tsx
+   loads on every route), so this page IS DiamondEdge rather than merely being
+   hosted by it — and when the palette moves, this page moves with it.
+
+   No JavaScript. This is the one surface that has to render fully for a crawler,
+   a link preview and a reader with a dead connection.
+   ════════════════════════════════════════════════════════════════════════════ */
+
+.rec-page{max-width:860px;margin:0 auto;padding:0 20px 88px;}
+/* NO BLANKET `.rec-page a{color:inherit}`. It was here for one paint and it
+   silently repainted the primary CTA: `.rec-page a` is (0,1,1) and `.rec-cta-b`
+   is (0,1,0), so the descendant selector won and the button's white knockout
+   came back as #0b1220 ink on a bronze fill — measured 2.4:1, i.e. exactly the
+   defect this page's own CTA comment says it is avoiding. Every link here states
+   its own colour. */
+
+/* ── MASTHEAD ───────────────────────────────────────────────────────────── */
+.rec-mast{display:flex;align-items:center;gap:10px;padding:20px 0 26px;border-bottom:1px solid var(--line3)}
+.rec-mast-dia{width:16px;height:16px;transform:rotate(45deg);border-radius:4px;
+  background:linear-gradient(135deg,var(--a2),var(--a0));flex-shrink:0}
+.rec-mast-name{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.02em;color:var(--ink)}
+.rec-mast-back{margin-left:auto;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink3);text-decoration:none}
+.rec-mast-back:hover{color:var(--ink)}
+
+/* ── LEDE ───────────────────────────────────────────────────────────────── */
+.rec-head{padding:40px 0 8px}
+.rec-kick{font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink3)}
+.rec-h1{font-family:var(--disp);font-weight:800;font-size:clamp(34px,7vw,52px);line-height:1.04;
+  letter-spacing:-.025em;color:var(--ink);margin:10px 0 0}
+.rec-lede{font-size:17px;line-height:1.6;color:var(--ink2);margin:16px 0 0;max-width:62ch}
+.rec-lede b{color:var(--ink);font-weight:650}
+
+/* ── THE FIGURE ─────────────────────────────────────────────────────────── */
+.rec-hero{margin:34px 0 0;background:var(--paper);border:1px solid var(--line2);
+  border-radius:18px;padding:26px 24px;box-shadow:0 1px 3px rgba(13,20,32,.04)}
+.rec-hero-rec{font-family:var(--mono);font-weight:700;font-size:clamp(38px,9vw,58px);
+  line-height:1;letter-spacing:-.02em;color:var(--ink);font-variant-numeric:tabular-nums}
+.rec-hero-sub{font-size:15px;line-height:1.55;color:var(--ink2);margin-top:10px}
+.rec-hero-sub b{color:var(--ink);font-weight:650}
+
+.rec-figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;
+  margin-top:22px;background:var(--line3);border:1px solid var(--line3);border-radius:12px;overflow:hidden}
+.rec-fig{background:var(--paper);padding:13px 14px}
+.rec-fig-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink4)}
+.rec-fig-v{font-family:var(--mono);font-weight:700;font-size:21px;color:var(--ink);
+  margin-top:5px;font-variant-numeric:tabular-nums;line-height:1.15}
+.rec-fig-n{font-size:12px;line-height:1.4;color:var(--ink4);margin-top:4px}
+.rec-fig-v.pos{color:var(--green)}.rec-fig-v.neg{color:var(--red)}
+
+/* ── SECTIONS ───────────────────────────────────────────────────────────── */
+.rec-sec{margin:48px 0 0}
+.rec-h2{font-family:var(--disp);font-weight:800;font-size:24px;letter-spacing:-.015em;
+  color:var(--ink);margin:0 0 6px}
+.rec-p{font-size:16px;line-height:1.62;color:var(--ink2);margin:12px 0 0;max-width:66ch}
+.rec-p b{color:var(--ink);font-weight:650}
+.rec-p.small{font-size:14px;line-height:1.6;color:var(--ink3)}
+
+/* The honest-reading panel. Bordered, not tinted red — this is a statement of
+   fact about the sample, not a warning label. */
+.rec-caveat{margin-top:18px;border-left:3px solid rgba(var(--goldc),.5);
+  background:var(--wash);border-radius:0 12px 12px 0;padding:16px 18px}
+.rec-caveat .rec-p{margin-top:0}
+.rec-caveat .rec-p + .rec-p{margin-top:11px}
+
+/* ── TABLES ─────────────────────────────────────────────────────────────── */
+.rec-tw{margin-top:18px;border:1px solid var(--line2);border-radius:14px;
+  background:var(--paper);overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
+.rec-t th{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink4);text-align:right;padding:12px 14px;
+  border-bottom:1px solid var(--line2);white-space:nowrap}
+.rec-t th:first-child,.rec-t th.rule{text-align:left}
+.rec-t td{padding:11px 14px;border-bottom:1px solid var(--line3);text-align:right;
+  color:var(--ink2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.rec-t td:first-child{text-align:left;color:var(--ink);font-weight:600;white-space:nowrap}
+.rec-t tbody tr:last-child td{border-bottom:0}
+.rec-t .num{font-family:var(--mono);font-weight:600;color:var(--ink)}
+.rec-t .u.pos{color:var(--green);font-weight:700}
+.rec-t .u.neg{color:var(--red);font-weight:700}
+.rec-t .u.flat{color:var(--ink3)}
+.rec-t td.rule{text-align:left;white-space:normal;color:var(--ink3);font-size:13px;
+  line-height:1.45;min-width:220px;font-weight:400}
+.rec-t tr.mth td{font-weight:700}
+
+/* ── STREAK ROW ─────────────────────────────────────────────────────────── */
+.rec-streaks{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.rec-st{background:var(--paper);border:1px solid var(--line2);border-radius:12px;padding:14px 16px}
+.rec-st-k{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--ink4)}
+.rec-st-v{font-family:var(--mono);font-weight:700;font-size:22px;color:var(--ink);margin-top:6px;
+  font-variant-numeric:tabular-nums}
+.rec-st-v.loss{color:var(--red)}.rec-st-v.win{color:var(--green)}
+
+/* ── CTA ────────────────────────────────────────────────────────────────── */
+.rec-cta{margin:52px 0 0;background:var(--paper);border:1px solid var(--line2);
+  border-radius:18px;padding:26px 24px;text-align:center}
+.rec-cta-h{font-family:var(--disp);font-weight:800;font-size:22px;letter-spacing:-.015em;color:var(--ink)}
+.rec-cta-p{font-size:15px;line-height:1.6;color:var(--ink2);margin:10px auto 0;max-width:48ch}
+/* WHITE KNOCKOUT ON THE DEEP END OF THE GOLD RAMP. `--a0` ink on an `--a3/--a4`
+   fill — the pairing used elsewhere in the app — measures 1.88:1 to 2.11:1 in
+   this (light-only) theme. `#fff` on `--a2 → --a0` measures 6.49:1 at the light
+   end of the gradient and 12.61:1 at the deep end, which is the same choice
+   .acct-cta already made in globals.css. */
+.rec-cta-b{display:inline-block;margin-top:18px;border-radius:14px;padding:14px 30px;
+  background:linear-gradient(135deg,var(--a2),var(--a0));color:#fff;text-decoration:none;
+  font-family:var(--disp);font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;
+  box-shadow:0 6px 20px rgba(var(--goldc),.28),inset 0 1px 0 rgba(255,255,255,.16)}
+.rec-cta-b:hover{filter:brightness(1.06)}
+
+.rec-foot{margin-top:44px;padding-top:20px;border-top:1px solid var(--line3);
+  font-size:13px;line-height:1.6;color:var(--ink4)}
+.rec-foot a{color:var(--ink3);text-decoration:underline;text-underline-offset:2px}
+
+/* ── THE null BRANCH ────────────────────────────────────────────────────── */
+.rec-down{margin:40px 0 0;background:var(--sunken);border:1px solid var(--line2);
+  border-radius:16px;padding:26px 24px}
+.rec-down .rec-h2{font-size:20px}
+
+@media (max-width:560px){
+  .rec-page{padding:0 16px 72px}
+  .rec-hero,.rec-cta{padding:20px 18px;border-radius:15px}
+  .rec-t td.rule{display:none}
+  .rec-t th.rule{display:none}
+  table.rec-t{min-width:0}
+}

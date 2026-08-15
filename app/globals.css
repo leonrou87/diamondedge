@@ -7214,6 +7214,12 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
   font-family:var(--sans);font-weight:700;font-size:14px;color:var(--ink2);text-align:left}
 .dp-recbtn em{font-style:normal;margin-left:auto;color:var(--ink4);font-size:16px}
 .dp-recbtn:active{background:rgba(var(--tintc),.09)}
+/* One of these is an <a> (the /record link) and one is a <button>. The anchor has to be
+   told both things a button gets for free — no underline, and the shared ink rather than
+   the UA's link blue — or the two rows sitting on top of each other read as two different
+   controls. */
+a.dp-recbtn{text-decoration:none;color:var(--ink2)}
+a.dp-recbtn:hover{color:var(--ink)}
 .dp-section-k{font-family:var(--disp);font-weight:850;font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin:22px 2px 9px}
 /* ══ WHY IT HOLDS UP — the science, stated rather than hedged ══
    Three numbered claims about the machine. Numbered because a numbered list reads as a
