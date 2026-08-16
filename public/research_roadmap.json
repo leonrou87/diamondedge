@@ -1225,7 +1225,7 @@
   ],
   "papers_index": {
     "contract_version": "1.1",
-    "generated_utc": "2026-08-15T09:18:16.737187+00:00",
+    "generated_utc": "2026-08-16T09:26:05.920644+00:00",
     "n_papers": 19,
     "payload_key": "research_papers",
     "static_fallback": "/research_papers.json",
