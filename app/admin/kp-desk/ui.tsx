@@ -85,6 +85,7 @@ export function Shell(props: {
     ["activity", "Activity", "/admin/kp-desk/activity"],
     ["support", "Support", "/admin/kp-desk/support"],
     ["email", "Email", "/admin/kp-desk/email"],
+    ["revenue", "Revenue", "/admin/kp-desk/revenue"],
   ];
   return (
     <div className="kpdesk">

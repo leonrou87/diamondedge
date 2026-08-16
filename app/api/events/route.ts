@@ -21,7 +21,26 @@ import { readUid, supa, touchUser, dataConfigured } from "../_lib/de";
 
 export const dynamic = "force-dynamic";
 
-const TYPES = new Set(["session", "tab", "game", "unlock", "upgrade", "signout"]);
+/* THE VOCABULARY (2026-08-16). `unlock` and `upgrade` retired with the paywall
+   — they were the funnel's "met the paywall" and "paid" steps and neither event
+   can happen any more. The rows already written stay readable in the console as
+   history; nothing new arrives under those names.
+
+   In their place, the three that let the owner PRICE ad inventory from measured
+   numbers rather than guesses:
+
+     ad_impression  a unit was rendered into the page
+     ad_view        it was VIEWABLE — ≥50% of its pixels for ≥1 continuous
+                    second, the IAB display standard, measured client-side by
+                    IntersectionObserver
+     ad_click       the reader clicked through
+
+   `meta` carries "<slot>|<partner>" so every number can be cut by slot and by
+   partner. These ride the SAME two-beacons-per-session batch as everything
+   else — the egress contract above is not relaxed for ads, and the client caps
+   its ad queue inside the existing 60-event budget. */
+const TYPES = new Set(["session", "tab", "game", "signout",
+                       "ad_impression", "ad_view", "ad_click"]);
 
 export async function POST(req: Request) {
   const done = () => new NextResponse(null, { status: 204, headers: { "Cache-Control": "no-store" } });

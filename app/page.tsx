@@ -969,67 +969,17 @@ export default function Home() {
        front of the first payload keeps first paint where it was. */
     try { manifest(); } catch {}
 
-    /* ═══ MEMBERS READ A DIFFERENT PAYLOAD, NOT A DIFFERENT VIEW OF ONE ═══
-       2026-08-10. `/api/snap` is public, unauthenticated and CDN-cached: one
-       response is shared by every reader, which is the property the whole
-       egress design rests on and the reason this project is not paying for its
-       Supabase bill twice. A cache like that cannot be auth-aware without the
-       auth state entering the cache key, which is per-reader caching, which is
-       the access pattern that caused the bill in the first place.
-
-       So the split is in the DATA, not in the route. Everyone — members
-       included — reads the public redacted board through the shared, pinned,
-       immutable cache. A member additionally asks /api/premium for the same
-       surface, which is uncached, session-gated and served `private, no-store`;
-       it opens a sealed row that is meaningless to anyone without the key.
-
-       PREMIUM FIRST, PUBLIC ALWAYS. If the premium read 402s (no session), 503s
-       (unconfigured) or fails for any other reason, this falls through to the
-       public board and the reader gets the locked surfaces and the upsell —
-       which is the correct behaviour for a paywall whose gate is unavailable.
-       It never fails the other way. */
-    const PREMIUM_SHAPES = new Set(["picks_unified_live", "picks_unified",
-      "pregame_picks", "picks_v4_beta_live", "picks_v4_beta",
-      /* the de_ms_v1 sport boards — sealed twins exist (`nfl__sealed` etc.) and the
-         route already whitelists them (e246ca8), so an entitled reader gets the full
-         board (pick/stars/why once each wall passes) through the same one paywall.
-         `mls` rides the SOCCER tab visually but keeps its own sealed board. */
-      "nfl", "nba", "nhl", "wnba", "mls"]);
-    let premiumOk = true;
-    let premiumRetryAt = 0;
-    async function snapPremium(k: string, ac: AbortController | null, opts: any) {
-      if (!isPremium() || !PREMIUM_SHAPES.has(k)) return null;
-      /* `?lite=1` and `?game=` are projections the PUBLIC route performs; the
-         premium board is served whole, so a caller asking for a projection gets
-         the public one and the full board separately rather than a half-premium
-         shape nobody has specified. */
-      if (opts && (opts.lite || opts.game)) return null;
-      if (!premiumOk && Date.now() < premiumRetryAt) return null;
-      premiumOk = true;
-      try {
-        const r = await fetch(`/api/premium/${encodeURIComponent(k)}`,
-          { cache: "no-store", ...(ac ? { signal: ac.signal } : {}) });
-        if (r.ok) return await r.json();
-        /* A 402 is an ANSWER, not a failure: this reader is not entitled, and
-           asking again every poll would be a request per poll for a fact that
-           does not change. Believe it and stop asking for a while. */
-        if (r.status === 402 || r.status === 503) {
-          serverPremium = false; setPremium(false);
-        }
-        premiumOk = false; premiumRetryAt = Date.now() + 120_000;
-      } catch (e) {
-        if (ac && ac.signal.aborted) throw e;
-        premiumOk = false; premiumRetryAt = Date.now() + 60_000;
-      }
-      return null;
-    }
-
+    /* ═══ ONE BOARD, ONE ROUTE (2026-08-16) ═══
+       There used to be two reads here: the public snapshot, and a second
+       `/api/premium/<key>` read that opened a SEALED twin for paying members.
+       The paywall is deleted, so the public bytes are the whole board — every
+       side, line, star and write-up — and there is nothing a second route
+       could add. `snapPremium`, `PREMIUM_SHAPES` and the sealed twins they
+       read are gone; the twins were 1.92 GB/month of Supabase egress. */
     async function snap(k: string, ms = SNAP_MS, opts: any = {}) {
       const ac = typeof AbortController !== "undefined" ? new AbortController() : null;
       const t = setTimeout(() => { try { ac && ac.abort(); } catch {} }, Math.max(1000, ms));
       try {
-        const prem = await snapPremium(k, ac, opts);
-        if (prem) return prem;
         if (snapProxyUsable()) {
           try {
             /* PIN THE READ TO A VERSION WHEN WE KNOW ONE. Dated archive keys
@@ -1963,7 +1913,7 @@ export default function Home() {
        and becomes what it always actually was: a local cache of the answer, for
        first paint, refreshed from the server on boot.
 
-       `serverPremium` is the truth. It starts null (unknown) and `entitled()`
+       `serverPremium` is the truth. It starts null (unknown) and `true`
        falls back to the cached flag only until the first /api/session answer
        lands — which affects nothing but a few hundred milliseconds of styling,
        because the bytes are already gone from the public payload either way. */
@@ -2012,16 +1962,11 @@ export default function Home() {
        night's three live picks in the clear, where anonymous gets 402.
        The client no longer has a path to it and the route no longer honours it.
        The owner's supported way in is unchanged and stronger: DE_PREMIUM_CODES. */
-    /* ENTITLEMENT JUST CHANGED, SO THE BOARD IS DIFFERENT BYTES — the picks are
-       not in the public payload, only in the premium one (and vice-versa on
-       sign-out). Rather than a full-page reload, drop every cached feed, clear
-       the premium-route backoff, and re-pull the feeds — `snap()` routes to
-       /api/premium or /api/snap purely off `isPremium()`, so the SAME call
-       fetches the locked board when entitled and the public one when not. Then
-       repaint the board, the open game page and the header together, in place:
-       every surface flips at once, unlocking OR re-locking. */
+    /* THE BOARD IS THE SAME BYTES FOR EVERY READER NOW (2026-08-16), so there
+       is no "entitlement changed, re-pull everything" event any more. This
+       remains as the SIGN-IN refresh: signing in or out changes the account
+       chrome and the support badge, not the picks. */
     async function entitlementRefresh() {
-      premiumOk = true; premiumRetryAt = 0;                 // the 402 backoff must not gate the first read either way
       try {
         betaLiveData = null; betaLiveAt = 0;                // live board (today/tomorrow)
         betaData = null; betaFull = false;                  // history / record spine
@@ -2034,10 +1979,6 @@ export default function Home() {
         if ($("slate-body")) renderSlate();
         if (typeof detailRerender === "function" && detail) detailRerender();
       } catch {}
-    }
-    async function unlockRefresh() {
-      serverPremium = true; setPremium(true);
-      await entitlementRefresh();
     }
     /* ═══════════ FIRST-PARTY ANALYTICS BEACON (2026-08-10) — EGRESS-FRUGAL BY CONTRACT ═══════════
        This platform fought an egress crisis, so the analytics layer is TWO requests per
@@ -2238,67 +2179,8 @@ export default function Home() {
     };
     // Free mode locks the SIDE/LINE of every official pick. Records, schedules, final scores
     // and analyst context stay visible; the actual side and line are the Premium product.
-    /* ═══ OPEN ACCESS: DO NOT HIDE WHAT WE WERE HANDED ═══
-       2026-08-14, owner: "everyone gets premium picks without being logged in
-       for now." The server half is done — DE_OPEN_ACCESS=1 publishes the board
-       whole, so an anonymous reader's payload carries real sides. But the
-       client kept drawing locks over them, which is the worst of both worlds:
-       the pick is in the bytes anyone can read, and the reader is still asked
-       to pay to see it.
-       The test is the payload itself, not a flag we could get out of sync with:
-       if an UNGRADED card on the loaded board carries a side, redaction is off
-       and there is nothing left to gate. Re-evaluated per board load (cached
-       per payload stamp) so re-sealing the board re-locks the UI by itself. */
-    let _openSeen: any = { stamp: "", open: false };
-    function openAccessBoard(): boolean {
-      try {
-        const srcs: any[] = [];
-        for (const get of [() => betaLiveData, () => livePayload, () => betaData]) {
-          try { const v = get(); if (v) srcs.push(v); } catch { /* not initialised yet */ }
-        }
-        if (!srcs.length) return false;
-        const stamp = srcs.map((s) => String(s.generated_utc || s.generated_at || "")).join("|");
-        if (_openSeen.stamp === stamp && stamp) return _openSeen.open;
-        let open = false;
-        outer: for (const src of srcs) {
-          for (const g of (src.games || [])) {
-            const p = g && g.pick;
-            if (!p || p.result) continue;          // graded cards are public anyway
-            if (p.side) { open = true; break outer; }
-          }
-        }
-        _openSeen = { stamp, open };
-        return open;
-      } catch { return false; }
-    }
-    const entitled = () => openAccessBoard() || (isSignedIn() && isPremium());
-    const unlockCtaTxt = () => (isSignedIn() ? "Unlock" : "Sign in to unlock");
-    const unlockPitchTxt = () => (isSignedIn() ? "Unlock today's picks" : "Sign in to unlock all picks");
-    // Every locked surface routes here: signed-out → the sign-in gateway; free member → Premium.
-    let unlockAt = 0;
-    function openUnlock() {
-      // Debounced: a [data-up] chip can be reached by BOTH a surface's own handler and the
-      // global delegate below — one tap must mint one history entry, not two.
-      const now = Date.now();
-      if (now - unlockAt < 400) return;
-      unlockAt = now;
-      track("unlock"); // the funnel's third step: this reader met the paywall
-      // ONE PAYWALL. This used to open the Upgrade view while Account's own CTA opened the
-      // subscribe mode — two screens selling the same thing, reached by different buttons.
-      accountMode = isSignedIn() ? "subscribe" : "signin";
-      // the paywall is a full page with a back that returns the reader where they were —
-      // one history entry, popped by the chevron or the hardware back alike
-      pushAcctEntry();
-      switchTab("account");
-    }
-    /* EVERY UNLOCK AFFORDANCE IS ALIVE, EVERYWHERE. `[data-up]` chips render on surfaces
-       that never wired them (the strategy bar's locked rule was a dead tap). One bubble-
-       phase delegate routes them all; a surface with its own handler stops propagation
-       first, and the debounce above makes an unstopped double-fire harmless. */
-    document.addEventListener("click", (e: any) => {
-      const el = e.target && e.target.closest && e.target.closest("[data-up]");
-      if (el) { e.stopPropagation(); openUnlock(); }
-    });
+    /* `openUnlock()` and the global `[data-up]` click delegate stood here. There
+       is no unlock: every surface they routed to is free. Deleted 2026-08-16. */
     /* ═════════════ THE PAYWALL, IN ONE PLACE ═════════════
        Leon: "ALL picks anywhere on the site are blurred/redacted unless the user has a
        premium account — board tiles, game pages, stories, news slides, desk surfaces. The
@@ -2343,38 +2225,84 @@ export default function Home() {
        payload built before this contract and every locally-cached one. Belt and braces: when
        the server redacts, we render the redaction; when it doesn't, we still don't publish an
        unsettled pick to a reader who hasn't paid. */
-    function servedRedacted(pl: any) {
-      if (!pl || typeof pl !== "object") return false;
-      if (pl.premium_locked === true) return true;
-      if (pl.premium === true && (pl.side == null || pl.side === "")) return true;
+    /* The server stopped redacting on 2026-08-16 and no longer emits
+       `premium_locked`. A stale CDN-pinned payload could still carry it, and
+       the honest answer for one of those is still "show the pick" — the bytes
+       either have a side or they do not, and a lock chip over a board nobody
+       is selling is just a broken promise. */
+    function servedRedacted(_pl: any) {
       return false;
     }
-    /* ═════════ SPORTSBOOK PARTNER SLOTS (Leon, 2026-08-10) — first-party, config-driven,
-       free readers only. Three placements share this one builder: the Odds tab's
-       "Shop this line" card, ONE quiet card mid-board (spliced after the sixth tile,
-       never between the first games), and one inline card between stories in the
-       article reader. House-built cards in the app's own card language — NO external
-       ad scripts, NO trackers, NO layout shift: until a partner below carries a real
-       affiliate URL the builder returns "" and the slots simply do not exist. The code
-       ships dark and lights up when the links land. Premium renders NOTHING either
-       way — ad-free is part of what they bought, and the subscribe screen names it as
-       a perk. Every card carries the FTC "Partner offer" label and the app's one-line
-       responsible-gambling copy, and no card ever implies the partner endorses our
-       picks: the only number a card may quote is OUR served line, and the partner is
-       named as a place to shop it, nothing more.
-       (This replaces the house-upsell ad that used to fill these slots — a paywall
-       pitch dressed as a sponsorship taught readers to ignore the slot before it ever
-       earned a cent, and the premium sell has real homes of its own.) */
-    // OWNER: replace with affiliate tracking links. A slot renders only once its url is
-    // a real link (anything other than "#") — the array ships dark; paste links to light it.
-    const AD_PARTNERS: { id: string; label: string; tagline: string; url: string }[] = [
-      { id: "book-a", label: "Your Sportsbook", tagline: "Compare totals and prices on today's board", url: "#" },
-      { id: "book-b", label: "Second Book", tagline: "Line-shop the slate before first pitch", url: "#" },
+    /* ═══════════════════ THE AD SURFACE — the revenue foundation (2026-08-16) ═══════════════════
+       The picks are free now, so advertising is how this pays for itself. This is
+       the whole ad system: an inventory of named slots, per-slot fill logic with a
+       house fallback, frequency caps, and first-party viewability + click
+       measurement so the owner can PRICE the inventory from measured numbers
+       instead of guesses.
+
+       ═══ THE HARD RULES, IN CODE RATHER THAN IN A COMMENT ═══
+        1. THE PICK ROW IS NEVER AN AD. Not the call strip, not the tile verdict,
+           not the live pick line, not the Record or any graded receipt. An ad
+           inside or beside a call implies the partner endorses it. There is no
+           "sponsored by" on a pick, at any price. `AD_SLOTS` simply contains no
+           such placement, and adding one is the thing not to do.
+        2. NO AD MAY BE MISTAKEN FOR EDITORIAL. Every unit carries the FTC
+           "Partner offer" eyebrow, renders in the app's aside language (never the
+           article or card voice), and links with rel="noopener sponsored".
+        3. THE ONLY NUMBER A UNIT MAY QUOTE IS OUR OWN PUBLISHED LINE, and the
+           partner is named as somewhere to shop it — never as a voice on it.
+        4. NO THIRD-PARTY SCRIPT LOADS UNTIL A NETWORK IS CONFIGURED. `AD_NETWORK`
+           is null out of the box: no tag, no tracker, no request. Display is the
+           fallback tier and it stays dark until the owner signs up.
+        5. THE STORY DECK IS OFF LIMITS. Its paint window (only the live slide ±1
+           painted) exists because iOS Safari killed the page without it. An extra
+           full-screen layer with a remote image is precisely that crash. There is
+           no deck slot and there should not be one. */
+
+    /* OWNER: paste approved affiliate tracking links here. A partner with url "#"
+       is DARK — it never renders. `states` is per-state licensing: null means "no
+       restriction recorded"; once a second partner lands, fill it in, because a
+       book that is only licensed in some jurisdictions must not be shown as though
+       it were available everywhere. */
+    const AD_PARTNERS: { id: string; label: string; tagline: string; url: string; states?: string[] | null }[] = [
+      { id: "book-a", label: "Your Sportsbook", tagline: "Compare totals and prices on today's board", url: "#", states: null },
+      { id: "book-b", label: "Second Book", tagline: "Line-shop the slate before first pitch", url: "#", states: null },
     ];
+
+    /* OWNER: a display network is the LOW-VALUE FALLBACK — it fills a slot no
+       affiliate wants. Leave null and no third-party script is ever injected.
+       Set { id } only after signing up; the loader below is the only place a
+       remote tag can enter this app, and it is never in the boot path. */
+    const AD_NETWORK: { id: string } | null = null;
+
+    /* ═══ THE INVENTORY ═══ Every placement worth having, with its honest cost to
+       the reader. `kinds` is the fill ladder in order of value: an affiliate unit
+       first (CPA, the real money), a display tag if a network is configured, then
+       a HOUSE card so a slot is never an empty hole. `cap` is the per-session
+       limit for that slot. Slots marked enabled:false are built and measured-ready
+       but held back until fill rate justifies the interruption. */
+    const AD_SLOTS: Record<string, { enabled: boolean; kinds: string[]; cap: number; minSlate?: number; note: string }> = {
+      // LOW COST — below the fold on most slates, never between the first games.
+      "board-mid":   { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 2, minSlate: 7, note: "mid-board, after the 6th tile" },
+      // VERY LOW COST — terminal position, zero interruption. Lowest CPM, safest.
+      "board-foot":  { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 1, note: "below the last tile" },
+      // LOW-MODERATE COST, HIGHEST VALUE — line-shopping intent lives here.
+      "odds-shop":   { enabled: true,  kinds: ["affiliate", "house"],            cap: 3, note: "game sheet, Odds tab" },
+      // LOW COST — terminal position in the reader.
+      "article-end": { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 2, note: "after the article body" },
+      // LOW COST — the slot the Premium CTA vacated; correctly styled already.
+      "desk-foot":   { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 1, note: "Desk tab, below the roster" },
+      // HELD BACK — interrupts prose. Only worth it at real fill rate.
+      "article-mid": { enabled: false, kinds: ["affiliate", "display", "house"], cap: 1, note: "mid-article; interrupts prose" },
+      // HELD BACK — small audience; treat as house-fallback inventory.
+      "research-foot": { enabled: false, kinds: ["house"],                       cap: 1, note: "end of a research paper" },
+    };
+
     const adLivePartners = () => AD_PARTNERS.filter((p) => p && p.label && p.url && p.url !== "#");
-    // Deterministic partner per slot key — stable across repaints (a card must never
-    // flicker to a different book mid-session), rotating by day so a multi-partner
-    // config shares the surfaces evenly.
+
+    /* Deterministic partner per slot — stable across repaints (a card must never
+       flicker to a different book mid-session), rotating by day so a multi-partner
+       config shares the surfaces evenly. */
     function adPartnerFor(key: string) {
       const live = adLivePartners();
       if (!live.length) return null;
@@ -2383,14 +2311,106 @@ export default function Home() {
       for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
       return live[Math.abs(h) % live.length];
     }
-    /* The slot: a paper card, gold accent, quiet. `g` is passed only by the Odds tab,
-       where the card names the game's total — a number this pane ALREADY prints publicly
-       (the graded-line card, or the wall grid's market record), so quoting it here can
-       never weaken the premium redaction; the partner is somewhere to shop it, never a
-       voice on it. On a free reader's ungraded game pregameLine() is served redacted,
-       so the LAST WALL — the market's own latest public check — is the fallback. */
-    function adSlot(key: string, g?: any) {
-      if (entitled()) return "";                    // premium is ad-free, by contract
+
+    /* ═══ FREQUENCY CAPS ═══ Session-scoped, in memory: a reload is a new session
+       and that is the honest reading of "per session" for a single-page app. Two
+       limits, both cheap to reason about: per-slot `cap`, and a global ceiling so
+       a very long session cannot turn into a wall of units. */
+    const AD_SESSION_MAX = 8;
+    let adShown: Record<string, number> = {};
+    let adShownTotal = 0;
+    function adMayRender(key: string): boolean {
+      const cfg = AD_SLOTS[key];
+      if (!cfg || !cfg.enabled) return false;
+      if (adShownTotal >= AD_SESSION_MAX) return false;
+      return (adShown[key] || 0) < cfg.cap;
+    }
+
+    /* ═══ MEASUREMENT ═══ Impression on render, VIEWABLE at the IAB display
+       standard (≥50% of pixels for ≥1 continuous second), and click. All three
+       ride the existing two-beacons-per-session batch — `track()` only queues,
+       it never sends — so measurement costs no extra request. The queue is
+       capped by track() itself inside the 60-event budget. */
+    let adObserver: any = null;
+    function adEnsureObserver() {
+      if (adObserver || typeof IntersectionObserver === "undefined") return adObserver;
+      adObserver = new IntersectionObserver((entries: any[]) => {
+        for (const en of entries) {
+          const el = en.target as any;
+          if (en.intersectionRatio >= 0.5) {
+            if (el._adViewT || el._adViewed) continue;
+            el._adViewT = setTimeout(() => {
+              el._adViewT = null;
+              if (el._adViewed) return;
+              el._adViewed = true;
+              track("ad_view", `${el.dataset.adSlot}|${el.dataset.adPartner || "house"}`);
+              try { adObserver.unobserve(el); } catch {}
+            }, 1000);
+          } else if (el._adViewT) {
+            clearTimeout(el._adViewT); el._adViewT = null;   // left the viewport before the second was up
+          }
+        }
+      }, { threshold: [0, 0.5, 1] });
+      return adObserver;
+    }
+    /* Called after any repaint that may have inserted units. Idempotent per
+       element: `_adWired` stops a repaint from double-counting an impression. */
+    function adWire(root?: any) {
+      try {
+        const scope = root || document;
+        const els = scope.querySelectorAll ? scope.querySelectorAll("[data-ad-slot]") : [];
+        els.forEach((el: any) => {
+          if (el._adWired) return;
+          el._adWired = true;
+          const slot = el.dataset.adSlot || "?";
+          const partner = el.dataset.adPartner || "house";
+          adShown[slot] = (adShown[slot] || 0) + 1;
+          adShownTotal++;
+          track("ad_impression", `${slot}|${partner}`);
+          const ob = adEnsureObserver();
+          if (ob) ob.observe(el);
+          const a = el.querySelector("a[href]");
+          if (a) a.addEventListener("click", () => track("ad_click", `${slot}|${partner}`), { passive: true });
+        });
+      } catch { /* measurement must never cost the reader a render */ }
+    }
+
+    /* ═══ THE HOUSE UNIT ═══ What fills a slot no partner has bought yet, so an
+       enabled slot is never an empty hole and the layout is the same shape on the
+       day a real partner lands. It sells nothing — there is nothing to sell — it
+       points at the record, which is the honest thing this product has. */
+    function adHouseHtml(key: string) {
+      return `<aside class="ad-slot is-house" data-ad-slot="${esc(key)}" data-ad-partner="house">
+        <a class="ad-partner" href="#" data-go="record" aria-label="See the DiamondEdge record">
+          <span class="ad-p-mark" aria-hidden="true">◆</span>
+          <span class="ad-p-tx">
+            <b>Every pick is free — and every result is on the record</b>
+            <i>DiamondEdge · see how the desk has actually done</i>
+          </span>
+          <span class="ad-p-cta" aria-hidden="true">See</span>
+          <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
+        </a>
+      </aside>`;
+    }
+
+    /* ═══ THE DISPLAY TIER ═══ Deliberately inert until `AD_NETWORK` is set. This
+       returns a MOUNT POINT, never a script tag: the loader is the single place a
+       remote tag may enter the app, it is called only from adWire's successors,
+       and it is never on the boot path or anywhere near the story deck. */
+    function adDisplayHtml(key: string) {
+      if (!AD_NETWORK || !AD_NETWORK.id) return "";
+      return `<aside class="ad-slot is-display" data-ad-slot="${esc(key)}" data-ad-partner="display">
+        <span class="ad-eyebrow">Advertisement</span>
+        <div class="ad-net-mount" data-ad-net="${esc(AD_NETWORK.id)}" data-ad-unit="${esc(key)}"></div>
+        <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
+      </aside>`;
+    }
+
+    /* ═══ THE AFFILIATE TIER — the high-value path (CPA) ═══
+       `g` is passed only by the Odds tab, where the card names the game's total.
+       That number is OUR published line, which this pane already prints; the
+       partner is somewhere to shop it, never a voice on it. */
+    function adAffiliateHtml(key: string, g?: any) {
       const p = adPartnerFor(key);
       if (!p) return "";                            // dark until a real affiliate link exists
       const pg = g ? pregameLine(g) : null;
@@ -2398,7 +2418,7 @@ export default function Home() {
       if (tot == null && g) { const w = totalWalls(g); if (w.length) tot = Number(w[w.length - 1].line); }
       if (tot != null && !isFinite(tot)) tot = null;
       const shop = tot != null;
-      return `<aside class="ad-slot" data-ad-slot="${esc(key)}">
+      return `<aside class="ad-slot" data-ad-slot="${esc(key)}" data-ad-partner="${esc(p.id)}">
         <span class="ad-eyebrow">Partner offer</span>
         <a class="ad-partner" href="${esc(p.url)}" target="_blank" rel="noopener sponsored" aria-label="Partner offer from ${esc(p.label)}">
           <span class="ad-p-mark" aria-hidden="true">${esc((p.label || "?").slice(0, 1).toUpperCase())}</span>
@@ -2411,6 +2431,33 @@ export default function Home() {
         </a>
       </aside>`;
     }
+
+    /* ═══ THE SLOT ═══ One entry point, one fill ladder, one cap check. Every
+       call site in the app goes through here and none of them knows which tier
+       filled it. */
+    /* Slots are built as HTML STRINGS by a dozen different render paths and then
+       assigned with innerHTML, so there is no single insertion point to hook. A
+       slot therefore schedules its own wiring: one debounced pass after the
+       current task, by which time whatever built the string has committed it to
+       the DOM. adWire is idempotent per element, so extra passes cost nothing. */
+    let adWireT: any = null;
+    function adScheduleWire() {
+      if (adWireT) return;
+      adWireT = setTimeout(() => { adWireT = null; adWire(); }, 0);
+    }
+    function adSlot(key: string, g?: any) {
+      const cfg = AD_SLOTS[key];
+      if (!cfg || !adMayRender(key)) return "";
+      for (const kind of cfg.kinds) {
+        const html = kind === "affiliate" ? adAffiliateHtml(key, g)
+                   : kind === "display"   ? adDisplayHtml(key)
+                   : kind === "house"     ? adHouseHtml(key)
+                   : "";
+        if (html) { adScheduleWire(); return html; }
+      }
+      return "";
+    }
+
     /* ═══ THE ONE GATE. NOTHING ELSE IN THIS FILE DECIDES WHO MAY SEE A SIDE ═══
        That sentence was in this file already, as a claim about GATE_SETTLED_PICKS — and it
        was FALSE as written. There were FOUR independent implementations:
@@ -2418,7 +2465,7 @@ export default function Home() {
          · pickLocked()        the board / game pages — the full rule.
          · unifiedPickLocked() the Record surfaces — the same rule, re-expressed against the
                                unified feed's pick shape, in a second settled vocabulary.
-         · newsAngle()         a bare `entitled()`. It never consulted servedRedacted(), so a
+         · newsAngle()         a bare `true`. It never consulted servedRedacted(), so a
                                SERVER-REDACTED payload still published the side on the News
                                front; and it never treated a settled pick as public, so the
                                record's own receipts were hidden there but shown everywhere
@@ -2428,11 +2475,16 @@ export default function Home() {
 
        Now every one of them ends up in `sideLocked`. Flipping GATE_SETTLED_PICKS moves all
        four, which is the only thing that makes the claim above true. */
-    function sideLocked(pick: any, settled: boolean) {
-      if (!pick) return false;
-      if (servedRedacted(pick)) return true;        // the server's word beats any local flag
-      if (entitled()) return false;
-      return GATE_SETTLED_PICKS ? true : !settled;
+    /* ═══ NOTHING IS LOCKED (2026-08-16) ═══
+       Every pick, every side, every line and every write-up is free, to every
+       reader, signed in or not. This was the ONE gate the whole app funnelled
+       through — pickLocked, gameLocked, unifiedPickLocked and newsAngle all
+       end here — so the paywall dies at this line and cannot come back through
+       a surface that forgot to ask. The server no longer redacts, no longer
+       stamps `premium_locked`, and there is no entitled/unentitled reader to
+       tell apart. */
+    function sideLocked(_pick: any, _settled: boolean) {
+      return false;
     }
     function pickLocked(pl: any, st: string) {
       if (!pl) return false;
@@ -2469,7 +2521,6 @@ export default function Home() {
        slate rule: chip text must not leak the pass/withheld distinction). */
     const gameFinalNow = (g: any) =>
       ["final", "post"].includes(String((g && g.status) || "").toLowerCase());
-    const unlockChipTxt = (g: any) => (gameFinalNow(g) ? "grading…" : "Unlock");
     // ===================== VIG / +EV GATE =====================
     // A bet is only worth taking when our win probability clears the PRICE's break-even (the
     // vig-inclusive hurdle). "Right side of the line" at a bad price (e.g. 64% at -196, which
@@ -3305,32 +3356,12 @@ export default function Home() {
        desk_policy.redact_day_strategy). This reads that flag first and falls
        back to "is it today, and is anything on today's board still open" for
        payloads built before the contract and for locally cached ones. */
-    function dayRuleLocked(s: any, dateISO?: string): boolean {
-      if (!s || typeof s !== "object") return false;
-      if (entitled()) return false;
-      if (s.premium_locked === true) return true;
-      const d = String(dateISO || s.date || "");
-      if (!d || d < todayISO()) return false;
-      return true;
-    }
-    /* What the reader gets instead — the upsell, in the rule's own place. It
-       sells what is behind it (the sentence, and the commentary on it) using
-       the evidence the server deliberately keeps public: the rule exists, it is
-       frozen, and here is its record over the window it was chosen on. */
-    function dayRuleUpsellHtml(s: any, opts: any = {}): string {
-      const rec = s && (s.record || (s.record_over_window &&
-        `${s.record_over_window.wins}-${s.record_over_window.losses}${
-          s.record_over_window.pushes ? `-${s.record_over_window.pushes}` : ""}`));
-      const win = s && s.window_days ? `${s.window_days} nights` : null;
-      const ev = rec
-        ? `Tonight's rule went <b>${esc(String(rec))}</b>${win ? ` over the ${esc(win)} it was chosen on` : ""}, and it was frozen before the first pitch.`
-        : `Tonight's rule was frozen before the first pitch and every pick on this board comes from it.`;
-      return `<div class="dp-locked-rule" data-up="1" role="button" tabindex="0">
-        <div class="dlr-k">${lockSvg} The rule itself is Premium</div>
-        <p class="dlr-ev">${ev}</p>
-        <button class="dlr-cta" data-up="1">${lockSvg} ${esc(unlockCtaTxt())} tonight's rule</button>
-        ${opts.foot ? `<p class="dlr-foot">${esc(opts.foot)}</p>` : ""}
-      </div>`;
+    /* The day's rule — the exact sentence the search wrote — used to be
+       withheld until the night it governed had graded. It is free now, on open
+       and graded dates alike, so this is a constant. Kept as a named function
+       because five surfaces ask the question and one place should answer it. */
+    function dayRuleLocked(_s: any, _dateISO?: string): boolean {
+      return false;
     }
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
@@ -4225,7 +4256,7 @@ export default function Home() {
       const actChip = word === "DIAMONDEDGE PICK" ? "" : `<span class="de-act">${esc(word)}</span>`;
       const head = `<div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span>${actChip}${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
       const callRow = callHtml ? `<div class="de-callrow">${callHtml}${atLine}</div>` : "";
-      const unlockRow = locked ? `<div class="de-unlock">${lockSvg}${esc(gameFinalNow(g) ? "grading…" : unlockCtaTxt())}</div>` : "";
+      const unlockRow = "";   // nothing is locked since 2026-08-16
       /* ═══════ THE HERO'S BETTING STRIP — the SAME pick language as the board ═══════
          Leon asked whether the pick cleanup covers the game page. It does, and this is where.
 
@@ -4239,15 +4270,14 @@ export default function Home() {
       if (compact) {
         const stamp = st === "won" || st === "lost" || st === "pushed" ? resultStamp(st, "mini", correctionOf(pl)) : "";
         const priceTxt = !locked && !avoid && pl && pl.price != null ? `<span class="destrip-price">${fmtOdds(pl.price)}</span>` : "";
-        return `<section class="decall ${cls} is-strip${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
+        return `<section class="decall ${cls} is-strip" aria-label="The DiamondEdge pick">
           <div class="destrip">
             ${compactDePickHtml(g, pl, locked, "strip", avoid, stamp)}
             ${priceTxt}
           </div>
-          ${locked ? `<div class="destrip-unlock">${lockSvg}${esc(gameFinalNow(g) ? "grading…" : unlockCtaTxt())}</div>` : ""}
         </section>`;
       }
-      return `<section class="decall ${cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1" role="button" tabindex="0" aria-label="The DiamondEdge pick — locked"` : ` aria-label="The DiamondEdge pick"`}>
+      return `<section class="decall ${cls}" aria-label="The DiamondEdge pick">
         ${head}${callRow}${unlockRow}
         ${locked ? "" : unobtainableRow(g)}
         ${/* THE CONFIDENCE, WHERE THERE IS ROOM TO SAY WHAT IT IS. The board tag prints the
@@ -4643,7 +4673,7 @@ export default function Home() {
            text AND in the row class, for TODAY's board as readily as for last month's. A
            GRADED row is the analyst's record and stays open; an ungraded one is a live read
            on a live game and is redacted like everything else. */
-        const anLocked = !entitled() && !(gradeOf(a) === "win" || gradeOf(a) === "loss" || gradeOf(a) === "push");
+        const anLocked = false && !(gradeOf(a) === "win" || gradeOf(a) === "loss" || gradeOf(a) === "push");
         const dirCls = anLocked ? "" : a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const res = gradeOf(a) === "win" ? resultStamp("won", "sm") : gradeOf(a) === "loss" ? resultStamp("lost", "sm") : gradeOf(a) === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
         const callHtml = anLocked
@@ -4695,7 +4725,7 @@ export default function Home() {
       }));
       // TODAY'S TAKES ARE TODAY'S CALLS. The persona quote is character and stays; the
       // direction chip beside it is the call, and today's calls are never graded yet.
-      const takesLocked = !entitled();
+      const takesLocked = false;
       const takesHtml = takesToday.slice(0, 3).map(({ g, a }: any) => {
         const aAb = g.away_abbr || mlbAbbr(g.away) || "—", hAb = g.home_abbr || mlbAbbr(g.home) || "—";
         const dirCls = takesLocked ? "" : a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
@@ -10238,13 +10268,11 @@ export default function Home() {
          let a signed-out reader tell a pass from a withheld pick by chip width alone —
          the exact distinction the uniform slate exists to hide. One chip, one word. */
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
-        ? (entitled()
-            ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
-            : `<span class="tv-unlock inrow" data-up="1">${lockSvg}<i>${unlockChipTxt(g)}</i></span>`)
+        ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
         : "";
       const verdictBlk = vd
-        ? `<div class="tl-verdict ${vd.cls}${locked ? " is-locked" : ""}"${locked ? ` data-up="1"` : ""}>
-             <div class="tv-callrow${locked ? " haslock" : passMark ? " haspass" : ""}">${callHtml}${locked ? `<span class="tv-unlock inrow">${lockSvg}<i>${unlockChipTxt(g)}</i></span>` : passMark}</div>
+        ? `<div class="tl-verdict ${vd.cls}">
+             <div class="tv-callrow${passMark ? " haspass" : ""}">${callHtml}${passMark}</div>
              ${liveCash}
            </div>`
         : incoming
@@ -11271,7 +11299,7 @@ export default function Home() {
                  `dayRuleLocked`; the upsell replaces them, and everything
                  around it (the name, the record, the "so far" stat) stays. */""}
             ${dayRuleLocked(s, dateISO)
-              ? dayRuleUpsellHtml(s)
+              ? ""
               : (voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : ""))}
             ${/* THE "NOT RUNNING NOW" LINE BELONGS ON EVERY SETTLED DAY, not only on the days
                   whose prose came from the forge. Its first half is a statement about SERVED
@@ -11878,10 +11906,13 @@ export default function Home() {
           const section = (label: string, arr: any[], cls = "") => {
             if (!arr.length) return "";
             const cardsArr = arr.map((g: any) => gameCard(g, n++));
-            // ONE partner card mid-board on a full slate (free tier only — adSlot returns ""
-            // for premium, and for everyone until a real affiliate link is configured).
-            // Spliced after the sixth card so it never sits between the first games.
-            if (!label && cardsArr.length > 6) cardsArr.splice(6, 0, adSlot("board-mid"));
+            /* ONE unit mid-board on a full slate, spliced after the sixth card so it
+               never sits between the first games (AD_SLOTS["board-mid"].minSlate = 7),
+               and one at the foot of the slate — the cheapest surface in the app,
+               terminal and non-interrupting. Neither is ever adjacent to a pick row. */
+            const _minSlate = (AD_SLOTS["board-mid"] || {}).minSlate || 7;
+            if (!label && cardsArr.length >= _minSlate) cardsArr.splice(6, 0, adSlot("board-mid"));
+            if (!label) cardsArr.push(adSlot("board-foot"));
             return `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${cardsArr.join("")}</div></div>`;
           };
           // Postponed cards ride at the end of the day, after the finals —
@@ -12112,7 +12143,6 @@ export default function Home() {
       //  exist on the GAME PAGE, where the legend is still rendered — see openDetail.)
       root.querySelectorAll(".tile[data-gid], .feat[data-gid], .tpk[data-gid]").forEach((bx: any) => {
         const open = (e: any) => {
-          if (e && e.target && e.target.closest && e.target.closest("[data-up]")) { openUnlock(); return; }
           const g = findGame(bx.dataset.gid); if (g) openDetail(g);
         };
         bx.onclick = open;
@@ -13709,9 +13739,6 @@ export default function Home() {
     // The DiamondEdge reasoning tab: a plain-English narrative FIRST, then the divergence, the
     // data visuals (graphs), the model-vs-market read, and the driving factors. Easy to follow, deep.
     function diamondEdgeReasoning(g: any, lead: any, leadLocked: boolean) {
-      if (leadLocked) {
-        return `<div class="de-pane"><div class="de-lead"><div class="de-k">◆ The DiamondEdge Read</div><p>The full model reasoning — our projected number, where it diverges from the market, and the data behind it — is part of DiamondEdge Premium.</p><button class="de-unlock" data-up="1">${lockSvg} ${isSignedIn() ? "Unlock the reasoning" : "Sign in to unlock the reasoning"}</button></div></div>`;
-      }
       const why = lead && lead.action === "TAKE" ? whySentences(g, lead) : composedPreview(g).paras;
       const narrative = why && why.length ? `<div class="de-sec"><div class="de-h">The read</div>${why.slice(0, 4).map((w: string) => `<p>${mdBold(w)}</p>`).join("")}</div>` : "";
       const div = deDivergence(g, lead);
@@ -14154,7 +14181,7 @@ export default function Home() {
       // last public check when the graded line is redacted, and that number only exists
       // once the grid has landed. Same-shape swap — never a layout shift.
       const ap = document.getElementById("odds-partner");
-      if (ap) ap.innerHTML = safeHtml("odds partner card", () => adSlot("odds-shop", detail), "");
+      if (ap) { ap.innerHTML = safeHtml("odds partner card", () => adSlot("odds-shop", detail), ""); adWire(ap); }
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
@@ -14285,7 +14312,7 @@ export default function Home() {
                       || (g.pick && (g.pick.premium_locked || g.pick.premium)))) {
               return `<div class="callcard pass locked"><div class="cc-k">${pickLabel(g)}</div>
               <p class="cc-passwhy">This game is decided and the call is frozen — it locked at this game's own wall, before ${esc(WALL_NOUN[String(sp || "").toLowerCase()] || "the start")}, and it is part of DiamondEdge Premium until the game grades.</p>
-              <div class="de-unlock">${lockSvg}${esc(unlockCtaTxt())}</div></div>`;
+              </div>`;
             }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
             const why = judged.length
@@ -14899,7 +14926,6 @@ export default function Home() {
           });
         }));
         // every locked chip inside the detail body routes to the unlock flow
-        page.querySelectorAll("[data-up]").forEach((b: any) => (b.onclick = (e: any) => { e.stopPropagation(); closeDetail(); setTimeout(() => openUnlock(), 60); }));
         wireBoxPane();
         // MLB's own box score is fetched on open (and on the live cycle) and repaints in place
         const gk = gameState(g).kind;
@@ -15822,7 +15848,7 @@ export default function Home() {
     // the open so far" reads as a track record it isn't.
     // ── News-forward front: real top sports stories (news_feed) with a DiamondEdge betting angle,
     //    leading the Today page (ESPN/CBS-style), with the DiamondEdge Picks below.
-    /* THE NEWS CHIP HAD TWO HOLES. It gated on isPremium() rather than entitled(), so a
+    /* THE NEWS CHIP HAD TWO HOLES. It gated on isPremium() rather than true, so a
        stale de_premium flag with no session revealed the call; and it exempted every
        lean-tier and every non-totals angle outright, while pickLocked() gates EVERY take
        regardless of tier or market. One rule now, and it is the site's rule. */
@@ -15836,7 +15862,7 @@ export default function Home() {
        renders that game's actual display pick and is gated by the same pickLocked() the tile
        uses, and the two cannot disagree. The story's own copy is a fallback for a game that
        is no longer on any loaded board — and even then it goes through the one gate rather
-       than the bare entitled() this used, which ignored servedRedacted() entirely. */
+       than the bare true this used, which ignored servedRedacted() entirely. */
     /* AND WHERE THE BOARD CANNOT CONFIRM IT, THE CHIP DOES NOT RUN (2026-08-09).
        The fallback this had used the feed's OWN `a.side` whenever the game was not on a
        loaded board. Those two stores do not merely drift a half-point apart between
@@ -16308,7 +16334,7 @@ export default function Home() {
          take. Both are the reader's reasons for being here. */
       const takeBody = artBlurb
         ? artBlurb
-        : takeConfirmed && entitled()
+        : takeConfirmed && true
         ? `<p class="art-take-p">${mdBold(takeTxt)}</p>`
         : "";
       /* ════════ THE OUR TAKE ROW HAD NO ROOM TO STAND IN (Leon, 2026-08-10) ════════
@@ -16799,7 +16825,7 @@ export default function Home() {
        for a reader who has not paid. `locked` is belt and braces on top of that: a locked
        slide shows the reason to care and not the call. */
     function pickBlurb(g: any, pl: any, locked: boolean) {
-      if (locked || !entitled()) return "";
+      if (locked) return "";
       const gc = pl && typeof pl.game_case === "object" ? pl.game_case : null;
       const bl = gc && typeof gc.blurb === "object" ? gc.blurb : null;
       const txt = bl && typeof bl.text === "string" ? bl.text.trim() : "";
@@ -16953,7 +16979,7 @@ export default function Home() {
       const lockHead = locked ? matchupHeadline(g, pl) : "";
       const call = locked
         ? `${lockHead ? `<h3 class="sts-head sm">${esc(lockHead)}</h3>` : ""}
-           <div class="sts-lockwrap"><span class="sts-dots" aria-hidden="true">●●●● ●</span>${pickStars(pl)}<button class="st-cta lock" data-go="unlock">${lockSvg} ${esc(unlockPitchTxt())}</button></div>`
+           `
         /* ═══ ONE PERCENT ON A CARD, AND IT IS THE LIVE ONE (Leon, 2026-08-10: "why is
            there 2 percents now that we have stars?") ═══
            This card was the last pick surface in the app still printing the served
@@ -16982,7 +17008,7 @@ export default function Home() {
         ${storyField(tier === "gold" ? "pickgold" : tier === "green" ? "pickgreen" : "pick")}
         ${storyEyebrow(sl.rank === 1 ? "Flagship Pick" : `Top Pick #${sl.rank}`, when)}
         <div class="sts-core">
-          <div class="sts-open" ${locked ? `data-go="unlock"` : `data-go="pick" data-gid="${esc(g.game_id)}"`} role="button" tabindex="0" aria-label="${locked ? "Unlock this pick" : "Open the full pick"}">
+          <div class="sts-open" data-go="pick" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="Open the full pick">
             <div class="sts-mu rail">${team("away")}${mid}${team("home")}</div>
             <div class="sts-callwrap">${call}</div>
             ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
@@ -17339,7 +17365,7 @@ export default function Home() {
          read on a finished game is the record and is the interesting half. */
       const _gs = gameState(g);
       const _settled = _gs.kind === "final" || _gs.kind === "void";
-      const locked = entitled() || _settled
+      const locked = true || _settled
         ? (pl ? pickLocked(pl, playState(g, pl)) : false)
         : true;
       const chief = deskChief(g);
@@ -17588,7 +17614,6 @@ export default function Home() {
         b.onclick = (e: any) => {
           e.stopPropagation();
           const go = b.dataset.go;
-          if (go === "unlock") { openUnlock(); return; }
           if (go === "pick") { const g = findGameLive(b.dataset.gid) || findGame(b.dataset.gid); if (g) openDetail(g); else jumpToGames([b.dataset.gid]); return; }
           if (go === "news") { openArticleSheet(newsStoryByKey(b.dataset.nf), b.dataset.nf); return; }
           if (go === "results") { goDeskResults(); }
@@ -17999,44 +18024,25 @@ export default function Home() {
        same class of error as quoting a record the ledger cannot produce.
        So: ONE object. Every price, every trial claim and the checkout door read
        it, and when the owner moves the plan there is exactly one line to change. */
-    const PREMIUM_PLAN = {
-      price: "$12.99",
-      per: "/ month",
-      trialDays: 3,
-      /* The plan's own checkout page — one tap from the CTA, no store browsing in
-         between. Verified live: 200, titled DiamondEdge Premium, $12.99. */
-      checkout: "https://whop.com/checkout/plan_GAW69XAsuOKPR/",
-      /* Where a member manages the subscription they actually bought — payment
-         method, receipts and cancellation all live with the biller, not here. */
-      hub: "https://whop.com/orders/",
-    };
-    const trialTxt = PREMIUM_PLAN.trialDays > 0
-      ? `${PREMIUM_PLAN.trialDays} days free, then ${PREMIUM_PLAN.price} a month. Cancel anytime.`
-      : `${PREMIUM_PLAN.price} a month. Cancel anytime.`;
-    const PLAN_COPY: any = {
-      premium: {
-        k: "DiamondEdge Premium",
-        price: PREMIUM_PLAN.price,
-        per: PREMIUM_PLAN.per,
-        body: "Every DiamondEdge Pick unlocked — the side, the line, the price we froze it at, and the full reasoning on every game.",
-      },
-      free: {
-        k: "Free member",
-        price: "$0",
-        per: "",
-        body: "The record, the schedule, the analysts and every graded result are yours. The live calls are the Premium part.",
-      },
-    };
+    /* ═══ HOW THIS IS FUNDED — the one honest line that replaced the sell ═══
+       The $12.99 plan, its 3-day trial, the Whop checkout and the free-vs-premium
+       comparison all stood here. Every pick and the whole record are free now, so
+       there is no plan, no price and no upgrade. What a reader is owed instead is
+       a straight answer to "then how does this pay for itself", and the last
+       clause is the one that has to be literally true — it is enforced by
+       AD_SLOTS containing no placement on or beside a pick row, and by an ad
+       unit being forbidden from quoting any number but our own published line. */
+    const FUNDING_LINE =
+      "Every pick and the full record are free. DiamondEdge is supported by "
+      + "clearly-labelled partner offers, which never influence a call.";
+
     function renderAccount() {
       const view = $("account-view");
       if (!view) return;
       const a = getAccount();
       if (!a) { accountMode = "signin"; renderSignIn(); return; }
-      if (accountMode === "subscribe") { renderSubscribe(); return; }
-      if (accountMode === "manage") { renderManagePlan(); return; }
       if (accountMode === "support") { renderSupport(); return; }
       const prem = isPremium();
-      const plan = prem ? PLAN_COPY.premium : PLAN_COPY.free;
       const blk = headlineRecordBlock();
       const recLine = blk ? `${blk.wl}${blk.hit != null ? ` · ${stratPct(blk.hit)}` : ""}` : "";
       view.innerHTML = `
@@ -18048,21 +18054,12 @@ export default function Home() {
             <div class="acct-tags"><span class="acct-tag prov">${PROVIDER_MARK[a.provider] ? `<span class="atp">${PROVIDER_MARK[a.provider]}</span>` : ""}${esc(PROVIDER_LABEL[a.provider] || "Account")}</span><span class="acct-tag ${prem ? "prem" : "free"}">${prem ? "◆ Premium" : "Free member"}</span></div>
           </header>
 
-          <!-- ── 2. YOUR PLAN ── the card carries its own state; the CTA changes with it ── -->
-          <section class="acct-card plancard${prem ? " is-prem" : ""}">
-            ${prem ? `<div class="mc-glow" aria-hidden="true"></div>` : ""}
-            <div class="plan-top">
-              <div class="plan-id"><span class="plan-k">${esc(plan.k)}</span><span class="plan-state">${prem ? "Active" : "Current plan"}</span></div>
-              <div class="plan-price"><b>${esc(plan.price)}</b>${plan.per ? `<i>${esc(plan.per)}</i>` : ""}</div>
-            </div>
-            <p class="plan-body">${esc(plan.body)}</p>
-            ${prem
-              ? `<div class="plan-acts">
-                   <button class="acct-link" id="acct-manage">Manage subscription<span class="al-sub">Payment method, renewal, cancel</span><em>→</em></button>
-                 </div>`
-              : `<button class="acct-cta" id="acct-upgrade">Go Premium — ${esc(PLAN_COPY.premium.price)}${esc(PLAN_COPY.premium.per)}</button>
-                 ${recLine ? `<div class="plan-proof">Backing a record of <b>${esc(recLine)}</b>. Cancel any time.</div>` : `<div class="plan-proof">Cancel any time.</div>`}
-                 ${termsMini("plan-terms")}`}
+          <!-- ── 2. HOW THIS IS FUNDED ── no plan, no price, no upgrade ── -->
+          <section class="acct-card">
+            <div class="acct-card-k">How DiamondEdge is funded</div>
+            <p class="plan-body">${esc(FUNDING_LINE)}</p>
+            ${recLine ? `<div class="plan-proof">The desk's record so far: <b>${esc(recLine)}</b>.</div>` : ""}
+            ${termsMini("plan-terms")}
           </section>
 
           <!-- ── 3. PREFERENCES ──
@@ -18109,8 +18106,6 @@ export default function Home() {
                 app's own format — same helper every other served date goes through. */""}
           <div class="acct-foot">Member since ${esc(stratDateTxt(String(a.since || todayISO())) || String(a.since || todayISO()))}.</div>
         </div>`;
-      bindClick("acct-upgrade", () => { accountMode = "subscribe"; pushAcctEntry(); renderSubscribe(); }, { optional: "premium members see Manage instead" });
-      bindClick("acct-manage", () => { accountMode = "manage"; pushAcctEntry(); renderManagePlan(); }, { optional: "free members see the upgrade CTA instead" });
       /* The preferences fold is part of THIS page now, so its controls bind here. Each
          re-render reopens the fold, because a toggle that closes the panel it lives in
          reads as the page throwing the reader out. */
@@ -18151,44 +18146,6 @@ export default function Home() {
        card, receipts, cancellation) is one clearly-labelled door to Whop, which is the only
        thing that can actually do any of it. The local control that DOES work keeps its own
        row, named for what it really does: lock this device, not stop the billing. */
-    function renderManagePlan() {
-      const view = $("account-view");
-      if (!view) return;
-      const a = getAccount() || {};
-      view.innerHTML = `
-        <div class="acct-page manage">
-          <button class="acct-back gp-back" id="mg-close" aria-label="Back">${backChevron}</button>
-          <header class="mg-hero">
-            <div class="mg-k">DiamondEdge Premium</div>
-            <div class="mg-state"><span class="mg-dot" aria-hidden="true"></span>Active</div>
-            <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
-          </header>
-          <section class="acct-card">
-            <div class="acct-card-k">Subscription</div>
-            <div class="mg-row"><span>Plan</span><b>Premium · ${esc(PREMIUM_PLAN.price)}${esc(PREMIUM_PLAN.per)}</b></div>
-            <div class="mg-row"><span>Access on this device</span><b>Unlocked</b></div>
-            <div class="mg-row"><span>Signed in as</span><b>${esc(a.email || "your account")}</b></div>
-          </section>
-          <section class="acct-card">
-            <div class="acct-card-k">Billing</div>
-            <a class="acct-link" id="mg-whop" href="${esc(PREMIUM_PLAN.hub)}" target="_blank" rel="noopener noreferrer">Manage on Whop<span class="al-sub">Renewal date, payment method, receipts, cancel</span><em>↗</em></a>
-          </section>
-          <button class="mg-cancel" id="mg-cancel">Lock premium on this device</button>
-          <div class="acct-foot">This signs this device out of premium — it does not cancel your subscription. Cancel with the biller on Whop. The record stays free either way.</div>
-        </div>`;
-      bindClick("mg-close", () => acctExit());
-      /* THE LOCAL LOCK, NAMED HONESTLY. It clears the HttpOnly cookie (dropping the local
-         flag alone would leave the session in place and the board unlocked) and re-locks
-         every surface where it stands. What it cannot do — and no longer claims to do — is
-         stop a charge: that lives with Whop, and the row above is the door to it. */
-      bindClick("mg-cancel", async () => {
-        await endSession();               // clears the server cookie + serverPremium
-        toast("Premium locked on this device — cancel billing on Whop");
-        accountMode = "menu";
-        renderAccount();
-        await entitlementRefresh();        // re-pull the now-public board and repaint every surface
-      });
-    }
     /* ═══════════ SUPPORT THREAD (2026-08-10) — the in-app half of the admin console ═══════════
        A plain message thread between this reader and the owner. NOT REAL-TIME, ON PURPOSE,
        and the copy says so: the owner answers from /admin/kp-desk, usually within a day,
@@ -18200,6 +18157,7 @@ export default function Home() {
        check at app open rides the /api/register response. No stream, no push, no
        background polling — a support inbox does not need any of them. */
     let supportPollT = 0;
+
     function renderSupport() {
       const view = $("account-view");
       if (!view) return;
@@ -18388,214 +18346,13 @@ export default function Home() {
        renderings of the same stub, and Whop's own checkout is where a buyer picks
        how to pay. Enumerating wallets we do not operate would be another claim
        this app cannot keep. `payMethod` went with it. */
-    function renderSubscribe() {
-      const view = $("account-view");
-      if (!view) return;
-      /* `const rh = recipeHistory()` and `const fwd = forwardRecord()` used to sit here.
-         They were the checkout screen's OWN reads of the record — recipeHistory() is the
-         in-sample backtest ("58.1% across 886 graded picks since 2022"), the very figure
-         deleted from this screen and from the share card for being a number no record
-         surface could produce. The sell now quotes headlineRecordBlock() like everywhere
-         else, so both calls were left computing a second record that nothing rendered.
-         Dead reads of a rival source are how a rival source comes back: the next edit that
-         wants a number finds one already in scope. Deleted, so there is nothing to find. */
-      const perk = (t: string, s: string) => `<div class="up-perk"><span class="pk-ic"><svg viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></svg></span><div><b>${t}</b><span>${s}</span></div></div>`;
-      /* The two steps, numbered, because they happen in two places and a reader
-         who does not know that will buy on Whop and then close the tab. */
-      const step = (n: string, t: string, s: string) =>
-        `<div class="sub-step"><span class="ss-n" aria-hidden="true">${n}</span><div><b>${t}</b><span>${s}</span></div></div>`;
-      /* ═══ TWO NOTES THAT USED TO BE <!-- HTML COMMENTS --> INSIDE THIS TEMPLATE ═══
-         Moved out of the markup on 2026-08-14 for a reason worth stating: an HTML
-         comment in an innerHTML string is not a code comment. It is shipped, byte
-         for byte, into every reader's DOM and into view-source — and one of these
-         two still carried "$9.99", four hours after every visible price on the app
-         had been corrected to $12.99. A dead price hiding in the page is exactly
-         how a corrected number comes back. Notes about the code belong in the code.
-
-         THE PRICE QUOTES THE RECORD, NOT A BACKTEST (2026-08-09). The sell block
-         below once sold the pick on "58.1% across 886 graded picks since 2022" —
-         recipeHistory(), the IN-SAMPLE backtest, and the very figure deleted from
-         the share card for being a number no record surface could produce. The one
-         place a reader is about to pay is the last place to quote a different
-         record from the one on the Desk, so it reads headlineRecordBlock() like
-         every other statement of it.
-
-         THE PERKS WERE LIFTED OFF THE DELETED UPGRADE VIEW (2026-08-09). There were
-         two paywalls selling the same subscription with the same four stats, and
-         which one a reader got depended on where they tapped: openUnlock() sent
-         them to the Upgrade view, acct-upgrade sent them straight here. The perks
-         belong with the price, and the price belongs with the checkout, so there is
-         one screen. Its stats come from the record: the Upgrade hero had opened
-         with a hardcoded "≈55%" and "56.9% · 239 picks", the same invented literals
-         the share card carried until that pass. */
-      view.innerHTML = `
-        <div class="acct-page subscribe">
-          <button class="acct-back gp-back" id="sub-close" aria-label="Back">${backChevron}</button>
-          <div class="sub-hero">
-            <div class="sub-dia" aria-hidden="true"></div>
-            <div class="sub-k">DiamondEdge Premium</div>
-            <h2 class="sub-h">Every pick. Every why. Nothing hidden.</h2>
-            <div class="sub-price"><span class="amt">${esc(PREMIUM_PLAN.price)}</span><span class="per">${esc(PREMIUM_PLAN.per)}</span></div>
-            <div class="sub-trial">${esc(trialTxt)}</div>
-            <p class="sub-sell">${boardSellsTiers() ? "Every Strong ◆◆◆ and Good ◆◆ pick, unlocked" : "Every pick on the board, unlocked"} — the exact calls behind ${(() => {
-              const r = headlineRecordBlock();
-              if (!r || !r.wl) return "every pick we publish, graded in the open";
-              const since = r.since ? stratDateTxt(r.since).replace(/,\s*\d{4}$/, "") : "";
-              /* A RATE NEVER SHIPS WITHOUT ITS SAMPLE (2026-08-14). This read
-                 "94–90–11 (51.1%) since Jul 1" — a hit rate with no n, on the one
-                 screen where a reader is deciding whether to believe it. The Desk
-                 hero has carried "195 picks graded" beside the rate since it was
-                 built; the sell quoted the same block and dropped that figure. It
-                 comes from the same headlineRecordBlock(), so the two can never
-                 drift, and a small sample now reads as a small sample here too. */
-              const nTxt = r.n ? ` across <b>${esc(String(r.n))}</b> graded picks` : "";
-              return `<b>${esc(r.wl)}</b>${r.hit != null ? ` (<b>${stratPct(r.hit)}</b>)` : ""}${nTxt}${since ? ` since ${esc(since)}` : ""}, graded in the open`;
-            })()}.</p>
-          </div>
-          <div class="up-perks">
-            ${/* The sub-sell headline directly above already says "Every Strong ◆◆◆ and
-                  Good ◆◆ pick, unlocked" — this perk repeated it verbatim two inches down.
-                  The perk now leads with what its own body actually promises. */""}
-            ${perk("The exact call, frozen before the game", "The side, the line and the price — never re-written after the fact.")}
-            ${/* "THE MODEL'S NUMBER, THE LINE IT BEATS, AND WHAT THE DESK
-                  DISAGREED ABOUT" — three things the product stopped producing
-                  and this screen kept selling (2026-08-14). One frozen rule
-                  chooses the board now; there is no model number behind a
-                  forge pick, and the four analysts were deliberately removed
-                  from the game page because they no longer make the call. The
-                  same teaser on the game card was rewritten for exactly this
-                  reason on 2026-08-09 ("machinery vocabulary, on the very
-                  surface whose generated prose `rule_voice._check_voice`
-                  REFUSES for containing those words") — the checkout was the
-                  copy of it nobody re-read. It now promises what is actually
-                  behind the lock, in the words the write-up itself uses. */""}
-            ${perk("The why, in plain English", "The day's rule in the search's own words, and the written case for this game against it — what it saw, and what it wanted before it would call a side.")}
-            ${/* Scores are free for everyone on this app and always will be, so
-                  the perk names the half that is actually gated. */""}
-            ${perk("Each pick tracked live", "Once a game starts, its own call's progress toward the line, updated with the score.")}
-            ${perk("Why we passed, game by game", "Most of the board is a pass — the reason we are not on a game unlocks with the picks.")}
-            ${/* THE RECORD IS NOT A PERK. This slot read "Deep results by
-                  league, price, pick type and theme… It's the same record we
-                  show free readers" — a benefit that names itself free in its
-                  own second sentence. `premium_contract.public` lists `record`
-                  first, /record is a public page, and the Desk is open. What
-                  is gated is the calls INSIDE it, which the first perk already
-                  sells, so the slot says the true and better thing instead.
-                  Nor is its replacement drafted from "every graded pick stays
-                  up, win or lose" — that is the brand, and it is FREE: a
-                  settled card returns from `redact_card` untouched, so a
-                  signed-out reader already sees every finished call with its
-                  side, line, price and result. The sub-sell above says it once,
-                  as the reason to believe the record, which is its real job.
-                  FOUR TRUE PERKS BEAT FIVE WITH A FILLER — a paid list padded
-                  with things the free tier already has is how a reader decides
-                  the rest of the list is padding too. */""}
-            ${/* AD-FREE SHIPS DARK WITH THE SLOTS IT DESCRIBES. Measured
-                  2026-08-14: both AD_PARTNERS entries carry url "#", so
-                  adLivePartners() is empty and adSlot() returns "" for every
-                  reader — a free reader sees no ads either. Selling the
-                  removal of something nobody is shown is a fabricated
-                  difference. The perk lights up when the affiliate links do,
-                  on the same condition as the slots themselves. */""}
-            ${adLivePartners().length ? perk("Ad-free", "No partner offers on the board, the odds pages or the news. Premium is the picks and nothing else.") : ""}
-          </div>
-          <div class="sub-steps">
-            <div class="pay-k">How it works</div>
-            ${step("1", "Subscribe on Whop", `Our store takes the payment — ${esc(trialTxt.replace(/\.$/, ""))}.`)}
-            ${step("2", "Paste your key here", "Your receipt carries a membership key. Drop it in the box below and every pick unlocks on this device.")}
-          </div>
-          <a class="sub-cta" id="sub-go" href="${esc(PREMIUM_PLAN.checkout)}" target="_blank" rel="noopener noreferrer">${PREMIUM_PLAN.trialDays > 0 ? `Start ${esc(String(PREMIUM_PLAN.trialDays))}-day free trial` : `Subscribe — ${esc(PREMIUM_PLAN.price)}${esc(PREMIUM_PLAN.per)}`}<span class="sub-cta-ext" aria-hidden="true">↗</span></a>
-          <div class="sub-secure">${lockSvg} Checkout and billing are handled by Whop. DiamondEdge never sees your card.</div>
-          <div class="sub-code">
-            <div class="sub-code-k">Already subscribed?</div>
-            <p class="sub-code-p">Paste the membership key from your Whop receipt — or the access code from your welcome email. Either one unlocks every pick on this device.</p>
-            <div class="sub-code-row">
-              <input id="sub-code" class="sub-code-in" type="text" inputmode="text" autocomplete="one-time-code" spellcheck="false" placeholder="Membership key or access code" aria-label="Membership key or access code">
-              <button class="sub-code-btn" id="sub-code-go">Unlock</button>
-            </div>
-            <p class="sub-code-note" id="sub-code-note" role="status"></p>
-          </div>
-          <button class="sub-skip" id="sub-skip">Not now</button>
-          <div class="sub-honest">Premium unlocks the pick side, line, price and the full reasoning on every game.</div>
-          ${termsMini("sub-terms")}
-        </div>`;
-      bindClick("sub-close", () => acctExit());
-      bindClick("sub-skip", () => acctExit());
-      bindClick("sub-terms", () => openTermsSheet());
-      // THE PURCHASE STEP REQUIRES THE ACKNOWLEDGMENT. If it is not already on file the full
-      // text opens with the accept box, and the charge only proceeds after it is ticked.
-      /* ═══ THE ACCESS CODE — THE ONLY THING ON THIS SCREEN THAT REALLY WORKS ═══
-         2026-08-10. The checkout above is a documented stub and stays one; what
-         changed is that `setPremium(true)` no longer unlocks anything, because
-         the picks are not in the payload a free reader is served. Entitlement is
-         an HttpOnly cookie minted by /api/session against a secret the browser
-         never sees, and this is the field that asks for it. When Stripe lands,
-         its webhook mints the same cookie and this field can go. */
-      bindClick("sub-code-go", async () => {
-        const el: any = $("sub-code");
-        const code = el && el.value ? String(el.value).trim() : "";
-        const note = $("sub-code-note");
-        if (!code) { if (note) note.textContent = "Paste the membership key from your Whop receipt."; return; }
-        if (note) note.textContent = "Checking…";
-        const r = await redeemAccessCode(code);
-        if (!r.ok) {
-          /* A BILLING OUTAGE IS NOT A BAD KEY. `whop_unavailable` is the route's
-             503 — Whop answered 5xx or timed out — and it used to land a paying
-             member on "That code was not recognised", which is the one thing we
-             know it does not mean. Three failures, three sentences. */
-          if (note) note.textContent =
-            r.reason === "unconfigured" ? "Member access is not switched on yet. The record stays free in the meantime."
-            : r.reason === "whop_unavailable" ? "Couldn't reach the billing service just now — your key is fine, try again in a minute."
-            : r.reason === "network" ? "Couldn't reach us — check your connection and try again."
-            : "That key wasn't recognised. Check the membership key on your Whop receipt.";
-          return;
-        }
-        if (note) note.textContent = "Unlocking…";
-        toast("Premium unlocked");
-        /* THE BOARD IS DIFFERENT BYTES NOW, not a different rendering of the same
-           ones — the picks were never in what this session downloaded. The feeds
-           are re-pulled (now through /api/premium) and every surface repaints in
-           place: no full-page reload. */
-        await unlockRefresh();
-        accountMode = "menu"; renderAccount();
-      }, { optional: "only on the subscribe screen" });
-      /* ═══ THE CHECKOUT DOOR ═══
-         The CTA is a real <a href> to the plan's own Whop checkout, so it behaves
-         like a link: it opens in a new tab, it survives a middle-click, and it
-         works even if this handler never runs. The handler adds two things and
-         takes nothing away.
-         (1) THE ACKNOWLEDGMENT STILL GATES THE MONEY. Every money flow on this app
-             gates on the terms being accepted, and a hand-off to a store where a
-             card is about to be charged is a money flow. Not yet accepted ⇒ the
-             click is cancelled, the full text opens with its accept box, and the
-             store opens once it is ticked — from THAT tap, which is a user gesture
-             of its own. If a popup blocker still refuses (the accept handler runs
-             on a short delay, and some blockers count that as breaking the chain)
-             we navigate this tab instead: a reader who agreed and tapped must end
-             up at the checkout either way, never at a silently dead button.
-         (2) IT COUNTS. Reaching the store is the last step of the funnel this app
-             can see — track() queues it onto the existing batched beacon, no extra
-             request. It is not a purchase and is not recorded as one; Whop is the
-             only thing that knows whether money moved. */
-      const openCheckout = () => {
-        track("upgrade", "whop_checkout");
-        let w: any = null;
-        try { w = window.open(PREMIUM_PLAN.checkout, "_blank", "noopener"); } catch { w = null; }
-        if (!w) { try { location.href = PREMIUM_PLAN.checkout; } catch {} }
-      };
-      bindClick("sub-go", (e: any) => {
-        if (termsAccepted()) return;          // the anchor's own navigation carries it
-        if (e && typeof e.preventDefault === "function") e.preventDefault();
-        openTermsSheet(true, openCheckout);
-      });
-    }
-
     // ===================== HEADER / SHELL =====================
     // ===================== UNIFIED PICK FEED (public/picks_unified{,_live}.json) =====================
     // ONE DiamondEdge Pick per game — pregame totals, star-rated, +EV-gated, price-aware, with
     // every PASS's priced-out reason. Graded in the open; the record accrues in public. History
     // key 'picks_unified' (all days) + live key 'picks_unified_live' (today + tomorrow).
     let betaData: any = null;
+
     const UNIFIED_HISTORY_MIN_UTC = "2026-08-02T18:43:22Z";
     function feedStampMs(src: any) {
       const t = Date.parse(String((src && (src.generated_utc || src.generated_at || src.as_of)) || ""));
@@ -19745,7 +19502,7 @@ export default function Home() {
       return `<section class="lab-today${rLocked ? " locked" : ""}">
         <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
         ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
-        ${rLocked ? dayRuleUpsellHtml(s) : (rule ? `<p class="lab-today-p">${esc(rule)}</p>` : "")}
+        ${rule ? `<p class="lab-today-p">${esc(rule)}</p>` : ""}
         ${/* Locked, the upsell one line up already says what it did over the window and that
               it froze before first pitch — the process line then repeats both within four
               lines. So the locked variant keeps only what the upsell does not say. */""}
@@ -21264,7 +21021,6 @@ export default function Home() {
         ${/* NO FOOT ON THE DESK'S UPSELL: the record hero is directly above this section
               saying the record is public, and dp-cta below closes with "The record on this
               page is public." A third assurance between them was the same fact again. */""}
-        ${locked ? dayRuleUpsellHtml(s) : ""}
         ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p></details>` : ""}
       </section>`;
     }
@@ -21423,13 +21179,11 @@ export default function Home() {
             <p class="dp-note"><b>How the records work.</b> Each analyst is measured on the calls they filed. DiamondEdge is measured on the picks it published, at ${paperLink(DESK_PAPERS.PRICES, "prices that were really on the board")} and against ${paperLink(DESK_PAPERS.GRADING, "finals two sources agree on")}. We publish ${paperLink(DESK_PAPERS.NULLS, "everything that didn't work")} too. ${anyRec ? "" : "Records start at 0–0 and build here in public."}</p>
           </div>
 
-          <!-- ONE ASK, AT THE FOOT OF THE SELL. A landing page earns its CTA by the time the
-               reader reaches it; putting a second one higher up would interrupt the proof. -->
-          ${entitled() ? "" : `<section class="dp-cta">
-            <div class="dp-cta-h">Get every pick, the moment it's published.</div>
-            <div class="dp-cta-s">The record on this page is public. The calls behind it are Premium.</div>
-            <button class="acct-cta" id="dp-premium">Go Premium — ${esc(PREMIUM_PLAN.price)}/month</button>
-          </section>`}
+          <!-- The "Go Premium" ask stood here. There is nothing to sell any more:
+               every pick and the whole record are free. The slot it vacated is the
+               foot of the Desk page — terminal, already correctly styled, and a
+               long way from any pick row — so it becomes ad inventory. -->
+          ${adSlot("desk-foot")}
         </section>`;
       bindDeskTaps();
       v.querySelectorAll(".rostcard").forEach((el: any) => {
@@ -21455,7 +21209,6 @@ export default function Home() {
         b.onclick = go;
         b.onkeydown = (e: any) => { if (e.key === "Enter" || e.key === " ") go(e); };
       });
-      bindClick("dp-premium", () => openUnlock(), { optional: "hidden for premium members" });
       /* THE 14-DAY WIDGET IS CONTENT, NOT A CONTROL (2026-08-09). It was a role=button
          bound to goDeskResults() back when that opened the separate Record view. The page
          collapse put the record ON this page — and the widget INSIDE the very region the

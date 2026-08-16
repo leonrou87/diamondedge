@@ -39,17 +39,10 @@ set -a; source "$HOME/.kytepush-platform.env"; set +a
 # them — re-sealed and re-upserted a multi-MB ciphertext row (measured: the
 # picks_unified statement is ~13 MB compact), pure write churn on the shared
 # free-tier Nano's disk-IO budget. And the asymmetric miss: a cycle where the
-# FULL twin changed while the public bytes did not took the heartbeat branch
-# and never sealed at all. Now the seal carries its own stamp — sha over the
-# twin's content MINUS the per-cycle generated stamps, the sync_ms_premium.sh
-# pattern — checked on EVERY run: an unchanged twin costs one local sha and no
-# DB statement; a changed twin seals no matter which branch the public sync
-# took. SEAL_WROTE=1 lets the heartbeat branch revalidate the edge tag so a
-# member sees the fresh board promptly instead of at /api/premium's 120 s net.
-# The seal helper lives in ONE place now — see scripts/seal_lib.sh for the
-# contract and the "members lose freshness, never the public board" rule.
-# shellcheck source=scripts/seal_lib.sh
-source "$DIR/scripts/seal_lib.sh"
+# THE SEALED TWIN IS GONE (2026-08-16). The paywall it fed has been deleted,
+# so there is no member-only variant of this board: the public bytes ARE the
+# full board. This removes a multi-MB ciphertext upsert per cycle — the
+# sealed twins measured 1.92 GB/month, 38% of the Supabase free egress cap.
 
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
@@ -83,12 +76,6 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   # check now runs on the heartbeat branch too — a no-op sha compare when
   # nothing changed, a real seal when the full board moved alone. Non-fatal,
   # same as the changed-branch seal: members lose freshness, never the public.
-  seal_full_guarded \
-    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json" \
-    picks_unified_live "$DIR/scripts/.unified_live_seal.sha" || true
-  if [ "$SEAL_WROTE" = "1" ]; then
-    bash "$DIR/scripts/revalidate_edge.sh" picks_unified_live || true
-  fi
   exit 0
 fi
 # updated_at IS SET EXPLICITLY (2026-07-31). PostgREST's
@@ -128,17 +115,6 @@ HTTP=$(curl -s -o /tmp/unified_live_sync_resp.txt -w "%{http_code}" \
   --data-binary "@$TMP")
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
   echo "$SHA" > "$STAMP"
-  # THE PREMIUM HALF (2026-08-10). $FILE is now the PUBLIC variant — the model
-  # writes the full board to a private 0600 twin instead, and this seals that
-  # twin for /api/premium. Guarded and non-fatal: a failed seal costs members
-  # their picks until the next cycle, which is the right way round. It must
-  # never take down the public publish, and it must never fall back to pushing
-  # the full board in the clear. Sha-guarded since 2026-08-13 — see
-  # seal_full_guarded above: a stamp-only rebuild of the twin no longer buys a
-  # multi-MB re-upsert of an identical sealed board.
-  seal_full_guarded \
-    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified_live.full.json" \
-    picks_unified_live "$DIR/scripts/.unified_live_seal.sha" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   bash "$DIR/scripts/revalidate_edge.sh" picks_unified_live || true

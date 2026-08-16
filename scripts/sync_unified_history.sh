@@ -29,10 +29,10 @@ set -a; source "$HOME/.kytepush-platform.env"; set +a
 # stamps, the sync_ms_premium.sh pattern), checked on EVERY run, so an
 # unchanged twin never buys a ~13 MB re-upsert of an identical sealed row and
 # a twin that moved while the public bytes did not still gets sealed.
-# The seal helper lives in ONE place now — see scripts/seal_lib.sh for the
-# contract and the "members lose freshness, never the public board" rule.
-# shellcheck source=scripts/seal_lib.sh
-source "$DIR/scripts/seal_lib.sh"
+# THE SEALED TWIN IS GONE (2026-08-16). The paywall it fed has been deleted,
+# so there is no member-only variant of this board: the public bytes ARE the
+# full board. This removes a multi-MB ciphertext upsert per cycle — the
+# sealed twins measured 1.92 GB/month, 38% of the Supabase free egress cap.
 SHA=$(shasum -a 256 "$FILE" | cut -d' ' -f1)
 # FRESHNESS GUARD — warn loudly if the unified history is missing recent days
 LATEST=$(python3 -c "import json; d=json.load(open('$FILE')); ds=sorted(g.get('date') for g in d.get('games',[])); print(ds[-1] if ds else '')" 2>/dev/null)
@@ -71,12 +71,6 @@ if [ -f "$STAMP" ] && [ "$(cat "$STAMP")" = "$SHA" ]; then
   fi
   # Seal check on the heartbeat branch too (2026-08-13) — a no-op sha compare
   # when nothing changed, a real seal when the full twin moved alone.
-  seal_full_guarded \
-    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json" \
-    picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
-  if [ "$SEAL_WROTE" = "1" ]; then
-    bash "$DIR/scripts/revalidate_edge.sh" picks_unified || true
-  fi
   exit 0
 fi
 # updated_at IS SET EXPLICITLY (2026-07-31). PostgREST's
@@ -142,14 +136,6 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     -H "apikey: $SUPABASE_SERVICE_KEY" -H "Authorization: Bearer $SUPABASE_SERVICE_KEY" \
     | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
   echo "$SHA" > "$STAMP"; echo "$(date '+%F %T') synced unified history ($HTTP) updated_at=$BACK"
-  # THE PREMIUM HALF (2026-08-10) — see sync_unified_live.sh. $FILE is the
-  # PUBLIC variant now; this seals the private full twin for /api/premium.
-  # Non-fatal by design: a failed seal must never take the public publish down.
-  # Sha-guarded since 2026-08-13 — see seal_full_guarded above: a stamp-only
-  # rebuild of the twin no longer buys a ~13 MB re-upsert of an identical row.
-  seal_full_guarded \
-    "$HOME/Desktop/sports-betting-platform/v4/serve/state/private/picks_unified.full.json" \
-    picks_unified "$DIR/scripts/.unified_history_seal.sha" || true
   # THE PUBLISH IS THE INVALIDATION (2026-08-09). Only on this branch — the
   # heartbeat branch above is the "nothing changed" case and must stay free.
   bash "$DIR/scripts/revalidate_edge.sh" picks_unified || true
