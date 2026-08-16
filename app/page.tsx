@@ -1206,21 +1206,6 @@ export default function Home() {
       if (which === "home") return ph != null ? ph : (pa != null ? 1 - pa : null);
       return pa != null ? pa : (ph != null ? 1 - ph : null);
     }
-    // Correct over/under/push accounting for a totals pick. Returns {p_over, p_under, p_push} where
-    // available so integer-line push mass is shown as PUSH, never mis-credited to UNDER. Prefers the
-    // distribution block, then reconstructs from totals_pick.p_over + p_push. Null if nothing usable.
-    function v3Push(g: any): { p_over: number | null; p_under: number | null; p_push: number | null } | null {
-      const v = v3Of(g);
-      if (!v) return null;
-      const dist = (v.distribution && typeof v.distribution === "object") ? v.distribution : {};
-      const tp = (v.totals_pick && typeof v.totals_pick === "object") ? v.totals_pick : {};
-      let po = _fin(dist.p_over), pu = _fin(dist.p_under), pp = _fin(dist.p_push);
-      if (po == null) po = _fin(tp.p_over);
-      // If we have over + push but not under, the remainder is under (push kept separate).
-      if (pu == null && po != null) pu = pp != null ? Math.max(0, 1 - po - pp) : null;
-      if (po == null && pu == null && pp == null) return null;
-      return { p_over: po, p_under: pu, p_push: pp };
-    }
 
     // ===================== PLAYS (normalized per game, per market) =====================
     const MARKETS = ["spread", "total", "moneyline"];
@@ -1795,30 +1780,6 @@ export default function Home() {
       const cls = ourMargin > 0 ? "hit" : ourMargin < 0 ? "miss" : "close";
       return { kind: "lean", cls, head: `${state} ${when} · our ${esc(side)} lean`, sub: "" };
     }
-    // Render the tracking read as a glass card (mirrors the live-hit-odds treatment). The
-    // honesty line is baked in: this is CONTEXT on the graded morning play, not a new pick.
-    function liveTrackCard(g: any, pl: any, variant = "full") {
-      const tr = liveTrackingRead(g, pl);
-      if (!tr) return "";
-      const live = gameState(g).kind === "live";
-      const hero = variant === "hero";
-      const done = tr.cls === "done-hit" || tr.cls === "done-miss";
-      const dirCls = tr.cls === "hit" || tr.cls === "done-hit" ? "dir-hit" : tr.cls === "miss" || tr.cls === "done-miss" ? "dir-miss" : "dir-close";
-      const kick = tr.kind === "total" ? (live ? "Tracking our pick — live" : "Our pick — graded") : (live ? "Live scoreboard read" : "Our lean — result");
-      const heroHead = !hero ? tr.head
-        : tr.cls === "done-hit" ? "✓ Pick cashed"
-        : tr.cls === "done-miss" ? "✕ Pick missed"
-        : tr.cls === "hit" ? "Trending our way"
-        : tr.cls === "miss" ? "Against us"
-        : "Still close";
-      // Hero = compact at-a-glance (the honesty note + sub-line live on the full pane card below).
-      return `<div class="ltrack ${dirCls}${done ? " is-done" : ""}${hero ? " ltrack-hero" : ""}" role="status">
-        <div class="ltr-k">${live ? `<span class="livedot"></span>` : ""}${esc(kick)}</div>
-        <div class="ltr-head">${esc(heroHead)}</div>
-        ${!hero && tr.sub ? `<div class="ltr-sub">${esc(tr.sub)}</div>` : ""}
-        ${!hero && live ? `<div class="ltr-note">Live read. The morning ticket stands.</div>` : ""}
-      </div>`;
-    }
 
     // ===================== ONE QUALITY VOCABULARY: Strong / Good / Lean =====================
     // Every bet the app recommends gets exactly one plain word (and 1-3 filled diamonds):
@@ -1869,33 +1830,6 @@ export default function Home() {
     const bestPlay = (g: any) => orderedTakes(g)[0] || null;
 
     const condCheck = `<svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true"><path class="chk" d="M2.5 8.5l3.4 3.4L13.5 4" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-    // The two trigger conditions of a recipe (VALUE) play, with live values off the payload.
-    function valueConds(pl: any) {
-      const gapPts = pl.edge != null ? Math.abs(Number(pl.edge)) * 100 : null;
-      const need = pl.value_tier === "value-b" ? 2 : 3;
-      const over = /over/i.test(String(pl.side || ""));
-      const pm = pl.p_model_over != null ? (over ? pl.p_model_over : 1 - pl.p_model_over) : null;
-      const pk = pl.p_mkt_over != null ? (over ? pl.p_mkt_over : 1 - pl.p_mkt_over) : null;
-      return {
-        gap: gapPts != null ? `Model edge +${gapPts.toFixed(1)} pts` : "Model vs market gap",
-        gapSub: pm != null && pk != null ? `model ${(pm * 100).toFixed(1)}% vs market ${(pk * 100).toFixed(1)}%` : "",
-        need,
-        split: pl.nlines != null ? `Books split across ${pl.nlines} lines` : "Books split on the line",
-      };
-    }
-
-    // Live "latest read" pill — power-user detail inside the sheet only.
-    function latestReadPill(g: any, pl: any) {
-      const lr = pl && pl.latest_read;
-      if (!lr || typeof lr !== "object" || (g.status || "pre").toLowerCase() !== "pre") return "";
-      const st = String(lr.status || "").toLowerCase();
-      const cls = st === "strengthening" ? "up" : st === "fading" ? "down" : "hold";
-      const arrow = st === "strengthening" ? "↑" : st === "fading" ? "↓" : "→";
-      const word = st === "strengthening" || st === "fading" ? st : "holding";
-      const mins = lr.minutes_to_start != null && !isNaN(Number(lr.minutes_to_start)) ? Math.max(0, Math.round(Number(lr.minutes_to_start))) : null;
-      const toGo = mins != null ? ` · ${mins >= 100 ? `${Math.floor(mins / 60)}h ${mins % 60}m` : `${mins}m`} to ${g.sport === "mlb" ? "first pitch" : "start"}` : "";
-      return `<span class="lread ${cls}" title="Latest model read — the graded morning play is unchanged."><i>latest read</i><b class="lr-x">${arrow} ${esc(word)}${esc(toGo)}</b></span>`;
-    }
 
 
     /* ═══════════ THERE IS NO ENTITLEMENT ANY MORE (2026-08-16) ═══════════
@@ -3295,17 +3229,6 @@ export default function Home() {
     const stratWL = (b: any) => (b ? wlTxt(b) : "—");
     const stratPct = (v: any) => (v == null ? "—" : `${(v * 100).toFixed(1)}%`);
     const stratRoi = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
-    function adaptiveTier(s: any) {
-      const t = String((s && (s.confidence_tier || s.game_confidence_tier)) || "").toUpperCase();
-      return t === "STRONG" || t === "LEAN" || t === "PASS" ? t : "";
-    }
-    function adaptiveCiText(s: any, key = "hit_rate_ci") {
-      const ci = s && Array.isArray(s[key]) ? s[key] : null;
-      const lo = ci && ci[0] != null ? Number(ci[0]) : s && key === "hit_rate_ci" && s.hit_rate_lower != null ? Number(s.hit_rate_lower) : null;
-      const hi = ci && ci[1] != null ? Number(ci[1]) : s && key === "hit_rate_ci" && s.hit_rate_upper != null ? Number(s.hit_rate_upper) : null;
-      if (!Number.isFinite(lo) || !Number.isFinite(hi)) return "";
-      return `${stratPct(lo)}-${stratPct(hi)}`;
-    }
     function adaptiveStrategyRoot(src: any) {
       const r = src && src.adaptive_strategy_record;
       return r && typeof r === "object" ? r : null;
@@ -3986,68 +3909,6 @@ export default function Home() {
        Every one of those is enforced below as a GATE, not decoration — the UI refuses to draw
        a move it cannot prove is like-for-like, whatever the feed says. And it refuses on
        started games regardless of what is served, so the class of bug cannot come back. */
-    function lineNow(g: any, lockedTotal?: any) {
-      if (!g) return null;
-      // GATE 0 — the game has started: there is no comparable pregame market any more.
-      const gk = gameState(g).kind;
-      if (gk !== "pre") return null;
-      const vg = v4GameFor(g);
-      for (const s of [g, vg].filter(Boolean)) {
-        const raw = (s as any).line_now != null ? (s as any).line_now
-          : ((s as any).pregame_line && (s as any).pregame_line.now != null ? (s as any).pregame_line.now
-            : ((s as any).vs_line && (s as any).vs_line.now != null ? (s as any).vs_line.now : null));
-        if (raw == null) continue;
-        if (typeof raw === "number") return { total: { line: Number(raw), price: null }, rl: null };
-        if (typeof raw !== "object") continue;
-        // GATE 1 — market must be the full-game total (the thing the locked line quotes)
-        const mkt = String(raw.market == null ? "" : raw.market).trim();
-        if (mkt && mkt !== "full_game_total") continue;
-        // GATE 2 — both sides must be the same basis
-        if (raw.same_basis === false) continue;
-        // GATE 3 — what the backend compared against must be the number WE are showing
-        const cmp = _fin(raw.pregame_total_compared);
-        const lt = _fin(lockedTotal);
-        if (cmp != null && lt != null && Math.abs(cmp - lt) > 0.001) continue;
-        // GATE 4 — a move larger than the backend's own plausibility ceiling is a bug, not news
-        const mv = _fin(raw.move);
-        const maxMv = _fin(raw.max_plausible_move);
-        if (mv != null && maxMv != null && Math.abs(mv) > Math.abs(maxMv) + 0.001) continue;
-        // GATE 5 — an explicit zero move is not a move; never chip it. The backend's own
-        // moved_vs_pregame boolean is authoritative when present.
-        if (raw.moved_vs_pregame === false) continue;
-        if (mv != null && Math.abs(mv) < 0.001) continue;
-        const total = pgSideBlock(raw.total != null ? raw.total : raw);
-        const rl = pgSideBlock(raw.run_line != null ? raw.run_line : raw.spread);
-        // the headline move has NO book — consensus median on both sides. Strip any that rides along.
-        if (total) (total as any).book = "";
-        if (rl) (rl as any).book = "";
-        if (total || rl) return { total, rl, nBooks: _fin(raw.n_books) };
-      }
-      return null;
-    }
-    const lockTimeTxt = (iso: any) => {
-      if (!iso) return "";
-      const d = new Date(String(iso));
-      if (isNaN(d.getTime())) return "";
-      return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-    };
-    const bookTxt = (b: any) => {
-      const s = String(b || "").trim();
-      if (!s) return "";
-      const NICE: any = { matchbook: "Matchbook", pinnacle: "Pinnacle", draftkings: "DraftKings", fanduel: "FanDuel", betmgm: "BetMGM", caesars: "Caesars", circa: "Circa", bet365: "bet365", betfair: "Betfair" };
-      return NICE[s.toLowerCase()] || (s.charAt(0).toUpperCase() + s.slice(1));
-    };
-    // The run-line as a readable call: "TB −1.5" (team abbr + signed number).
-    function rlTxt(g: any, rl: any) {
-      if (!rl || rl.line == null) return "";
-      const homeAb = (g && (g.home_abbr || mlbAbbr(g.home))) || "HOME";
-      const awayAb = (g && (g.away_abbr || mlbAbbr(g.away))) || "AWAY";
-      // a served run line is quoted from the HOME side unless a side/team says otherwise
-      let ab = homeAb, ln = Number(rl.line);
-      if (/away/i.test(rl.side)) { ab = awayAb; }
-      else if (rl.team) { const t = mlbAbbr(rl.team); if (t) ab = t; }
-      return `${ab} ${sgn(ln)}`;
-    }
     /* THE PREGAME LINE SLAB — the card's opening statement. Total is the hero number
        (it is the market the desk actually bets), the run line rides beside it, and the
        provenance strip says which book and when it was locked. A market move renders as a
@@ -4562,7 +4423,6 @@ export default function Home() {
        get half-right, they are collapsed HERE to a single answer — there is one kind of
        record — so no caller can reintroduce the distinction by accident. ledgerChip and
        anLedger render nothing at all; ROI is now just ROI, coloured by its sign. */
-    const isLean = (_rec?: any) => false;
     const ledgerMark = (_rec?: any) => "◆";
     const ledgerCls = (_rec?: any) => "";
     const ledgerWord = (_rec?: any) => "graded record";
@@ -4718,10 +4578,10 @@ export default function Home() {
         const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const callHtml = !a.side ? ""
           : `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>`;
-        /* THE PERSONA SAYS THE WHOLE QUOTE NOW. It used to be filtered through leaksPick()
-           — drop any take whose prose names the side — because character that gives away
-           the call was the call. The call is free, so naming it costs nothing, and half a
-           quote was never the better read. */
+        /* THE PERSONA SAYS THE WHOLE QUOTE NOW. It used to be filtered through a
+           pick-word test — drop any take whose prose names the side — because character
+           that gave away the call was the call. The call is free, so naming it costs
+           nothing, and half a quote was never the better read. */
         const say = a.take;
         return `<div class="anl-take">
           <div class="anl-take-top"><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span>${callHtml}</div>
@@ -4885,36 +4745,6 @@ export default function Home() {
         e.preventDefault(); e.stopPropagation();
         openAnalystSheet(b.dataset.an);
       }, true);
-    }
-    // ---- the detail drill-down: the four analysts DEBATING the game ----
-    function deskRecChip(key: string) {
-      const r = deskRecordRows().find((x: any) => x.key === key);
-      if (!r || r.win + r.loss + r.push === 0) return "";
-      // even the smallest inline chip carries its sample AND its kind — a bare W–L with no n
-      // reads as a characteristic instead of a running tally, and a lean ledger's W–L read as
-      // a betting record is the same lie in miniature.
-      return `<span class="dbt-rec ${ledgerCls(r)}"><b>${wlTxt(r)}</b><i>${ledgerMark(r)} ${r.n} graded ${esc(ledgerShort(r))}</i></span>`;
-    }
-    // compact desk line for the flagship/lead story card (consensus chip + the four glyphs)
-    // ---- record.consensus_history → "when the desk agrees" (Insights) ----
-    function consensusHistoryRows() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
-        let ch = d && (d as any).record && (d as any).record.consensus_history;
-        if (!ch) continue;
-        // served shape nests the states under by_state
-        if (ch.by_state && typeof ch.by_state === "object") ch = ch.by_state;
-        const items: any[] = [];
-        const push = (state: string, r: any) => {
-          const b = stratBlock(r);
-          if (b) items.push({ state: state.toUpperCase(), ...b });
-        };
-        if (Array.isArray(ch)) ch.forEach((r: any) => r && r.state && push(String(r.state), r));
-        else if (typeof ch === "object") Object.keys(ch).forEach((k) => push(k, ch[k]));
-        const order = ["UNANIMOUS", "MAJORITY", "SPLIT"];
-        items.sort((a, b) => order.indexOf(a.state) - order.indexOf(b.state));
-        if (items.length) return items;
-      }
-      return [];
     }
     // ═══════════ THE DESK COMES ALIVE — live ATLAS · nightly recaps · rivalries · weekly race ═══════════
     // Every reader below is FULLY DEFENSIVE: the backend fields (atlas live block,
@@ -5216,10 +5046,6 @@ export default function Home() {
       }
       return null;
     }
-    const weeklyRowFor = (key: string) => {
-      const w = weeklyStandingsData();
-      return w ? (w.rows.find((r: any) => r.key === key) || null) : null;
-    };
     // Insights: THE WEEK AT THE DESK — a tally, deliberately not a race.
     // A week is a handful of graded calls, an order of magnitude under the readable bar, so
     // there are no ordinals and no result-order here: rows are listed by calls made and each
@@ -6040,13 +5866,6 @@ export default function Home() {
     /* THE ONE-LINE PROFILE STATE for any card. Prefers the measured block; falls back to the
        roster row's own served profile_headline / profile_has_characteristic so a card still
        says the honest thing if analyst_profiles itself never arrives. */
-    function profHeadFor(k: string) {
-      const p = profileFor(k);
-      if (p) return { line: p.chars.length ? p.chars[0].line : p.headline, any: p.chars.length > 0, char: p.chars[0] || null };
-      const rec = deskRecordRows().find((r: any) => r.key === k);
-      if (rec && rec.profHead) return { line: rec.profHead, any: rec.profAny === true, char: null };
-      return null;
-    }
     /* DEV-ONLY (?profmock=1 on localhost): promotes one synthetic surviving characteristic so
        the "a cell finally cleared the desk-wide correction" path is provable BEFORE the
        backend ever has one. Never active in production (hostname-gated), and it refuses to
@@ -6435,22 +6254,11 @@ export default function Home() {
       } catch {}
       return d;
     }
-    // Universal star renderer: unified picks use the 5-star scale; any legacy pick keeps 3.
-    function pickStars(pl: any) {
-      return "";
-    }
     /* pickGrade AND pickStrengthPill DELETED (2026-08-16) — both had zero callers.
        pickGrade was a two-line stub whose every path returned "". pickStrengthPill was a
        live-looking renderer whose comment explained how it asks about the lock before
        reading `pl.stars`: a careful answer to a question nobody asks any more, on a surface
        with no door. It was also the last reader of servedRedacted() outside the gates. */
-    // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
-    // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
-    function isLowConf(pl: any) {
-      if (!isPick(pl)) return false;
-      if (qualityOf(pl) === "lean") return true;
-      return pl.market !== "total" && !pickPlusEV(pl);
-    }
     /* confWord DELETED (2026-08-16) — zero callers, and the only reader of Q_LABEL, whose
        `locked` entry rendered the literal word "Premium" to a reader. isLowConf survives:
        it still has a real caller at the detail sheet. */
@@ -6605,7 +6413,6 @@ export default function Home() {
       const mu = (p && p.matchup) ? String(p.matchup) : (g ? `${g.away_abbr} @ ${g.home_abbr}` : "");
       return esc(cleanBlurb(mu));
     }
-    const leaksPick = (s: string) => PICK_WORDS.test(s) || /\d+(\.\d+)?\s?%/.test(s);
     // A short, GAME-focused hero lede (pitching matchup / storyline) — never the pick or the
     // model's number. Prefers a clean served dek, then the article's first non-pick sentence,
     // then a streak. Returns "" if we can only find pick-flavored copy.
@@ -7131,26 +6938,6 @@ export default function Home() {
     // first pitch — never made mid-game. Pre-game it's the branded "DiamondEdge Pick".
     const isStarted = (g: any) => { const s = String((g && g.status) || "pre").toLowerCase(); return s === "live" || s === "final"; };
     const pickLabel = (g: any) => (isStarted(g) ? "◆ Pre-Game Pick" : "◆ DiamondEdge Pick");
-    // Short tile kicker — the board is already branded (section headers + featured card), so
-    // per-tile strips carry a compact orienting label instead of the full brand line.
-    const pickLabelShort = (g: any) => (isStarted(g) ? "◆ Pre-Game Pick" : "◆ The Pick");
-    const pickWord = (g: any) => (isStarted(g) ? "Pre-Game Pick" : "DiamondEdge Pick");
-    // The pick sub-headline for a preview: served article.pick_headline wins, else composed
-    // from the display pick. Always names the side/line; no-pick games show the market line.
-    function pickHeadline(g: any) {
-      const art = gameArticle(g);
-      if (art && art.pick_headline) {
-        // normalize the served label's brand prefix to the state-aware one
-        let s = String(art.pick_headline).replace(/^\s*(◆\s*)?(DiamondEdge|Pre-?Game)\s*Pick\s*:?\s*/i, "");
-        if (/no pick|pass/i.test(s) || !s.trim()) return { txt: passLineTxt(g) || "O/U", has: false };
-        return { txt: `${pickWord(g)}: ${s}`, has: true };
-      }
-      const pl = displayPick(g);
-      if (pl && pl.action === "TAKE" && pl.side) {
-        return { txt: `${pickWord(g)}: ${String(pl.side)}${pl.price != null ? ` (${fmtOdds(pl.price)})` : ""}`, has: true, q: qualityOf(pl) };
-      }
-      return { txt: passLineTxt(g) || "O/U", has: false };
-    }
 
     // ===================== GAME ARTICLES (served game.article / game.streaks, tolerant reader) =====================
     // Contract (picks_engine/ARTICLES_CONTRACT.md) is landing server-side — read defensively,
@@ -7928,10 +7715,6 @@ export default function Home() {
     // ISO/absent formats that broke plain string compares — finals especially), string
     // compare only as the last resort for same/unknown timestamps.
     const startMsOf = (g: any) => { const t = firstPitchTs(g); return t != null ? t : Number.MAX_SAFE_INTEGER; };
-    const statusOrder = (g: any) => {
-      const k = gameState(g).kind;
-      return k === "live" ? 0 : k === "pre" ? 1 : k === "final" ? 2 : 3;
-    };
     const boardPhaseRank = (g: any) => {
       const k = gameState(g).kind;
       return k === "live" ? 0 : k === "final" ? 1 : k === "pre" ? 2 : 3;
@@ -8306,76 +8089,6 @@ export default function Home() {
     // (Pull-to-refresh removed — replaced by smart silent tiered auto-refresh in init.)
 
     // ===================== POWER-USER VISUALS (sheet "More detail" only) =====================
-    function lineMove(pk: any) {
-      const lm = pk && pk.line_move;
-      if (!lm || lm.open_line == null || lm.current_line == null) return "";
-      const open = Number(lm.open_line), cur = Number(lm.current_line);
-      const dir = lm.direction || (cur > open ? "up" : cur < open ? "down" : "flat");
-      const mag = lm.magnitude != null ? Number(lm.magnitude) : Math.abs(cur - open);
-      const isAmerican = lm.unit === "american_ml";
-      const fmtL = (v: number) => (isAmerican ? (v > 0 ? "+" + Math.round(v) : "" + Math.round(v)) : num(v, 1));
-      const n = lm.n_snapshots != null ? lm.n_snapshots : null;
-      if (mag === 0 || dir === "flat") {
-        return `<span class="lmove flat" title="Line held from open through pregame across ${n || 0} snapshots.">
-          <span class="lm-arrow">→</span><span class="lm-val">${fmtL(cur)}</span><span class="lm-tag">held${n ? ` · ${n}` : ""}</span>
-        </span>`;
-      }
-      const toward = lm.moved_toward_pick;
-      const stateCls = toward === true ? "toward" : toward === false ? "against" : "neutral";
-      const arrow = dir === "up" ? "▲" : dir === "down" ? "▼" : "→";
-      const badge = toward === true
-        ? `<span class="lm-sharp toward" title="The market moved toward our side across ${n || 0} snapshots.">◆ your way</span>`
-        : toward === false
-        ? `<span class="lm-sharp against" title="The market moved against our side across ${n || 0} snapshots.">drifting off</span>`
-        : "";
-      return `<span class="lmove ${stateCls}" title="Line moved ${fmtL(open)} → ${fmtL(cur)} over ${n || 0} snapshots.">
-        <span class="lm-open">${fmtL(open)}</span><span class="lm-arrow">${arrow}</span><span class="lm-cur">${fmtL(cur)}</span>${n ? `<span class="lm-n">·${n}</span>` : ""}${badge}
-      </span>`;
-    }
-    function leanMeter(pk: any, kind: string, g?: any) {
-      if (!pk) return "";
-      const line = pk.line != null ? Number(pk.line) : null;
-      // For a total, prefer v3's reconciled number for the tick so it agrees with the pick side; the
-      // lean DIRECTION is already sourced from the pick side below (never re-derived from the proj).
-      const _v3tot = (kind === "total" && g) ? v3PredTotal(g) : null;
-      const proj = _v3tot != null ? _v3tot : (pk.our_proj != null ? Number(pk.our_proj) : null);
-      const iv = pk.interval || {};
-      const lo = iv.lo != null ? Number(iv.lo) : null;
-      const hi = iv.hi != null ? Number(iv.hi) : null;
-      if (line == null || proj == null || isNaN(line) || isNaN(proj)) return "";
-      const spanCand = [Math.abs(proj - line)];
-      if (lo != null && !isNaN(lo)) spanCand.push(Math.abs(lo - line));
-      if (hi != null && !isNaN(hi)) spanCand.push(Math.abs(hi - line));
-      const span = Math.max(0.6, ...spanCand) * 1.25;
-      const pos = (v: number) => Math.max(2, Math.min(98, ((v - line) / (2 * span)) * 100 + 50));
-      const projPct = pos(proj);
-      const bandL = lo != null && !isNaN(lo) ? pos(lo) : null;
-      const bandR = hi != null && !isNaN(hi) ? pos(hi) : null;
-      const overish = kind === "total" ? /over/i.test(String(pk.side)) : proj > line;
-      const leanCls = overish ? "over" : "under";
-      const band = (bandL != null && bandR != null)
-        ? `<span class="ln-band" style="left:${Math.min(bandL, bandR).toFixed(1)}%;width:${Math.abs(bandR - bandL).toFixed(1)}%"></span>`
-        : "";
-      return `<span class="lean ${leanCls}" title="Our projection ${num(proj, 1)} vs line ${num(line, 1)}${lo != null && hi != null ? ` · 80% interval [${num(lo, 1)}, ${num(hi, 1)}]` : ""}">
-        ${band}
-        <span class="ln-track"></span>
-        <span class="ln-tick" style="left:50%"></span>
-        <span class="ln-proj" style="left:${projPct.toFixed(1)}%"></span>
-      </span>`;
-    }
-    function wpLean(pk: any, g?: any) {
-      const _v3wp = g ? v3WinProb(g, pk && pk.side === g.away_abbr ? "away" : "home") : null;
-      const our = _v3wp != null ? _v3wp : (pk.our_winprob != null ? Number(pk.our_winprob) : null);
-      let mkt = pk.market_winprob != null ? Number(pk.market_winprob) : null;
-      if (mkt == null && pk.price != null) { const d = Number(pk.price); if (d > 1 && d < 100) mkt = 1 / d; }
-      if (our == null || mkt == null) return "";
-      const span = Math.max(0.06, Math.abs(our - mkt)) * 1.4;
-      const pos = (v: number) => Math.max(2, Math.min(98, ((v - mkt!) / (2 * span)) * 100 + 50));
-      const leanCls = our >= mkt ? "over" : "under";
-      return `<span class="lean ${leanCls}" title="Our win prob ${(our * 100).toFixed(1)}% vs market ${(mkt * 100).toFixed(1)}%">
-        <span class="ln-track"></span><span class="ln-tick" style="left:50%"></span><span class="ln-proj" style="left:${pos(our).toFixed(1)}%"></span>
-      </span>`;
-    }
 
     // home-relative spread line (positive = home getting points)
     function spreadHomeLine(g: any, pk: any) {
@@ -9901,20 +9614,6 @@ export default function Home() {
        wins; otherwise a PASS game's own `side` + `line` IS the desk's direction (that is
        what the field has always meant on a no-bet row — see `is_bet`). Nothing served,
        or a served bet ⇒ null, and the tile falls back to the plain "Pass" it shows today. */
-    function deskCall(g: any) {
-      const chief = deskChief(g);
-      const raw = chief && chief.raw ? chief.raw : null;
-      if (!raw) return null;
-      const blk = (raw.desk_call && typeof raw.desk_call === "object") ? raw.desk_call
-        : (raw.call && typeof raw.call === "object") ? raw.call
-          : (raw.is_bet === false || String(raw.status || "").toUpperCase() === "PASS") ? raw : null;
-      if (!blk) return null;
-      const s = String(blk.side == null ? "" : blk.side);
-      const dir = /under/i.test(s) ? "under" : /over/i.test(s) ? "over" : "";
-      if (!dir) return null;
-      const ln = _fin(blk.line != null ? blk.line : raw.line);
-      return { dir, line: ln, txt: `${dir === "over" ? "Over" : "Under"}${ln != null ? ` ${lineStr(ln)}` : ""}` };
-    }
 
     /* ════════ THE RECORD MOVES WHEN A GAME GOES FINAL ════════
        Leon: "games go final → the card should reflect updated records/streaks."
@@ -10085,22 +9784,6 @@ export default function Home() {
       const p = Number(r.p != null ? r.p : r.push != null ? r.push : r.pushes) || 0;
       return `${w}–${l}${p ? `–${p}` : ""}`;
     }
-    // current run: served record.streaks.current (signed) wins; else derive from graded games.
-    function currentRun() {
-      const st = recordRoot().streaks;
-      if (st && typeof st === "object") {
-        const c = _fin(st.current != null ? st.current : st.current_run);
-        if (c != null && c !== 0) return c > 0 ? `W${Math.round(c)}` : `L${Math.round(Math.abs(c))}`;
-        if (typeof st.current === "string" && /^[WL]\d+$/i.test(st.current)) return st.current.toUpperCase();
-      }
-      const graded = (((betaData && betaData.games) || []) as any[])
-        .filter((x: any) => x.pick && (gradeOf(x.pick) === "win" || gradeOf(x.pick) === "loss"))
-        .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
-      if (!graded.length) return "";
-      let run = 0, last = "";
-      graded.forEach((x: any) => { const r = gradeOf(x.pick) || ""; if (r === last) run++; else { run = 1; last = r; } });
-      return `${last === "win" ? "W" : "L"}${run}`;
-    }
     /* THE RUN CHIP IS GONE FROM THE TILE (Leon, mid-round: "the DiamondEdge pick and upsell
        — not sure we need the record and Run W1… feels overkill").
 
@@ -10108,9 +9791,9 @@ export default function Home() {
        theory that the record sells everywhere. It doesn't — repeated on fifteen tiles it is
        stat confetti, and it competed with the one thing a tile has to say. The record is now
        concentrated where it lands hardest: the Desk headline, the 14-day widget and the
-       Record surface. dailyRecordFor() and currentRun() are UNTOUCHED and still feed all
-       three; only this per-tile chip is retired. */
-    function deskRunChip(_g: any, _st: string) { return ""; }
+       Record surface. dailyRecordFor() still feeds those; currentRun() did not survive —
+       when this chip was retired it lost its last caller, and the 2026-08-16 reachability
+       sweep found it marooned along with monthRecord/tierRecordFor/edgeLeanSplit. */
 
     /* ════════════════════════ THE BOARD TILE ════════════════════════
        Leon: "the new UX has WAYY too much information — we need to make it a 2 by X matrix
@@ -10128,7 +9811,7 @@ export default function Home() {
          2. who                — two crests, two abbreviations, the score once it exists
          3. what we think      — the desk's direction and the number, and whether that view
                                  is a BET or only a CALL (the two are drawn differently and
-                                 the difference is the point — see deskCall)
+                                 the difference is the point — see tileVerdict)
          4. what the four said — one sigil each with its own over / under / no-call mark
        Everything else moved to the game page: one tap away, and where a reader who wants
        the argument was always going to go.
@@ -10307,92 +9990,8 @@ export default function Home() {
         g && g.date === dateISO && String(g.status || "") === "postponed"
         && !seen.has(String(g.game_pk)) && !seen.has(String(g.game_id)));
     }
-    // A human sentence for WHY the model passed a market — built from the numbers when we
-    // have them, never the raw jargon string.
-    function plainPassReason(c: any) {
-      if (!c) return "";
-      // the line we passed AT always rides with the pass — a pass is a judged number, not a shrug
-      const rawLn = c.market_line != null ? c.market_line : c.pick_line;
-      const lnTag = rawLn != null
-        ? (c.bet_type === "total" ? `at O/U ${num(Math.abs(Number(rawLn)))}` : c.bet_type === "spread" ? `at ${sgn(Number(rawLn))}` : "")
-        : "";
-      if (c.our_prob != null && c.p_breakeven != null && c.per_side_price != null) {
-        const our = (c.our_prob * 100).toFixed(0), need = (c.p_breakeven * 100).toFixed(0);
-        const pre = lnTag ? lnTag.replace(/^at /, "At ") + ", " : "";
-        // when our number clears break-even but the margin is under the bar, say THAT —
-        // "needs 49%, we say 50%, no bet" reads like a contradiction otherwise
-        if (c.our_prob > c.p_breakeven) {
-          return `${pre}our ${our}% only just clears the ${need}% break-even at ${fmtOdds(c.per_side_price)} — the margin is under our bar.`;
-        }
-        return `${pre}${fmtOdds(c.per_side_price)} needs ${need}% to profit — our model says ${our}%. Pass.`;
-      }
-      const raw = String(c.pass_reason || "").replace(/\s*—\s*priced out.*$/i, "").trim();
-      return raw ? `${raw}${lnTag ? ` (${lnTag})` : ""}` : `No edge ${lnTag || "at today's prices"}.`;
-    }
-    // The line a PASSED game was judged at — for pass verdicts on tiles/covers/detail
-    // ("Pass — O/U 8.5 held no edge"), so a pass always states the number it priced.
-    function passLineTxt(g: any) {
-      for (const mk of ["total", "spread", "moneyline"]) {
-        const v4 = v4LineOf(g, mk);
-        if (v4 && (v4.line != null || v4.price != null)) {
-          const t = vegasLine(g, mk);
-          if (t) return t;
-        }
-      }
-      return vegasLine(g, "total") || vegasLine(g, "spread") || "";
-    }
 
     // ===================== FEATURED GAME (highest exact conviction) =====================
-    // Conviction = the quality ladder (Strong > Good > Lean, per the house vocabulary)
-    // ranked at FULL precision behind the scenes by the exact p_correct decimal within
-    // each tier — raw p is never comparable across markets (a −188 spread lean carries a
-    // high p with no value) and never displayed. The winner gets the big hero treatment.
-    function convictionSort(aP: any, aQ: number, bP: any, bQ: number) {
-      if (aQ !== bQ) return aQ - bQ;
-      const ap = aP != null ? Number(aP) : -1, bp = bP != null ? Number(bP) : -1;
-      return bp - ap;
-    }
-    // DAY-LOCKED flagship: once chosen for a calendar day, the featured game STAYS (no
-    // intraday shuffling as walls/feeds refresh). slot 1 = flagship, slot 2 = runner-up.
-    // The day's featured game per the feed = `featured_game_id` (its highest-score pick). Resolve
-    // it against the games we're rendering, keyed on game_pk (the trailing id).
-    function feedFeaturedGame(games: any[]) {
-      if (!games || !games.length) return null;
-      const date = gameLocalDay(games[0]);
-      const src = betaLiveData || betaData;
-      let pk: string | null = null;
-      const fmap = (src && src.featured) || (betaData && betaData.featured);
-      if (fmap && date && fmap[date] && fmap[date].game_pk != null) pk = String(fmap[date].game_pk);
-      if (!pk) { const fid = String((src && src.featured_game_id) || (betaData && betaData.featured_game_id) || ""); const m = fid.match(/(\d+)$/); if (m) pk = m[1]; }
-      if (!pk) return null;
-      return games.find((g: any) => { const gm = String(g.game_id || "").match(/(\d+)$/); return (gm ? gm[1] : String(g.game_id)) === pk; }) || null;
-    }
-    function featuredPick(games: any[]) {
-      let best: any = null;
-      // Prefer the feed's featured game when it's an actionable upcoming pick — otherwise fall
-      // through to the score ranking below (so a started/finished featured game never strands).
-      const fg = feedFeaturedGame(games);
-      if (fg && gameState(fg).kind === "pre") { const fpl = displayPick(fg); if (isBet(fpl)) return { g: fg, pl: fpl }; }
-      // Actionability rank: upcoming-today (3) > upcoming-future (2) > live (1) > final (0).
-      // Within a rank, highest score/conviction wins (Leon: featured = highest score).
-      const actRank = (g: any) => {
-        const k = gameState(g).kind;
-        if (k === "pre") return gameLocalDay(g) === todayISO() ? 3 : 2;
-        if (k === "live") return 1;
-        return 0;
-      };
-      games.forEach((g: any) => {
-        const pl = displayPick(g);
-        if (!isBet(pl)) return; // never feature a bet that doesn't clear its price's break-even
-        const cand = { g, pl, act: actRank(g), p: pl.p != null ? Number(pl.p) : null, qr: Q_RANK[qualityOf(pl)], gr: pl.grade != null ? Number(pl.grade) : null };
-        if (!best) { best = cand; return; }
-        if (cand.act !== best.act) { if (cand.act > best.act) best = cand; return; } // more actionable first
-        // decimal grade wins when both carry one (the flagship ranking); legacy conviction otherwise
-        if (cand.gr != null && best.gr != null) { if (cand.gr > best.gr) best = cand; return; }
-        if (convictionSort(cand.p, cand.qr, best.p, best.qr) < 0) best = cand;
-      });
-      return best;
-    }
     /* featuredCard() DELETED (round 5, the single-source sweep). It had no callers — the
        comment above is kept because it is the record of WHY the surface was cut, but the
        dead builder underneath it was a fourth independent rendering of facts the live
@@ -10506,88 +10105,7 @@ export default function Home() {
       </div>`;
     }
 
-    // This month's DiamondEdge Picks = TOTALS only (the validated edge). Spread/ML leans are
-    // NOT blended into this headline number — they live in the record-breakdown sheet.
-    function monthRecord() {
-      const src = livePayload || payload;
-      if (!src) return null;
-      const m = todayISO().slice(0, 7);
-      let w = 0, l = 0;
-      ((src.games || []) as any[]).forEach((g: any) => {
-        if (String(g.date || "").slice(0, 7) !== m) return;
-        const P = gamePlays(g);
-        (["total"] as string[]).forEach((mk) => {
-          const pl = P[mk];
-          if (pl && pl.action === "TAKE" && pl.result) {
-            if (pl.result.status === "hit") w++;
-            else if (pl.result.status === "miss") l++;
-          }
-        });
-      });
-      return w + l ? { w, l } : null;
-    }
-    // Per STRENGTH-TIER tally over a set of games. Every TAKE across all markets is bucketed by
-    // qualityOf() → strong / good / lean, using the SAME grading path as the rest of the record
-    // (pickResult on each market's play). This is what makes a bare "0–3" self-explanatory:
-    // spread/moneyline leans sit in the Lean tier; the totals edge sits in Strong/Good.
-    function tierRecordFor(filterFn: (g: any) => boolean) {
-      const src = livePayload || payload;
-      if (!src) return null;
-      const T: any = {
-        strong: { w: 0, l: 0, push: 0, live: 0, up: 0 },
-        good: { w: 0, l: 0, push: 0, live: 0, up: 0 },
-        lean: { w: 0, l: 0, push: 0, live: 0, up: 0 },
-      };
-      ((src.games || []) as any[]).forEach((g: any) => {
-        if (!filterFn(g)) return;
-        const P = gamePlays(g);
-        const gs = gameState(g);
-        MARKETS.forEach((mk) => {
-          const pl = P[mk];
-          if (!pl || pl.action !== "TAKE") return;
-          const q = qualityOf(pl);
-          if (!q || !T[q]) return;
-          const r = pickResult(g, pl);
-          if (r === "hit") T[q].w++;
-          else if (r === "miss") T[q].l++;
-          else if (r === "push") T[q].push++;
-          else if (gs.kind === "live") T[q].live++;
-          else if (gs.kind !== "final" && gs.kind !== "void") T[q].up++;
-        });
-      });
-      const graded = (t: any) => t.w + t.l;
-      return {
-        strong: T.strong, good: T.good, lean: T.lean,
-        gradedTotal: graded(T.strong) + graded(T.good) + graded(T.lean),
-        w: T.strong.w + T.good.w + T.lean.w,
-        l: T.strong.l + T.good.l + T.lean.l,
-        p: (T.strong.push || 0) + (T.good.push || 0) + (T.lean.push || 0),
-        live: T.strong.live + T.good.live + T.lean.live,
-        up: T.strong.up + T.good.up + T.lean.up,
-      };
-    }
     // ===================== THE RECORD LADDER (one mental model everywhere) =====================
-    // The whole app tells ONE story about how the picks are doing: long-run we're 58% (the nav
-    // anchor / validated signature) → this window the EDGE (totals, the validated play) is X–Y
-    // and the LEANS (spread/ML directional reads) are A–B → tap for the exact picks. The Edge
-    // and the Leans are ALWAYS split so a lean loss and an edge loss never read identically, and
-    // a bad edge stretch is always framed against the 886-pick record as normal variance.
-    //
-    // edgeLeanSplit() collapses tierRecordFor()'s three tiers into that two-part shape WITHOUT
-    // recomputing anything: Edge = Strong + Good (both are totals); Leans = the Lean tier
-    // (spread + moneyline). Same grading path (pickResult/qualityOf) — presentation only.
-    function edgeLeanSplit(tr: any) {
-      if (!tr) return null;
-      const add = (a: any, b: any) => ({ w: a.w + b.w, l: a.l + b.l, push: (a.push || 0) + (b.push || 0), live: a.live + b.live, up: a.up + b.up });
-      const edge = add(tr.strong, tr.good);
-      const lean = { w: tr.lean.w, l: tr.lean.l, push: tr.lean.push || 0, live: tr.lean.live, up: tr.lean.up };
-      return {
-        edge, lean,
-        edgeGraded: edge.w + edge.l, leanGraded: lean.w + lean.l,
-        anyGraded: edge.w + edge.l + lean.w + lean.l,
-        anyOut: edge.live + edge.up + lean.live + lean.up,
-      };
-    }
     // Overall pick record for the VIEWED date/league — across ALL markets (spread + total + ML),
     // plus a separate "top picks" (Strong ★★★) tally. Drives the small performance banner.
     /* dayPicksTally() DELETED (round 5, the single-source sweep). It had no callers — the
@@ -10938,15 +10456,6 @@ export default function Home() {
        FAILS TOWARD THE WEAKER CLAIM. When no day block has arrived there is no
        evidence of a ladder, so this returns false and the sell says the plainer
        true thing. A sales sentence must never be the fallback. */
-    function boardSellsTiers(): boolean {
-      const d = new Date();
-      for (let i = 0; i < 7; i++) {
-        const iso = new Date(d.getTime() - i * 864e5).toISOString().slice(0, 10);
-        const s: any = adaptiveDayStrategy(iso);
-        if (s && typeof s === "object" && (s.tier_basis || s.label)) return !s.tier_basis;
-      }
-      return false;
-    }
     /* ═══════ THE DAY'S RECORD, COUNTED OFF THE BOARD THE READER IS LOOKING AT ═══════
        Leon: "the record of DiamondEdge picks should always be shown in real time on a given
        day." The strip used to answer a different question — the SINCE-JULY-1 headline rate,
@@ -13123,7 +12632,6 @@ export default function Home() {
         return mlbBox[pk];
       } catch { mlbBox[pk] = { ...(cur || {}), loading: false, at: Date.now() }; return null; }
     }
-    const IP_SORT = (v: any) => { const n = Number(v); return isNaN(n) ? 0 : n; };
     const bxN = (v: any) => (v == null || v === "" ? "0" : String(v));
     /* THE LINE SCORE GRID — innings across, R/H/E pinned.
        Partial and shortened games are the case that breaks naive grids: a rain-shortened
@@ -13719,44 +13227,6 @@ export default function Home() {
         ${stratHtml}
         ${narrative}
         ${div ? `<div class="de-sec"><div class="de-h">Our number vs the market</div>${div}</div>` : ""}
-      </div>`;
-    }
-    // POST-GAME RECAP (own tab, only when final): the result, how our pick did, and a served
-    // recap story if the backend provides one (g.article.recap). The Preview stays the pregame read.
-    function gameRecap(g: any) {
-      const gs = gameState(g);
-      const sc = gs.score;
-      const away = g.away_abbr, home = g.home_abbr;
-      /* NARRATIVE ONLY. The `.de-sub` used to print "Final — PHI 8, BAL 0" directly under a
-         hero already showing 8 and 0, and directly above a paragraph saying "Philadelphia
-         took it 8–0". Three renderings of one fact inside 200px. The recap keeps the prose;
-         the hero owns the score and the Box Score tab owns the rest. */
-      const bits: string[] = [];
-      if (sc && sc.split && sc.home != null) {
-        if (sc.home === sc.away) bits.push(`${esc(g.away_team || away)} and ${esc(g.home_team || home)} finished level at ${num(sc.away, 0)}–${num(sc.home, 0)}.`);
-        else {
-          const wName = sc.home > sc.away ? esc(g.home_team || home) : esc(g.away_team || away);
-          bits.push(`${wName} took it ${Math.max(sc.home, sc.away)}–${Math.min(sc.home, sc.away)}.`);
-        }
-      }
-      const pl = displayPick(g);
-      if (isPick(pl)) {
-        const st = playState(g, pl);
-        const sideTxt = ticketLabel(pl) || (String(pl.side) + (pl.line != null && !/\d/.test(String(pl.side)) ? " " + lineStr(pl.line) : ""));
-        const low = isLowConf(pl) ? "low-confidence " : "";
-        if (st === "won") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — cashed.`);
-        else if (st === "lost") bits.push(`Our ${low}pick — <b>${esc(sideTxt)}</b> — came up short.`);
-        else if (st === "pushed") bits.push(`Our pick — <b>${esc(sideTxt)}</b> — pushed.`);
-        const why = deskTicketWhy(g);
-        if (why) bits.push(`<b>Why that was the pick:</b> ${esc(why)}`);
-      }
-      const art = gameArticle(g);
-      const recapRaw = art && (art as any).recap;
-      const recapParas = Array.isArray(recapRaw) ? recapRaw : (recapRaw ? [String(recapRaw)] : []);
-      return `<div class="de-pane">
-        <div class="de-lead"><div class="de-k">◆ Recap</div><p class="de-sub">How it finished, and how our call did.</p></div>
-        ${bits.length ? `<div class="de-sec"><div class="de-h">How it finished</div>${bits.map((b) => `<p>${b}</p>`).join("")}</div>` : ""}
-        ${recapParas.length ? `<div class="de-sec"><div class="de-h">The story</div>${recapParas.map((p: any) => `<p>${mdBold(cleanBlurb(String(p)))}</p>`).join("")}</div>` : ""}
       </div>`;
     }
     /* ══════════════ ODDS, CUT DOWN TO THE TWO THINGS WORTH KEEPING ══════════════
@@ -14771,8 +14241,8 @@ export default function Home() {
          copy of the same two numbers, 40px under the hero that already showed them. The Box
          Score tab owns every in-game number now; the hero owns the score. Nothing else on the
          page prints either. */
-      // RECAP IS NARRATIVE ONLY — the score blocks that used to open it are the hero's and the
-      // box score's job (gameRecap drops its own `finalTxt` chip for the same reason).
+      // RECAP IS NARRATIVE ONLY — the score blocks that used to open it are the hero's and
+      // the box score's job.
       // RECAP RETIRED (see the tab-set note): a final game has no live/recap pane at all, and
       // the live pane exists only while the game is actually in progress.
       const livePane = "";   // retired — the live-vs-line meter lives at the top of Box Score now
@@ -15301,8 +14771,11 @@ export default function Home() {
        what made the record confusing. The pricing-defect disclosure that used to be buried
        in here rides with the picks it describes, on the game page.
 
-       Everything cut is still computed and still reachable: tierRecordFor / strategyRecords
-       feed the Desk's research folds, which is where a breakdown by strategy belongs. */
+       This block used to promise that "everything cut is still computed and still reachable:
+       tierRecordFor / strategyRecords feed the Desk's research folds". Half of that was
+       already false when it was written — tierRecordFor had no callers at all, and neither
+       did monthRecord or edgeLeanSplit beside it. All three are gone (2026-08-16). The
+       by-strategy breakdown the Desk actually renders comes from strategyRecords. */
     // Deep links (?g=<id>, /g/<id>) resolve against EVERY pool — see gameAnywhere.
     function gameById(gid: any) {
       return gameAnywhere(gid);
@@ -15898,10 +15371,6 @@ export default function Home() {
        ellipsised to "ClickOnDetroit …". Measured on the live deck: scrollWidth 189 into a
        103px box. The leading segment IS the publisher's name as they gave it to us, so the
        button takes that and nothing is invented or renamed. */
-    function newsSourceName(s: any) {
-      const n = String((s && s.source) || "").trim().split(/\s+[|·—–]\s+/)[0].trim();
-      return n && !/^diamondedge$/i.test(n) ? n : "";
-    }
     // Dedupe headlines vs the lead (and each other) — one card per game. Shared by the front-page
     // render and the article reader's prev/next nav so keys/order always agree.
     function newsDedupedHeadlines(): any[] {
@@ -15973,9 +15442,6 @@ export default function Home() {
         { s: newsFeed.lead, key: "L" },
         ...newsDedupedHeadlines().map((s: any) => ({ s, key: String(orig.indexOf(s)) })),
       ].filter((x) => newsWorthASlide(x.s));
-    }
-    function newsDisplayKeys(): string[] {
-      return newsDisplayStories().map((x) => x.key);
     }
     /* THE READER'S RUNNING ORDER. The deck's order, filtered to the stories that actually
        open — a story we route to the wire has no reader page to walk to, so "next" must
@@ -17939,11 +17405,6 @@ export default function Home() {
           if (onAccept) setTimeout(onAccept, 320);
         }, { optional: "only rendered in the must-accept variant" });
       }
-    }
-    // Every money flow gates on acceptance before it can complete.
-    function requireTerms(next: () => void) {
-      if (termsAccepted()) { next(); return; }
-      openTermsSheet(true, next);
     }
     /* ═══ THE PLAN IS ONE FACT, AND IT IS THE ONE THE STORE CHARGES ═══
        2026-08-14. Every price on this app said $9.99. The live plan

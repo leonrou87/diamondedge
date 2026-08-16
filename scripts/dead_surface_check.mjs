@@ -136,6 +136,116 @@ const renderedIds = new Map(); // id -> {line, tag, hasHref}
   ts.forEachChild(node, walk);
 })(sf);
 
+/* ═══════ (C) REACHABILITY CLOSURE — the check (A) is too polite to make ═══════
+ *
+ * (A) asks "does anything outside this function name it?" — one hop. That clears any
+ * function called by ONE other function, and never asks whether that caller is itself
+ * reachable. So an entire severed island passes: on 2026-08-16 check (A) was green while
+ * 47 declarations across 26 clusters were unreachable from any entry point — the whole
+ * FEATURED GAME section (featuredPick and its five helpers, orphaned when featuredCard()
+ * was deleted in "round 5"), the whole POWER-USER VISUALS section (lineMove/leanMeter/
+ * wpLean, addressed to a "More detail" fold that no longer exists), and gameRecap(), the
+ * superseded twin of diamondEdgeReasoning() sitting 35 lines below it.
+ *
+ * This check walks the call graph properly: it indexes EVERY named function-like (function
+ * declarations AND `const f = () => …`, not just the two prefixes), attributes each identifier
+ * reference to the innermost function that encloses it, then computes the transitive
+ * closure from the real entry points — the top level of the component body, where init(),
+ * the pollers and the DOM bindings live.
+ *
+ * TWO THINGS KEEP IT HONEST. Rendered markup can call code through an inline handler, so
+ * template-literal TEXT is scanned for `name(` and those count as live edges. And anything
+ * reached from the top level is an entry point by definition, so a renderer wired up by a
+ * lifecycle hook is never mistaken for an island.
+ * ════════════════════════════════════════════════════════════════════════════════════════ */
+const fns = new Map(); // name -> {start, end, line}
+(function walk(node) {
+  let name = null;
+  if (ts.isFunctionDeclaration(node) && node.name) name = node.name.text;
+  else if (
+    ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer &&
+    (ts.isArrowFunction(node.initializer) || ts.isFunctionExpression(node.initializer))
+  ) name = node.name.text;
+  if (name && !fns.has(name)) {
+    fns.set(name, {
+      start: node.getStart(sf), end: node.getEnd(),
+      line: sf.getLineAndCharacterOfPosition(node.getStart(sf)).line + 1,
+    });
+  }
+  ts.forEachChild(node, walk);
+})(sf);
+
+// innermost enclosing function for a position — "@root" when a reference sits at top level
+const spans = [...fns.entries()].sort((a, b) => (b[1].end - b[1].start) - (a[1].end - a[1].start));
+const enclosing = (pos) => {
+  let best = null, bestSize = Infinity;
+  for (const [n, d] of spans) {
+    if (pos >= d.start && pos < d.end) {
+      const size = d.end - d.start;
+      if (size < bestSize) { best = n; bestSize = size; }
+    }
+  }
+  return best || "@root";
+};
+
+const edges = new Map(); // caller -> Set(callee)
+const addEdge = (from, to) => {
+  if (from === to) return; // self-recursion is not a door
+  if (!edges.has(from)) edges.set(from, new Set());
+  edges.get(from).add(to);
+};
+(function walk(node) {
+  if (ts.isIdentifier(node) && fns.has(node.text)) {
+    const d = fns.get(node.text);
+    const pos = node.getStart(sf);
+    const isDeclName =
+      node.parent &&
+      ((ts.isFunctionDeclaration(node.parent) && node.parent.name === node) ||
+       (ts.isVariableDeclaration(node.parent) && node.parent.name === node));
+    if (!isDeclName) addEdge(enclosing(pos), node.text);
+    void d;
+  }
+  // an inline handler in rendered markup — `onclick="foo()"` — is a real edge
+  if (ts.isTemplateHead(node) || ts.isTemplateMiddle(node) || ts.isTemplateTail(node) ||
+      ts.isNoSubstitutionTemplateLiteral(node)) {
+    const from = enclosing(node.getStart(sf));
+    for (const m of node.text.matchAll(/([A-Za-z_$][\w$]*)\s*\(/g)) {
+      if (fns.has(m[1])) addEdge(from, m[1]);
+    }
+  }
+  ts.forEachChild(node, walk);
+})(sf);
+
+/* THE ROOTS. Everything in this file lives inside the exported component, so "top level"
+ * alone reaches nothing — the entry points are the module's EXPORTS (the default-exported
+ * component, plus any named export a route may import) and true file top level. */
+const roots = new Set(["@root"]);
+(function walk(node) {
+  const mods = ts.canHaveModifiers(node) ? ts.getModifiers(node) : undefined;
+  if (mods && mods.some((m) => m.kind === ts.SyntaxKind.ExportKeyword)) {
+    if (ts.isFunctionDeclaration(node) && node.name) roots.add(node.name.text);
+    if (ts.isVariableStatement(node)) {
+      for (const d of node.declarationList.declarations) {
+        if (ts.isIdentifier(d.name)) roots.add(d.name.text);
+      }
+    }
+  }
+  ts.forEachChild(node, walk);
+})(sf);
+
+const reached = new Set();
+const visit = (n) => {
+  if (reached.has(n)) return;
+  reached.add(n);
+  for (const c of edges.get(n) || []) visit(c);
+};
+for (const r of roots) visit(r);
+
+const unreachable = [...fns.entries()]
+  .filter(([name]) => !reached.has(name) && !(name in ALLOW))
+  .map(([name, d]) => ({ name, line: d.line, lines: sf.getLineAndCharacterOfPosition(d.end).line + 1 - d.line + 1 }))
+  .sort((a, b) => a.line - b.line);
+
 // ---- 4. report ----
 const rel = relative(ROOT, TARGET);
 const dead = [...decls.entries()]
@@ -151,12 +261,27 @@ const orphanButtons = [...renderedIds.entries()]
 
 console.log(
   `dead-surface check — ${decls.size} render*/open* declarations, ` +
-  `${renderedIds.size} rendered button/link ids in ${rel}`
+  `${renderedIds.size} rendered button/link ids, ` +
+  `${fns.size} named functions (${reached.size - 1} reachable) in ${rel}`
 );
 
-if (!dead.length && !orphanButtons.length) {
-  console.log("  ✓ every surface has a door, and every door has a room");
+if (!dead.length && !orphanButtons.length && !unreachable.length) {
+  console.log("  ✓ every surface has a door, every door has a room, and nothing is marooned");
   process.exit(0);
+}
+
+if (unreachable.length) {
+  const total = unreachable.reduce((a, u) => a + u.lines, 0);
+  console.log(`\n  ✗ ${unreachable.length} MAROONED function(s) — ${total} lines no entry point can reach:\n`);
+  for (const { name, line, lines } of unreachable) {
+    console.log(`      ${name}()`.padEnd(34) + `${rel}:${line}  (${lines} lines)`);
+  }
+  console.log(`
+  These are not merely uncalled — nothing reachable from the component body calls them, or
+  calls anything that calls them. A cluster here is usually one deleted renderer and the
+  helpers it took down with it, still reading like live code. Delete the island, or wire it
+  to a door. If something reaches it a way this script cannot see, add it to ALLOW WITH the
+  reason.`);
 }
 
 if (dead.length) {

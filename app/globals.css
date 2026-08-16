@@ -1305,41 +1305,10 @@ details.more[open]>summary::after{transform:rotate(180deg)}
 .ic-line .ic-sub2{font-family:var(--mono);font-size:12px;color:var(--ink2);margin-left:6px}
 .ic-sub3{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;color:var(--ink3);margin-top:5px;line-height:1.45}
 .reasoning{font-size:14px;line-height:1.55;color:var(--ink)}
-/* line movement chip */
-.lmove{display:inline-flex;align-items:center;gap:4px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:12px;line-height:1;padding:3px 8px;border-radius:999px;white-space:nowrap;background:rgba(var(--tintc),.05)}
-.lmove .lm-open{color:var(--ink3)}
-.lmove .lm-arrow{font-weight:700}
-.lmove .lm-cur,.lmove .lm-val{font-weight:700;color:var(--ink)}
-.lmove .lm-n{color:var(--ink3);font-size:11px}
-.lmove .lm-tag{color:var(--ink3);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin-left:1px}
-.lmove.flat{opacity:.85}
-.lmove.toward{background:var(--dirgoodbg)}
-.lmove.toward .lm-arrow,.lmove.toward .lm-cur{color:var(--dirgood)}
-.lmove.against{background:var(--amberbg)}
-.lmove.against .lm-arrow,.lmove.against .lm-cur{color:var(--amber)}
-.lm-sharp{display:inline-flex;align-items:center;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:999px;margin-left:2px}
-.lm-sharp.toward{color:#fff;background:var(--b1);box-shadow:0 1px 6px rgba(var(--bluec),.35)}
-.lm-sharp.against{color:var(--a1);background:var(--a4)}
-
 /* lean meter */
 .lean{position:relative;display:inline-block;width:74px;height:16px;flex-shrink:0}
-.lean .ln-track{position:absolute;left:0;right:0;top:50%;height:3px;transform:translateY(-50%);border-radius:2px;background:rgba(var(--tintc),.12)}
-.lean .ln-band{position:absolute;top:50%;height:8px;transform:translateY(-50%);border-radius:3px;background:rgba(var(--bluec),.18)}
-.lean.over .ln-band{background:rgba(var(--bluec),.16)}
-.lean.under .ln-band{background:rgba(var(--cyanc),.16)}
-.lean .ln-tick{position:absolute;top:1px;bottom:1px;width:2px;transform:translateX(-50%);background:var(--ink3);border-radius:1px}
-.lean .ln-proj{position:absolute;top:50%;width:9px;height:9px;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #fff;box-shadow:0 1px 4px var(--sh5);z-index:1}
-.lean.over .ln-proj{background:var(--over)} .lean.under .ln-proj{background:var(--under)}
-
 /* ── recipe (VALUE) power-user blocks — soft gold highlights, not boxes ── */
 .pl-vdia{font-size:11px;line-height:1;color:var(--gold)}
-/* ── latest-read pill (More detail only) ── */
-.lread{display:inline-flex;align-items:center;gap:5px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:700;font-size:12px;line-height:1.2;border-radius:999px;padding:3.5px 9px;max-width:100%;min-width:0}
-.lread i{font-style:normal;font-weight:600;font-size:10px;letter-spacing:.09em;text-transform:uppercase;opacity:.72;white-space:nowrap;flex-shrink:0}
-.lread .lr-x{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
-.lread.up{color:var(--green);background:var(--greenbg)}
-.lread.hold{color:var(--ink2);background:var(--slatebg)}
-.lread.down{color:var(--amber);background:var(--amberbg)}
 .rcp-title{display:flex;align-items:center;gap:8px;font-family:var(--disp);font-weight:700;font-size:23px;letter-spacing:.02em;margin-top:7px;color:var(--ink)}
 .rcp-title .pl-vdia{color:var(--gold);font-size:17px;text-shadow:0 1px 6px rgba(var(--goldc),.4)}
 .rcp-steps{display:flex;flex-direction:column;gap:10px}
@@ -2774,25 +2743,6 @@ body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 .lp-graded.hit{border-color:rgba(var(--greenc),.34);background:rgba(var(--greenc),.08)}
 .lp-graded.miss{border-color:rgba(var(--redc),.28);background:rgba(var(--redc),.06)}
 .lp-graded.push{border-color:var(--glass-brd)}
-/* ---- LIVE TRACKING READ ("is our pick on course to cash?") ---- */
-.ltrack{padding:12px 15px 13px;border-radius:14px;border:1px solid var(--glass-brd);background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);box-shadow:var(--glass-shadow)}
-.ltr-k{display:flex;align-items:center;gap:6px;font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
-.ltr-k .livedot{width:6px;height:6px;border-radius:50%;background:var(--livemark);animation:pulse 1.3s infinite}
-.ltr-head{margin-top:6px;font-family:var(--disp);font-weight:800;font-size:17px;line-height:1.3;letter-spacing:.005em;color:var(--ink);font-variant-numeric:tabular-nums}
-.ltr-sub{margin-top:5px;font-family:var(--sans);font-size:14px;line-height:1.45;color:var(--ink2)}
-.ltr-note{margin-top:8px;font-family:var(--sans);font-size:13px;line-height:1.4;color:var(--ink3)}
-.ltrack.dir-hit{border-color:var(--dirgoodline);background:var(--dirgoodbg)}
-.ltrack.dir-hit .ltr-head{color:var(--dirgood)}
-.ltrack.dir-close{border-color:var(--dirnearline);background:var(--dirnearbg)}
-.ltrack.dir-close .ltr-head{color:var(--dirnear)}
-.ltrack.dir-miss{border-color:var(--dirbadline);background:var(--dirbadbg)}
-.ltrack.dir-miss .ltr-head{color:var(--dirbad)}
-.ltrack.is-done .ltr-head{font-size:16px}
-/* hero variant — compact, sits in the fused game header */
-.ltrack-hero{padding:9px 12px 10px;border-radius:12px;box-shadow:var(--glass-shadow)}
-.ltrack-hero .ltr-head{font-size:15px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gp-trend .ltrack-hero{margin-top:0}
-
 /* --- Article reader: graded result on the pick (final games) --- */
 .art-res{font-family:var(--sans);font-variant-numeric:tabular-nums;font-weight:800;font-size:13px;letter-spacing:.02em;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .art-res.hit{background:rgba(var(--greenc),.14);color:var(--g3)}
@@ -4235,8 +4185,6 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
   box-shadow:inset 0 0 0 1px rgba(var(--slatec),.30),inset 0 1.5px 0 rgba(var(--rimc),.12)}
 .dsk-l10{display:inline-flex;align-items:center;gap:3px}
 .dsk-l10 i{width:5.5px;height:5.5px;border-radius:99px;display:block}
-.dbt-rec{font-family:var(--mono);font-weight:700;font-size:12px;color:var(--ink3);background:rgba(var(--tintc),.07);
-  border-radius:999px;padding:2px 8px;box-shadow:inset 0 0 0 1px rgba(var(--rimc),.08)}
 /* detail masthead desk line */
 .sh-desk{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:9px}
 
@@ -5215,12 +5163,6 @@ a.dp-recbtn:hover{color:var(--ink)}
 
 /* the character page carries the same line under its hero stats */
 .anl-prov{margin-top:12px}
-.dbt-rec{display:inline-flex;flex-direction:column;align-items:flex-end;gap:1px;line-height:1.15}
-.dbt-rec b{font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:-.02em;
-  font-variant-numeric:tabular-nums}
-.dbt-rec i{font-style:normal;font-family:var(--sans);font-variant-numeric:tabular-nums;
-  font-weight:600;font-size:9.5px;letter-spacing:.02em;color:var(--ink4);white-space:nowrap}
-
 /* ── game-page tab strip: EQUAL CELLS, AND "BOX SCORE" FITS INSIDE ITS OWN ──────────────
    The bar carries three tabs pregame, four on a final and five on a live game. `flex:1 1 0`
    makes the cells identical at every count; these steps make the longest label fit the
