@@ -1898,62 +1898,28 @@ export default function Home() {
     }
 
 
-    // ===================== PREMIUM / FREEMIUM (design-complete; payments stubbed) =====================
-    // Entitlement is one localStorage flag `de_premium` — DEFAULT false for public launch.
-    // STRIPE WIRE-IN POINT: a real flow replaces setPremium(true) in the Upgrade page's
-    // Subscribe handler with: POST /api/checkout → Stripe Checkout Session → redirect →
-    // webhook confirms the subscription → entitlement served with the payload/session.
-    /* ═══════════ ENTITLEMENT IS THE SERVER'S ANSWER NOW ═══════════
-       2026-08-10. `de_premium` is a localStorage flag: the browser writes it,
-       anyone with a devtools console can write it, and nothing on the server
-       has ever read it. That was survivable only because there was nothing to
-       protect — the payload was identical for every reader, so the flag merely
-       decided whether the client drew a blur over bytes it already had.
+    /* ═══════════ THERE IS NO ENTITLEMENT ANY MORE (2026-08-16) ═══════════
+       The paywall is deleted and the product is funded by clearly-labelled
+       partner units. What stood here — `serverPremium`, `isPremium()`,
+       `setPremium()`, `refreshSession()` and `redeemAccessCode()` — is gone
+       rather than flagged off, because a dormant tier is not free: it kept
+       WRITING `localStorage.de_premium` on every boot, and two surfaces still
+       read it. A browser that carried `de_premium="1"` from the paid era was
+       still shown a "◆ Premium" badge on an app with nothing to be premium
+       about, and the sign-in screen still promised that "Premium reveals the
+       picks" — which, now, is simply false: the picks are the free part.
 
-       Now there are two payloads. The public board is what /api/snap serves and
-       what this flag can never unlock, because the picks are not in it. The
-       premium board comes from /api/premium behind an HMAC-signed HttpOnly
-       cookie that JS cannot read or forge. So this flag stops being the gate
-       and becomes what it always actually was: a local cache of the answer, for
-       first paint, refreshed from the server on boot.
-
-       `serverPremium` is the truth. It starts null (unknown) and `true`
-       falls back to the cached flag only until the first /api/session answer
-       lands — which affects nothing but a few hundred milliseconds of styling,
-       because the bytes are already gone from the public payload either way. */
-    let serverPremium: boolean | null = null;
-    let sessionConfigured = false;
-    const isPremium = () => (serverPremium != null ? serverPremium : (() => { try { return localStorage.getItem("de_premium") === "1"; } catch { return false; } })());
-    const setPremium = (v: boolean) => { try { localStorage.setItem("de_premium", v ? "1" : "0"); } catch {} };
-    async function refreshSession() {
-      try {
-        const r = await fetch("/api/session", { cache: "no-store" });
-        if (!r.ok) return;
-        const j = await r.json();
-        const was = serverPremium;
-        serverPremium = !!j.premium;
-        sessionConfigured = !!j.configured;
-        setPremium(serverPremium);
-        /* A CHANGE OF ENTITLEMENT CHANGES WHICH PAYLOAD WE SHOULD BE HOLDING,
-           not merely how it is drawn — so it is a reload of the data, never a
-           re-render of what we have. */
-        if (was !== null && was !== serverPremium) { try { location.reload(); } catch {} }
-      } catch { /* unknown stays unknown; the public board renders either way */ }
-    }
-    async function redeemAccessCode(code: string): Promise<{ ok: boolean; reason?: string }> {
-      try {
-        const r = await fetch("/api/session", {
-          method: "POST", headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ code }),
-        });
-        const j = await r.json().catch(() => ({}));
-        if (r.ok && j && j.ok) { serverPremium = true; setPremium(true); track("upgrade", "code"); return { ok: true }; }
-        return { ok: false, reason: String((j && j.reason) || `http_${r.status}`) };
-      } catch { return { ok: false, reason: "network" }; }
-    }
+       The one thing that survives is SIGN-OUT. Accounts are kept (support
+       threads and analytics need them), so ending a session still tells the
+       server, and still clears any stale premium cookie a long-lived browser
+       is holding from before the deletion. It reports no tier because there
+       is no tier to report. */
     async function endSession() {
       try { await fetch("/api/session", { method: "DELETE" }); } catch {}
-      serverPremium = false; setPremium(false);
+      /* Retire the dead paid-era flag from this browser rather than rewriting
+         it to "0" — nothing reads it now, and leaving it lying around is how a
+         future reader of this file concludes there is still a tier. */
+      try { localStorage.removeItem("de_premium"); } catch {}
     }
     /* THE MOCK CHECKOUT IS GONE (2026-08-14). It POSTed {mock:true} and, when the
        owner had DE_ALLOW_MOCK_CHECKOUT=1 set — which production did — the server
@@ -14376,31 +14342,29 @@ export default function Home() {
               return `<div class="callcard pass pending"><div class="cc-k">${pickLabel(g)}</div>
               <p class="cc-passwhy">${esc(picksEtaLong(g))} When the pick posts it locks — no pick on this site is ever quietly edited.</p></div>`;
             }
-            /* ══ AND A SEALED CARD IS NOT A PASS EITHER — it is a decision we are
-                  WITHHOLDING, and this surface was answering on its behalf ══
-               `picksPending()` returns FALSE for a premium_locked card, by design and
-               correctly (2245ccf: a sealed card is decided, not pending — the tile must
-               show UNLOCK, not PICKS SOON). But that made this the `else`, so the moment
-               a sealed game went live the preview printed, in the DiamondEdge Pick slot,
-               to a signed-out reader: "We checked the spread, the total and the moneyline
-               … none of them offered a real advantage." Two things wrong with that, and
-               the second is the serious one:
-                 · the client INVENTED a verdict the payload deliberately withholds —
-                   `pick`, `stars` and `why` are ABSENT on an ungraded card, and a
-                   sentence asserting we passed is that same fact reconstructed;
-                 · it is a coin-flip lie. On DEN@ATL we had in fact passed, so it read
-                   true; on the very next sealed card carrying a real OVER it would have
-                   told a free reader we had no bet — hiding the product AND leaking
-                   pass-vs-pick, the one premium fact the redaction exists to protect.
-               So a server-sealed card gets the unlock affordance, which is the honest
-               answer: a decision exists, and it is behind the paywall. (The predicate is
-               the server's own `premium_locked` — the same expression `picksPending` and
-               `picksEtaShort` each compute inline; three copies now, and they should
-               converge on one resolver the next time this file is opened for that.) */
+            /* ══ THE SELL IS GONE FROM THIS BRANCH; THE HONESTY RAIL UNDER IT STAYS ══
+               This used to end "…and it is part of DiamondEdge Premium until the game
+               grades" — an ask, on a free product, for a pick the reader can now read
+               on the tile. That sentence is deleted.
+
+               WHAT IS NOT DELETED IS THE GUARD, because the bug it was built for
+               outlived the paywall. `picksPending()` returns FALSE for a card the
+               payload has already decided, which made the `else` below the default —
+               and the `else` asserts "We priced every market … none of them beat our
+               number." That is the client INVENTING a verdict: on a card whose
+               decision this surface failed to resolve, it is a coin flip whether the
+               sentence is true, and on the half where we actually hold a side it tells
+               the reader we had no bet on a game we did bet. Free or paid, that is the
+               one thing this app may not do.
+
+               So when the payload says a decision EXISTS (`premium_*` survive as the
+               server's marker for "this card is decided") and this surface could not
+               resolve it, the honest answer is to say the call exists and where to read
+               it — not to invent a pass, and not to sell anything. */
             if (g && (g.premium_locked === true
                       || (g.pick && (g.pick.premium_locked || g.pick.premium)))) {
               return `<div class="callcard pass locked"><div class="cc-k">${pickLabel(g)}</div>
-              <p class="cc-passwhy">This game is decided and the call is frozen — it locked at this game's own wall, before ${esc(WALL_NOUN[String(sp || "").toLowerCase()] || "the start")}, and it is part of DiamondEdge Premium until the game grades.</p>
+              <p class="cc-passwhy">This game is decided and the call is frozen — it locked at this game's own wall, before ${esc(WALL_NOUN[String(sp || "").toLowerCase()] || "the start")}. It is on the board with the rest of the day's picks; this pane just could not load it.</p>
               </div>`;
             }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
@@ -14574,24 +14538,20 @@ export default function Home() {
          NO RULE-NAME CHIP EITHER, and that one predates today: the card used to print
          `forge_strategy.rule_name` — "ATLAS's Call" — one line above prose whose own
          voice check REFUSES that exact string inside it. */
-      /* AND THE TEASER IS SPOKEN IN BASEBALL TOO (2026-08-09). This read "the full read
-         behind this pick — the model number, the line it beats, and the history of calls
-         made exactly this way". That is machinery vocabulary, on the very surface whose
-         generated prose `rule_voice._check_voice` REFUSES for containing those words. It
-         was exempt from the rule only because it is hand-written marketing copy rather
-         than generated text — a distinction nobody reading the card can see. It now names
-         what is actually behind the lock, in the words the write-up itself uses. */
-      const previewBlock = leadLocked
-        ? `<div class="whycard">
-            <div class="wc-k">Game preview</div>
-            <p>The write-up on this game — the two starters, where the total opened and where it is now, and the measured facts behind the call — is part of DiamondEdge Premium.</p>
-          </div>`
-        /* AN EMPTY CARD IS WORSE THAN NO CARD. On a game the backend has not written a
-           preview for yet — every game on the board before the morning serve — bodyParas,
-           streaks and facts are all empty and this shipped a titled box with nothing in it.
-           A heading over white space reads as content that failed to load. No content, no
-           card; the rest of the pane is unaffected. */
-        : (bodyParas.length || stks || facts.length)
+      /* THE TEASER BRANCH IS DELETED (2026-08-16). `previewBlock` used to open with a
+         `leadLocked ?` arm that replaced the entire write-up with "…is part of
+         DiamondEdge Premium". The write-up is free, so the arm is gone rather than
+         made unreachable — `sideLocked()` already returns a hard false, which means
+         `leadLocked` is always false and this was dead code advertising a dead plan
+         to the next person to read the file. What is left is the real question this
+         expression asks: is there a preview to show at all?
+
+         AN EMPTY CARD IS WORSE THAN NO CARD. On a game the backend has not written a
+         preview for yet — every game on the board before the morning serve — bodyParas,
+         streaks and facts are all empty and this shipped a titled box with nothing in it.
+         A heading over white space reads as content that failed to load. No content, no
+         card; the rest of the pane is unaffected. */
+      const previewBlock = (bodyParas.length || stks || facts.length)
           ? `<div class="whycard preview">
               ${/* NO SECTION HEADING OVER THE NARRATIVE. "The setup" made sense over three
                    composed sentences sitting under a separate rationale card; over the
@@ -17984,17 +17944,19 @@ export default function Home() {
 
     // ===================== UPGRADE (stub checkout — no real payments) =====================
 
-    // ===================== ACCOUNT / SIGN-IN / SUBSCRIBE (stubs) =====================
+    // ===================== ACCOUNT / SIGN-IN =====================
     // Top-right header button: an avatar (initials) when signed in, a person glyph when not.
-    // Both open the Account screen; the screen branches to sign-in or subscribe as needed.
+    // Both open the Account screen; there is one kind of account, so it never branches.
     const personSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-3.7 3.6-6.5 8-6.5s8 2.8 8 6.5"/></svg>`;
     function accountButton() {
       const a = getAccount();
-      const prem = isPremium();
+      /* THE ◆ RANK MARK IS GONE with the tier it ranked. It gilded the avatar and
+         hung a diamond off the button for anyone whose browser still held the
+         paid-era flag — a status badge for a status that no longer exists. */
       const inner = a
-        ? `<span class="acct-av${prem ? " prem" : ""}">${esc(accountInitials())}</span>`
+        ? `<span class="acct-av">${esc(accountInitials())}</span>`
         : `<span class="acct-ic">${personSvg}</span><span class="acct-signin-tx">Sign in</span>`;
-      return `<button class="acctbtn${a ? "" : " signin"}" id="acctbtn" aria-label="${a ? "Your account" : "Sign in"}">${inner}${a && prem ? `<span class="acct-star" aria-hidden="true">◆</span>` : ""}</button>`;
+      return `<button class="acctbtn${a ? "" : " signin"}" id="acctbtn" aria-label="${a ? "Your account" : "Sign in"}">${inner}</button>`;
     }
     function refreshAccountButton() {
       const old = $("acctbtn"); if (!old || !old.parentElement) return;
@@ -18142,16 +18104,21 @@ export default function Home() {
       const a = getAccount();
       if (!a) { accountMode = "signin"; renderSignIn(); return; }
       if (accountMode === "support") { renderSupport(); return; }
-      const prem = isPremium();
       const blk = headlineRecordBlock();
       const recLine = blk ? `${blk.wl}${blk.hit != null ? ` · ${stratPct(blk.hit)}` : ""}` : "";
       view.innerHTML = `
         <div class="acct-page">
           <header class="acct-hero">
-            <span class="acct-bigav${prem ? " prem" : ""}">${esc(accountInitials())}</span>
+            <span class="acct-bigav">${esc(accountInitials())}</span>
             <h2>${esc(a.name || "DiamondEdge Member")}</h2>
             <div class="acct-em">${esc(a.email || "")}</div>
-            <div class="acct-tags"><span class="acct-tag prov">${PROVIDER_MARK[a.provider] ? `<span class="atp">${PROVIDER_MARK[a.provider]}</span>` : ""}${esc(PROVIDER_LABEL[a.provider] || "Account")}</span><span class="acct-tag ${prem ? "prem" : "free"}">${prem ? "◆ Premium" : "Free member"}</span></div>
+            ${/* THE TIER CHIP IS DELETED, NOT SET TO "FREE" (2026-08-16). It read
+                  "◆ Premium" or "Free member", and once there is only one kind of
+                  account BOTH are wrong: the first is a badge for a tier that no
+                  longer exists, and the second still tells the reader he is on the
+                  lesser half of a ladder that has no upper rung. How the sign-in
+                  happened is the one true thing left to say here. */""}
+            <div class="acct-tags"><span class="acct-tag prov">${PROVIDER_MARK[a.provider] ? `<span class="atp">${PROVIDER_MARK[a.provider]}</span>` : ""}${esc(PROVIDER_LABEL[a.provider] || "Account")}</span></div>
           </header>
 
           <!-- ── 2. HOW THIS IS FUNDED ── no plan, no price, no upgrade ── -->
@@ -18342,7 +18309,15 @@ export default function Home() {
           <div class="sgn-hero">
             <div class="sgn-dia" aria-hidden="true"></div>
             <h2>Join DiamondEdge</h2>
-            <p>Save your preferences and unlock Premium. The record stays public; Premium reveals the picks and the reasoning behind them.</p>
+            ${/* THE SELL THAT STOOD HERE WAS ALSO, BY 2026-08-16, A LIE. It read
+                  "Save your preferences and unlock Premium. The record stays public;
+                  Premium reveals the picks and the reasoning behind them." Every
+                  pick and every write-up is free and public now, so that sentence
+                  told each new reader the product was hidden from him when it was
+                  sitting one tab away — the most-reached surface in the app selling
+                  something that does not exist. An account buys exactly what an
+                  account buys, and the honest version is short. */""}
+            <p>An account saves your league order and your preferences, and gives you a support thread we answer. Every pick, every write-up and the full record are free either way — signed in or not.</p>
           </div>
           <!-- THE SIGNUP GATE, ABOVE THE BUTTONS IT GATES (2026-08-10). A checkbox that
                must be ticked before any provider button will complete — so it belongs
@@ -21668,18 +21643,13 @@ export default function Home() {
       // completed (and the hash scrubbed) before the shell renders. Costs a string
       // check on every ordinary boot; fire-and-forget, it never blocks the board.
       try { supaBootComplete(); } catch {}
-      /* ASK THE SERVER WHETHER THIS READER IS ENTITLED, BEFORE THE FEEDS. The
-         answer decides WHICH PAYLOAD the loads below should fetch — public or
-         premium — so it has to land first or a member's first board is the
-         public one and every surface has to be repainted when the truth
-         arrives. It is a ~200-byte same-origin request with a short deadline;
-         if it does not answer, entitlement stays "unknown", the public board
-         renders, and nothing is blocked. The failure mode is a locked board,
-         which is the correct default for a paywall. */
-      await Promise.race([
-        refreshSession(),
-        new Promise((r) => setTimeout(r, 1200)),
-      ]);
+      /* THE ENTITLEMENT CHECK THAT STOOD HERE IS DELETED (2026-08-16), AND WITH
+         IT UP TO 1.2s OF BOOT. Every boot used to `await` /api/session before
+         touching a feed, because the answer decided which payload to fetch.
+         There is one payload now — the free one — so the question has no
+         consequence, and asking it was costing every reader a blocking
+         same-origin round-trip in front of the board on the slowest connection
+         they own. The feeds start immediately. */
       bindDeskTaps(); // one capture-phase delegate: any [data-an] tap opens the analyst card
       bindShellSwipeBack();
       renderShell();
