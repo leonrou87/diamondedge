@@ -48,7 +48,15 @@ export const KEYS = [
      the whole session off the proxy (snapProxyFailed) and burned the reader's
      12-read direct budget on Supabase full-price reads. In the manifest they are
      first-class surfaces: stamped (~40 bytes each), edge-cached at DEFAULT_TTL,
-     revalidated by the platform's mssync hook on real change. */
+     and revalidated on real change by the platform's `edge_revalidate.notify()`
+     hook, which every publisher of these keys calls.
+
+     CORRECTED 2026-08-16: this used to credit "the platform's mssync hook".
+     `com.diamondedge.mssync` was the PREMIUM SEALER and was deleted with the
+     paywall that morning — it never revalidated these bare keys, and it does
+     not exist. Behaviour here is unaffected; the sentence was simply false, and
+     a false comment on a live cache path sends the next debugger looking for a
+     job that is gone. (Platform-side register: `v4/serve/fleet_manifest.py`.) */
   "nfl",
   "nba",
   "nhl",

@@ -69,9 +69,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # THE WEEKLY CANARY. An alarm that has never fired is a hypothesis. Monday
-      # 20:17 UTC forces a verdict so the SMTP path is exercised on a schedule
-      # and a broken secret is discovered by a drill instead of by an outage.
+      # THE DRILL, ON DEMAND. An alarm that has never fired is a hypothesis, so
+      # the SMTP path still has to be exercised deliberately — `workflow_dispatch`
+      # with `drill=<mode>` forces a verdict and proves the secret works.
+      #
+      # CORRECTED 2026-08-16: this heading used to read "THE WEEKLY CANARY …
+      # Monday 20:17 UTC forces a verdict", describing the `17 20 * * 1` cron
+      # that was REMOVED on 2026-08-15 — see the block thirty lines above, which
+      # explains at length why a guaranteed weekly email is an alarm that cannot
+      # mean anything. The two passages contradicted each other in the same file,
+      # and this one named a schedule that no longer exists.
       - name: Decide drill mode
         id: mode
         run: |
