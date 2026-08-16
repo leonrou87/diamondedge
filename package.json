@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "check:surfaces": "node scripts/dead_surface_check.mjs"
+    "check:surfaces": "node scripts/dead_surface_check.mjs",
+    "check:css": "node scripts/dead_css_check.mjs --strict",
+    "check": "npm run check:surfaces && npm run check:css"
   },
   "dependencies": {
     "next": "16.2.9",
