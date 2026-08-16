@@ -2312,16 +2312,34 @@ export default function Home() {
       return live[Math.abs(h) % live.length];
     }
 
-    /* ═══ FREQUENCY CAPS ═══ Session-scoped, in memory: a reload is a new session
-       and that is the honest reading of "per session" for a single-page app. Two
-       limits, both cheap to reason about: per-slot `cap`, and a global ceiling so
-       a very long session cannot turn into a wall of units. */
+    /* ═══ FREQUENCY CAPS, AND THE REPAINT TRAP ═══
+       Session-scoped and in memory: a reload is a new session, which is the honest
+       reading of "per session" for a single-page app.
+
+       THE TRAP, AND WHY THIS COUNTS PLACEMENTS RATHER THAN RENDERS: the board
+       repaints on every live cycle, and each repaint rebuilds the slate as a fresh
+       HTML string. A cap that counted RENDERS burned itself within a minute — the
+       first version of this did exactly that, and every slot on the site went dark
+       permanently about two repaints after boot. The same bug would have inflated
+       the impression numbers the owner is meant to price inventory from: one board
+       left open all evening would have reported hundreds of impressions for a unit
+       the reader saw once.
+
+       So the unit of both the cap and the impression is a PLACEMENT — a slot in a
+       context — not a render. Re-rendering `odds-shop` for the same game is the
+       same placement; opening a different game is a new one. */
     const AD_SESSION_MAX = 8;
-    let adShown: Record<string, number> = {};
+    const adPlacementKey = (key: string, g?: any) => {
+      const gid = g && (g.game_id || g.game_pk);
+      return `${key}|${gid != null ? String(gid) : "board"}`;
+    };
+    const adPlacements = new Set<string>();     // every placement filled this session
+    let adShown: Record<string, number> = {};   // distinct placements, per slot
     let adShownTotal = 0;
-    function adMayRender(key: string): boolean {
+    function adMayRender(key: string, pk: string): boolean {
       const cfg = AD_SLOTS[key];
       if (!cfg || !cfg.enabled) return false;
+      if (adPlacements.has(pk)) return true;    // a repaint of a unit already granted
       if (adShownTotal >= AD_SESSION_MAX) return false;
       return (adShown[key] || 0) < cfg.cap;
     }
@@ -2361,14 +2379,23 @@ export default function Home() {
         const els = scope.querySelectorAll ? scope.querySelectorAll("[data-ad-slot]") : [];
         els.forEach((el: any) => {
           if (el._adWired) return;
-          el._adWired = true;
+          el._adWired = true;                    // per ELEMENT: don't double-bind a click
           const slot = el.dataset.adSlot || "?";
           const partner = el.dataset.adPartner || "house";
-          adShown[slot] = (adShown[slot] || 0) + 1;
-          adShownTotal++;
-          track("ad_impression", `${slot}|${partner}`);
-          const ob = adEnsureObserver();
-          if (ob) ob.observe(el);
+          const pk = el.dataset.adPk || `${slot}|board`;
+          /* Per PLACEMENT: a repaint produces a new element for a unit the reader is
+             already looking at. That is not a second impression and it must not spend
+             the cap — see the note on adMayRender. */
+          if (!adPlacements.has(pk)) {
+            adPlacements.add(pk);
+            adShown[slot] = (adShown[slot] || 0) + 1;
+            adShownTotal++;
+            track("ad_impression", `${slot}|${partner}`);
+            const ob = adEnsureObserver();
+            if (ob) ob.observe(el);
+          } else {
+            el._adViewed = true;                 // already measured; don't re-observe
+          }
           const a = el.querySelector("a[href]");
           if (a) a.addEventListener("click", () => track("ad_click", `${slot}|${partner}`), { passive: true });
         });
@@ -2447,13 +2474,17 @@ export default function Home() {
     }
     function adSlot(key: string, g?: any) {
       const cfg = AD_SLOTS[key];
-      if (!cfg || !adMayRender(key)) return "";
+      const pk = adPlacementKey(key, g);
+      if (!cfg || !adMayRender(key, pk)) return "";
       for (const kind of cfg.kinds) {
         const html = kind === "affiliate" ? adAffiliateHtml(key, g)
                    : kind === "display"   ? adDisplayHtml(key)
                    : kind === "house"     ? adHouseHtml(key)
                    : "";
-        if (html) { adScheduleWire(); return html; }
+        if (html) {
+          adScheduleWire();
+          return html.replace("<aside ", `<aside data-ad-pk="${esc(pk)}" `);
+        }
       }
       return "";
     }
