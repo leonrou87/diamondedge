@@ -1,5 +1,9 @@
 "use client";
 import { useEffect } from "react";
+/* The ad configuration is a module rather than a const in this file because it
+   has a SECOND reader: the owner's revenue console imports the same inventory
+   to price it. See app/ads.ts for the rules that govern every unit. */
+import { AD_SLOTS, AD_NETWORK, adLivePartners } from "./ads";
 
 export default function Home() {
   useEffect(() => {
@@ -1994,8 +1998,15 @@ export default function Home() {
     const track = (t: string, m?: any) => { try { if (anQ.length < 200) anQ.push(m != null ? { t, m: String(m).slice(0, 80) } : { t }); } catch {} };
     function anFlush(useBeacon: boolean) {
       if (!anQ.length) return;
+      /* The server caps a batch at 60 rows, so the client sends 60 — but it used to
+         CLEAR the whole queue afterwards, discarding events 61+ that the server had
+         never seen. Harmless while the vocabulary was tab/game; not harmless now that
+         ad measurement rides this queue, because the events it would silently drop on
+         a long session are the impressions and viewables the inventory is priced from.
+         Keep the remainder for the next flush; the tab-hide flush is the last one
+         either way, and the 200-event queue cap still bounds the whole thing. */
       const body = JSON.stringify({ sid: anSid, ev: anQ.slice(0, 60) });
-      anQ = [];
+      anQ = anQ.slice(60);
       try {
         if (useBeacon && navigator.sendBeacon) { navigator.sendBeacon("/api/events", body); return; }
         fetch("/api/events", { method: "POST", body, keepalive: true }).catch(() => {});
@@ -2235,70 +2246,14 @@ export default function Home() {
     }
     /* ═══════════════════ THE AD SURFACE — the revenue foundation (2026-08-16) ═══════════════════
        The picks are free now, so advertising is how this pays for itself. This is
-       the whole ad system: an inventory of named slots, per-slot fill logic with a
-       house fallback, frequency caps, and first-party viewability + click
-       measurement so the owner can PRICE the inventory from measured numbers
-       instead of guesses.
+       the ENGINE: fill logic, frequency caps, the house fallback, the display
+       loader, and first-party viewability + click measurement so the owner can
+       PRICE the inventory from measured numbers instead of guesses.
 
-       ═══ THE HARD RULES, IN CODE RATHER THAN IN A COMMENT ═══
-        1. THE PICK ROW IS NEVER AN AD. Not the call strip, not the tile verdict,
-           not the live pick line, not the Record or any graded receipt. An ad
-           inside or beside a call implies the partner endorses it. There is no
-           "sponsored by" on a pick, at any price. `AD_SLOTS` simply contains no
-           such placement, and adding one is the thing not to do.
-        2. NO AD MAY BE MISTAKEN FOR EDITORIAL. Every unit carries the FTC
-           "Partner offer" eyebrow, renders in the app's aside language (never the
-           article or card voice), and links with rel="noopener sponsored".
-        3. THE ONLY NUMBER A UNIT MAY QUOTE IS OUR OWN PUBLISHED LINE, and the
-           partner is named as somewhere to shop it — never as a voice on it.
-        4. NO THIRD-PARTY SCRIPT LOADS UNTIL A NETWORK IS CONFIGURED. `AD_NETWORK`
-           is null out of the box: no tag, no tracker, no request. Display is the
-           fallback tier and it stays dark until the owner signs up.
-        5. THE STORY DECK IS OFF LIMITS. Its paint window (only the live slide ±1
-           painted) exists because iOS Safari killed the page without it. An extra
-           full-screen layer with a remote image is precisely that crash. There is
-           no deck slot and there should not be one. */
-
-    /* OWNER: paste approved affiliate tracking links here. A partner with url "#"
-       is DARK — it never renders. `states` is per-state licensing: null means "no
-       restriction recorded"; once a second partner lands, fill it in, because a
-       book that is only licensed in some jurisdictions must not be shown as though
-       it were available everywhere. */
-    const AD_PARTNERS: { id: string; label: string; tagline: string; url: string; states?: string[] | null }[] = [
-      { id: "book-a", label: "Your Sportsbook", tagline: "Compare totals and prices on today's board", url: "#", states: null },
-      { id: "book-b", label: "Second Book", tagline: "Line-shop the slate before first pitch", url: "#", states: null },
-    ];
-
-    /* OWNER: a display network is the LOW-VALUE FALLBACK — it fills a slot no
-       affiliate wants. Leave null and no third-party script is ever injected.
-       Set { id } only after signing up; the loader below is the only place a
-       remote tag can enter this app, and it is never in the boot path. */
-    const AD_NETWORK: { id: string } | null = null;
-
-    /* ═══ THE INVENTORY ═══ Every placement worth having, with its honest cost to
-       the reader. `kinds` is the fill ladder in order of value: an affiliate unit
-       first (CPA, the real money), a display tag if a network is configured, then
-       a HOUSE card so a slot is never an empty hole. `cap` is the per-session
-       limit for that slot. Slots marked enabled:false are built and measured-ready
-       but held back until fill rate justifies the interruption. */
-    const AD_SLOTS: Record<string, { enabled: boolean; kinds: string[]; cap: number; minSlate?: number; note: string }> = {
-      // LOW COST — below the fold on most slates, never between the first games.
-      "board-mid":   { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 2, minSlate: 7, note: "mid-board, after the 6th tile" },
-      // VERY LOW COST — terminal position, zero interruption. Lowest CPM, safest.
-      "board-foot":  { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 1, note: "below the last tile" },
-      // LOW-MODERATE COST, HIGHEST VALUE — line-shopping intent lives here.
-      "odds-shop":   { enabled: true,  kinds: ["affiliate", "house"],            cap: 3, note: "game sheet, Odds tab" },
-      // LOW COST — terminal position in the reader.
-      "article-end": { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 2, note: "after the article body" },
-      // LOW COST — the slot the Premium CTA vacated; correctly styled already.
-      "desk-foot":   { enabled: true,  kinds: ["affiliate", "display", "house"], cap: 1, note: "Desk tab, below the roster" },
-      // HELD BACK — interrupts prose. Only worth it at real fill rate.
-      "article-mid": { enabled: false, kinds: ["affiliate", "display", "house"], cap: 1, note: "mid-article; interrupts prose" },
-      // HELD BACK — small audience; treat as house-fallback inventory.
-      "research-foot": { enabled: false, kinds: ["house"],                       cap: 1, note: "end of a research paper" },
-    };
-
-    const adLivePartners = () => AD_PARTNERS.filter((p) => p && p.label && p.url && p.url !== "#");
+       THE CONFIGURATION IS NOT HERE. Partners, slots, caps and the honest
+       reader-cost of each surface live in `app/ads.ts`, imported at the top of
+       this file, because the revenue console imports the same table to price it.
+       The five hard rules that govern every unit are written down there. */
 
     /* Deterministic partner per slot — stable across repaints (a card must never
        flicker to a different book mid-session), rotating by day so a multi-partner
@@ -2329,10 +2284,26 @@ export default function Home() {
        context — not a render. Re-rendering `odds-shop` for the same game is the
        same placement; opening a different game is a new one. */
     const AD_SESSION_MAX = 8;
-    const adPlacementKey = (key: string, g?: any) => {
-      const gid = g && (g.game_id || g.game_pk);
-      return `${key}|${gid != null ? String(gid) : "board"}`;
-    };
+    /* THE CONTEXT IS THE OTHER HALF OF A PLACEMENT, and getting it wrong is a
+       measurement bug rather than a visible one — which is why it is spelled out.
+       A placement is "this slot, in this thing the reader is looking at":
+
+         board slots  the slate — league + date. Changes only when the reader
+                      picks a different sport or day, which is a genuinely new
+                      opportunity to show a unit, and never on a repaint.
+         odds-shop    the game.
+         article-end  THE STORY. Keyed on the surface alone (the first version of
+                      this was), every article after the first counted zero
+                      impressions and zero viewables no matter how many the reader
+                      read — the news inventory would have priced at one impression
+                      per session forever, and the owner would have concluded the
+                      news deck was worthless when it is the deepest surface here.
+         desk-foot    the Desk tab; there is only one.
+
+       Callers pass it explicitly. A caller that forgets gets the slot's own name,
+       which is the safe direction: it under-counts rather than inflating. */
+    const adPlacementKey = (key: string, ctx?: string) => `${key}|${ctx || "one"}`;
+    const adGameCtx = (g: any) => { const id = g && (g.game_id ?? g.game_pk); return id != null ? String(id) : "game"; };
     const adPlacements = new Set<string>();     // every placement filled this session
     let adShown: Record<string, number> = {};   // distinct placements, per slot
     let adShownTotal = 0;
@@ -2349,18 +2320,35 @@ export default function Home() {
        ride the existing two-beacons-per-session batch — `track()` only queues,
        it never sends — so measurement costs no extra request. The queue is
        capped by track() itself inside the 60-event budget. */
+    /* VIEWABILITY IS COUNTED PER PLACEMENT, NOT PER ELEMENT — same reason as the
+       cap, and the mistake here is subtler because it fails silently in one
+       direction only. The board replaces its whole slate on every live cycle, so
+       the element carrying `board-foot` is destroyed and rebuilt every minute or
+       so. Marking viewability on the ELEMENT meant: unit renders below the fold
+       (impression counted, not yet viewable) → board repaints → the new element
+       is a repeat placement, so the old code set `_adViewed = true` on it and
+       never observed it → the reader scrolls down and looks straight at the unit
+       and it can never become viewable again, for the rest of the session.
+
+       That understates viewability for exactly the surfaces that repaint — the
+       board, the two highest-traffic slots in the app — and viewable rate is the
+       number a partner actually pays against. So the set below is keyed on the
+       placement, and a rebuilt element for a placement that has not yet been seen
+       is observed again. */
+    const adViewed = new Set<string>();
     let adObserver: any = null;
     function adEnsureObserver() {
       if (adObserver || typeof IntersectionObserver === "undefined") return adObserver;
       adObserver = new IntersectionObserver((entries: any[]) => {
         for (const en of entries) {
           const el = en.target as any;
+          const pk = el.dataset.adPk || "";
           if (en.intersectionRatio >= 0.5) {
-            if (el._adViewT || el._adViewed) continue;
+            if (el._adViewT || adViewed.has(pk)) continue;
             el._adViewT = setTimeout(() => {
               el._adViewT = null;
-              if (el._adViewed) return;
-              el._adViewed = true;
+              if (adViewed.has(pk)) return;
+              adViewed.add(pk);
               track("ad_view", `${el.dataset.adSlot}|${el.dataset.adPartner || "house"}`);
               try { adObserver.unobserve(el); } catch {}
             }, 1000);
@@ -2372,7 +2360,7 @@ export default function Home() {
       return adObserver;
     }
     /* Called after any repaint that may have inserted units. Idempotent per
-       element: `_adWired` stops a repaint from double-counting an impression. */
+       element: `_adWired` stops one element being bound twice. */
     function adWire(root?: any) {
       try {
         const scope = root || document;
@@ -2382,20 +2370,25 @@ export default function Home() {
           el._adWired = true;                    // per ELEMENT: don't double-bind a click
           const slot = el.dataset.adSlot || "?";
           const partner = el.dataset.adPartner || "house";
-          const pk = el.dataset.adPk || `${slot}|board`;
+          const pk = el.dataset.adPk || `${slot}|one`;
           /* Per PLACEMENT: a repaint produces a new element for a unit the reader is
              already looking at. That is not a second impression and it must not spend
              the cap — see the note on adMayRender. */
+          /* A DISPLAY UNIT'S IMPRESSION IS DEFERRED until the tag has had its
+             chance to fill (see adNetworkFill). The cap is still spent here —
+             the slot was given away either way — but an impression is only
+             claimed for something the reader could actually see. */
+          const deferred = partner === "display";
           if (!adPlacements.has(pk)) {
             adPlacements.add(pk);
             adShown[slot] = (adShown[slot] || 0) + 1;
             adShownTotal++;
-            track("ad_impression", `${slot}|${partner}`);
-            const ob = adEnsureObserver();
-            if (ob) ob.observe(el);
-          } else {
-            el._adViewed = true;                 // already measured; don't re-observe
+            if (!deferred) track("ad_impression", `${slot}|${partner}`);
           }
+          // Observe whenever this PLACEMENT has not yet been seen — including the
+          // rebuilt element of a placement that was counted but never viewed.
+          if (!deferred && !adViewed.has(pk)) { const ob = adEnsureObserver(); if (ob) ob.observe(el); }
+          if (deferred) adNetworkFill(el);
           const a = el.querySelector("a[href]");
           if (a) a.addEventListener("click", () => track("ad_click", `${slot}|${partner}`), { passive: true });
         });
@@ -2406,9 +2399,24 @@ export default function Home() {
        enabled slot is never an empty hole and the layout is the same shape on the
        day a real partner lands. It sells nothing — there is nothing to sell — it
        points at the record, which is the honest thing this product has. */
+    /* IT IS STILL LABELLED. The eyebrow does not say "Partner offer", because
+       there is no partner and claiming one would be the disclosure lying in the
+       other direction — but a promotional unit sitting in a slate of game tiles
+       must say what it is or it reads as editorial, which is rule 2 and applies
+       to us exactly as it applies to a book that pays us.
+
+       IT ALSO GOES SOMEWHERE. This card carried `href="#" data-go="record"`, and
+       `data-go` is wired ONLY inside the story deck's view — and its handler has
+       no "record" case in any event. So the one unit rendering on the whole site
+       today (no affiliate is live, so every slot falls through to here) was a
+       dead link: a click did nothing but push a `#` onto the URL, while adWire
+       dutifully logged an `ad_click`. The revenue console would have shown a CTR
+       for clicks that reached nothing. A plain href needs no wiring and works
+       from the board, the reader, the Desk and the game sheet alike. */
     function adHouseHtml(key: string) {
       return `<aside class="ad-slot is-house" data-ad-slot="${esc(key)}" data-ad-partner="house">
-        <a class="ad-partner" href="#" data-go="record" aria-label="See the DiamondEdge record">
+        <span class="ad-eyebrow">From DiamondEdge</span>
+        <a class="ad-partner" href="/record" aria-label="See the DiamondEdge record">
           <span class="ad-p-mark" aria-hidden="true">◆</span>
           <span class="ad-p-tx">
             <b>Every pick is free — and every result is on the record</b>
@@ -2420,17 +2428,64 @@ export default function Home() {
       </aside>`;
     }
 
-    /* ═══ THE DISPLAY TIER ═══ Deliberately inert until `AD_NETWORK` is set. This
-       returns a MOUNT POINT, never a script tag: the loader is the single place a
-       remote tag may enter the app, it is called only from adWire's successors,
-       and it is never on the boot path or anywhere near the story deck. */
+    /* ═══ THE DISPLAY TIER ═══ Deliberately inert until `AD_NETWORK` is set, and
+       it needs BOTH an id and a script src to be considered configured. */
     function adDisplayHtml(key: string) {
-      if (!AD_NETWORK || !AD_NETWORK.id) return "";
+      if (!AD_NETWORK || !AD_NETWORK.id || !AD_NETWORK.src) return "";
       return `<aside class="ad-slot is-display" data-ad-slot="${esc(key)}" data-ad-partner="display">
         <span class="ad-eyebrow">Advertisement</span>
         <div class="ad-net-mount" data-ad-net="${esc(AD_NETWORK.id)}" data-ad-unit="${esc(key)}"></div>
         <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
       </aside>`;
+    }
+    /* THE LOADER — THE ONLY PLACE A REMOTE TAG MAY ENTER THIS APP.
+       The previous version of this file promised a loader in a comment and never
+       had one, which is worse than having no display tier at all: `display` sits
+       ABOVE `house` in the fill ladder, so the day the owner configured a network
+       every board slot would have fallen into a permanently empty grey box and
+       stopped showing the house card. Configuring revenue would have removed
+       revenue. It is a real function now, and it fails back.
+
+       Three properties this must keep:
+        · NOTHING LOADS BY DEFAULT. AD_NETWORK is null, so this returns on its
+          first line and the app makes no third-party request of any kind.
+        · IT IS NEVER ON THE BOOT PATH. It runs from adWire, after a unit is in
+          the DOM, which is after first paint by construction.
+        · A SLOT IS NEVER AN EMPTY HOLE. If the mount has not filled within
+          2.5s — network down, blocked by an extension, no fill for this unit —
+          the unit becomes the house card. Either way the impression is claimed
+          for what the reader actually got, so the console never credits a
+          network for an empty box. */
+    let adNetLoaded = false;
+    function adNetworkEnsure() {
+      if (!AD_NETWORK || !AD_NETWORK.src || adNetLoaded) return;
+      adNetLoaded = true;
+      try {
+        const s = document.createElement("script");
+        s.src = AD_NETWORK.src; s.async = true; s.setAttribute("data-ad-net", AD_NETWORK.id);
+        document.head.appendChild(s);
+      } catch {}
+    }
+    function adNetworkFill(el: any) {
+      const slot = el.dataset.adSlot || "?";
+      const pk = el.dataset.adPk || `${slot}|one`;
+      if (!AD_NETWORK || !AD_NETWORK.src) return;
+      adNetworkEnsure();
+      const mount = el.querySelector(".ad-net-mount");
+      if (!mount) return;
+      setTimeout(() => {
+        try {
+          if (!el.isConnected) return;                         // reader moved on
+          if (mount.childElementCount > 0) {                   // the tag filled it
+            track("ad_impression", `${slot}|display`);
+            if (!adViewed.has(pk)) { const ob = adEnsureObserver(); if (ob) ob.observe(el); }
+            return;
+          }
+          el.outerHTML = adHouseHtml(slot).replace("<aside ", `<aside data-ad-pk="${esc(pk)}" `);
+          track("ad_impression", `${slot}|house`);             // what the reader got
+          adScheduleWire();                                    // binds the click + observes the new element
+        } catch {}
+      }, 2500);
     }
 
     /* ═══ THE AFFILIATE TIER — the high-value path (CPA) ═══
@@ -2472,9 +2527,9 @@ export default function Home() {
       if (adWireT) return;
       adWireT = setTimeout(() => { adWireT = null; adWire(); }, 0);
     }
-    function adSlot(key: string, g?: any) {
+    function adSlot(key: string, ctx?: string, g?: any) {
       const cfg = AD_SLOTS[key];
-      const pk = adPlacementKey(key, g);
+      const pk = adPlacementKey(key, ctx);
       if (!cfg || !adMayRender(key, pk)) return "";
       for (const kind of cfg.kinds) {
         const html = kind === "affiliate" ? adAffiliateHtml(key, g)
@@ -11941,9 +11996,12 @@ export default function Home() {
                never sits between the first games (AD_SLOTS["board-mid"].minSlate = 7),
                and one at the foot of the slate — the cheapest surface in the app,
                terminal and non-interrupting. Neither is ever adjacent to a pick row. */
-            const _minSlate = (AD_SLOTS["board-mid"] || {}).minSlate || 7;
-            if (!label && cardsArr.length >= _minSlate) cardsArr.splice(6, 0, adSlot("board-mid"));
-            if (!label) cardsArr.push(adSlot("board-foot"));
+            const _minSlate = (AD_SLOTS["board-mid"] || ({} as any)).minSlate || 7;
+            // The slate IS the placement context: league + date. A repaint keeps it,
+            // switching sport or day is a genuinely new one. (See adPlacementKey.)
+            const _bctx = `${league}:${curDate}`;
+            if (!label && cardsArr.length >= _minSlate) cardsArr.splice(6, 0, adSlot("board-mid", _bctx));
+            if (!label) cardsArr.push(adSlot("board-foot", _bctx));
             return `<div class="slate-sec ${cls}">${label ? `<div class="sec-hd"><span class="sec-lab">${esc(label)}</span><span class="sec-n">${arr.length}</span></div>` : ""}<div class="slate">${cardsArr.join("")}</div></div>`;
           };
           // Postponed cards ride at the end of the day, after the finals —
@@ -14101,7 +14159,7 @@ export default function Home() {
       //     It shares the grid's re-render slot (see `repaintOddsMove`) because the total
       //     it quotes can arrive with the wall grid, after first paint.
       return `<div class="oddspane"><div id="odds-linecard">${oddsLineCard(g)}</div>${
-        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}<div id="odds-partner">${adSlot("odds-shop", g)}</div></div>`;
+        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}<div id="odds-partner">${adSlot("odds-shop", adGameCtx(g), g)}</div></div>`;
     }
     function oddsLineCard(g: any) {
       const raw = pregameLineRaw(g);
@@ -14212,7 +14270,7 @@ export default function Home() {
       // last public check when the graded line is redacted, and that number only exists
       // once the grid has landed. Same-shape swap — never a layout shift.
       const ap = document.getElementById("odds-partner");
-      if (ap) { ap.innerHTML = safeHtml("odds partner card", () => adSlot("odds-shop", detail), ""); adWire(ap); }
+      if (ap) { ap.innerHTML = safeHtml("odds partner card", () => adSlot("odds-shop", adGameCtx(detail), detail), ""); adWire(ap); }
     }
     function openDetail(g: any, focusMk?: string, fromHistory = false, restoreTab?: string) {
       detail = g;
@@ -16284,7 +16342,18 @@ export default function Home() {
       // the number", "to the board") per ARTICLE_SPEC while preserving **bold** lead-ins.
       const paras = String(s.article || s.summary || "").split(/\n+/).map((x) => hedgeFree(x.trim()))
         .filter((p) => p && !/^—\s*DiamondEdge/i.test(p));           // drop any trailing byline + hedge paragraphs
-      const body = paras.length ? paras.map((p) => `<p>${mdBold(p)}</p>`).join("") : `<p>${esc(hedgeFree(s.summary || ""))}</p>`;
+      /* article-mid IS WIRED AND IS OFF. An inventory that lists a slot with no
+         call site tells the owner he has something to sell that he cannot ship —
+         `enabled:false` in app/ads.ts makes adSlot return "", so this splice
+         inserts nothing today and turning it on is a one-word config change.
+         Only on a story long enough to have a middle (5+ paragraphs), and never
+         before the third, so it cannot sit under the standfirst. */
+      const _pbody = paras.map((p) => `<p>${mdBold(p)}</p>`);
+      if (_pbody.length >= 5) {
+        const unit = adSlot("article-mid", `news:${key || (s && (s.key || s.headline)) || "story"}`);
+        if (unit) _pbody.splice(Math.max(3, Math.floor(_pbody.length / 2)), 0, unit);
+      }
+      const body = paras.length ? _pbody.join("") : `<p>${esc(hedgeFree(s.summary || ""))}</p>`;
       const words = paras.join(" ").split(/\s+/).filter(Boolean).length;
       const readMin = Math.max(1, Math.round(words / 200));
       /* THE STORY IS FREE. THE CALL IS THE PRODUCT.
@@ -16448,7 +16517,7 @@ export default function Home() {
               ${takePanel}
               <div class="art-body">${body}</div>
               ${ctaRow}
-              ${adSlot("article-end")}
+              ${adSlot("article-end", `news:${key || (s && (s.key || s.headline)) || "story"}`)}
             </div>
           </div>
           ${navBar}`;
@@ -19209,6 +19278,13 @@ export default function Home() {
                   <span class="rp-relgo" aria-hidden="true">→</span>
                 </button>`).join("")}
               </div>` : ""}
+              ${/* research-foot: WIRED AND OFF (enabled:false in app/ads.ts), and
+                    house-only in the config at any price. A paper whose verdict is
+                    that a thing did NOT work is the last surface on this site that
+                    should carry a book's offer — eleven of nineteen conclude
+                    exactly that. It exists as inventory so the console can say the
+                    surface is real and worth nothing, rather than omitting it. */""}
+              ${adSlot("research-foot", `paper:${pp.id}`)}
             </article>
           </div>
         </div>`;
@@ -21214,7 +21290,7 @@ export default function Home() {
                every pick and the whole record are free. The slot it vacated is the
                foot of the Desk page — terminal, already correctly styled, and a
                long way from any pick row — so it becomes ad inventory. -->
-          ${adSlot("desk-foot")}
+          ${adSlot("desk-foot", "desk")}
         </section>`;
       bindDeskTaps();
       v.querySelectorAll(".rostcard").forEach((el: any) => {

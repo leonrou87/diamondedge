@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { adminState } from "../../../api/_lib/admin";
 import { Shell, Login } from "../ui";
 import { recentEvents, unreadSupport } from "../data";
+import { AD_SLOTS, AD_NETWORK, AD_NEVER, adLivePartners } from "../../../ads";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /admin/kp-desk/revenue — REVENUE READINESS.
@@ -38,19 +39,14 @@ export const dynamic = "force-dynamic";
 const DAYS = 30;
 const AD_TYPES = new Set(["ad_impression", "ad_view", "ad_click"]);
 
-/* The inventory, mirrored from AD_SLOTS in app/page.tsx so a slot that has
-   never rendered still appears here as a zero rather than silently missing —
-   "this slot earned nothing" and "this slot does not exist" are different
-   facts and the owner needs to tell them apart. */
-const SLOTS: [string, string, string][] = [
-  ["board-mid", "Board · mid-slate", "low"],
-  ["board-foot", "Board · foot", "very low"],
-  ["odds-shop", "Game sheet · Odds tab", "low-moderate"],
-  ["article-end", "News reader · end of article", "low"],
-  ["desk-foot", "Desk · below the roster", "low"],
-  ["article-mid", "News reader · mid-article (held back)", "moderate"],
-  ["research-foot", "Research · end of paper (held back)", "low"],
-];
+/* THE INVENTORY IS IMPORTED, NOT RETYPED. This page used to keep its own copy
+   of the slot table, which drifts the first time a slot is added and leaves the
+   owner pricing a surface that no longer exists — or blind to one that does.
+   app/ads.ts is the single table; app/page.tsx renders from it and this page
+   prices from it. A slot that has never rendered still appears here as a zero,
+   because "earned nothing" and "does not exist" are different facts. */
+const SLOTS = Object.entries(AD_SLOTS).map(([id, s]) => ({ id, ...s }));
+const SURFACE_ORDER = ["board", "game", "news", "desk", "research"];
 
 const pct = (n: number, d: number) => (d ? `${((n / d) * 100).toFixed(1)}%` : "—");
 
@@ -89,33 +85,80 @@ export default async function RevenuePage() {
     else { r.click++; byDay.get(d)!.click++; }
   }
 
-  const paidPartners = [...partnersSeen].filter((p) => p !== "house" && p !== "display");
+  /* WHETHER REVENUE IS ON IS A FACT ABOUT THE CONFIG, NOT ABOUT THE EVENTS.
+     Reading it off `partnersSeen` (as this page first did) means a deployment
+     whose beacon is not writing — which is this one, see the blindness banner
+     below — reports the same "no partner" as a correctly-measured empty week.
+     One of those is a config the owner controls and the other is a broken
+     pipe, so the page asks the config directly. */
+  const livePartners = adLivePartners();
+  const networkLive = !!(AD_NETWORK && AD_NETWORK.id && AD_NETWORK.src);
+  const revenueLive = livePartners.length > 0 || networkLive;
+  const paidPartners = [...partnersSeen].filter((p) => p !== "house");
   const tot = [...bySlot.values()].reduce(
     (a, r) => ({ imp: a.imp + r.imp, view: a.view + r.view, click: a.click + r.click }),
     { imp: 0, view: 0, click: 0 },
   );
   const ranked = SLOTS
-    .map(([id, label, cost]) => ({ id, label, cost, ...(bySlot.get(id) || { imp: 0, view: 0, click: 0, partners: new Set<string>() }) }))
-    .sort((a, b) => b.imp - a.imp);
-  const orphans = [...bySlot.keys()].filter((k) => !SLOTS.some(([id]) => id === k));
+    .map((s) => ({ ...s, ...(bySlot.get(s.id) || { imp: 0, view: 0, click: 0, partners: new Set<string>() }) }))
+    .sort((a, b) => (SURFACE_ORDER.indexOf(a.surface) - SURFACE_ORDER.indexOf(b.surface)) || b.imp - a.imp);
+  const orphans = [...bySlot.keys()].filter((k) => !AD_SLOTS[k]);
 
   return (
     <Shell active="revenue" unread={unread}>
-      {!paidPartners.length && (
+      {!events.length && (
+        <div className="panel">
+          <h2>⚠ Nothing is being measured</h2>
+          <p className="muted" style={{ lineHeight: 1.6 }}>
+            <b>Not one event of any kind</b> — ad or otherwise — has reached{" "}
+            <span className="mono">de_events</span> in {DAYS} days. That is not a quiet
+            week: the app emits a <span className="mono">session</span> row for every
+            visit. The beacon is not writing, so <b>every number on this page is a floor
+            of zero, not a measurement</b>, and none of the inventory below can be priced
+            until it is fixed.
+          </p>
+          <p className="muted" style={{ lineHeight: 1.6 }}>
+            <span className="mono">POST /api/events</span> returns 204 and writes nothing
+            when <span className="mono">dataConfigured()</span> is false — that is{" "}
+            <span className="mono">SUPABASE_URL</span> (or{" "}
+            <span className="mono">NEXT_PUBLIC_SUPABASE_URL</span>) plus{" "}
+            <span className="mono">SUPABASE_SERVICE_KEY</span> in the deployment&apos;s
+            environment. Set the service key in Vercel and redeploy; rows start arriving
+            on the next session.
+          </p>
+        </div>
+      )}
+
+      {!revenueLive && (
         <div className="panel">
           <h2>No revenue is being earned</h2>
           <p className="muted" style={{ lineHeight: 1.6 }}>
-            No affiliate partner is live. Every unit counted below was the <b>house
-            card</b>, and every click went to our own record page — so these numbers are
-            <b> traffic, not income</b>. They are what the inventory is worth to a partner,
-            measured rather than estimated.
+            This is read from the <b>configuration</b>, not from the numbers below: no
+            partner in <span className="mono">AD_PARTNERS</span> has a real tracking URL
+            and no display network is set. So every unit rendered was the <b>house
+            card</b>, every click went to our own record page, and the income is exactly
+            zero. What follows is <b>traffic, not income</b> — what the inventory is worth
+            to a partner, measured rather than estimated.
           </p>
           <p className="muted" style={{ lineHeight: 1.6 }}>
             To turn revenue on: get an affiliate approval, then replace{" "}
             <span className="mono">url: &quot;#&quot;</span> with the approved tracking URL in{" "}
-            <span className="mono">AD_PARTNERS</span> (<span className="mono">app/page.tsx</span>).
+            <span className="mono">AD_PARTNERS</span> (<span className="mono">app/ads.ts</span>).
             A display network is the low-value fallback and stays dark — no third-party
-            script loads until <span className="mono">AD_NETWORK</span> is set.
+            script loads anywhere in this app until <span className="mono">AD_NETWORK</span>{" "}
+            has both an id and a script src.
+          </p>
+        </div>
+      )}
+      {revenueLive && !paidPartners.length && !!events.length && (
+        <div className="panel">
+          <h2>Configured, but nothing paid has rendered yet</h2>
+          <p className="muted" style={{ lineHeight: 1.6 }}>
+            {livePartners.length} affiliate partner{livePartners.length === 1 ? " is" : "s are"} live
+            {networkLive ? " and a display network is configured" : ""}, but every unit
+            counted below still came back <span className="mono">house</span>. Check the
+            slot table: a slot whose fill ladder starts at{" "}
+            <span className="mono">affiliate</span> should be showing the partner id.
           </p>
         </div>
       )}
@@ -137,18 +180,27 @@ export default async function RevenuePage() {
       </div>
 
       <div className="panel">
-        <h2>By slot · {DAYS}d</h2>
+        <h2>The inventory · {DAYS}d</h2>
         <table>
           <thead>
             <tr>
-              <th>Slot</th><th>Reader cost</th><th>Impr.</th><th>Viewable</th>
+              <th>Slot</th><th>State</th><th>Reader cost</th><th>Impr.</th><th>Viewable</th>
               <th>View %</th><th>Clicks</th><th>CTR</th><th>Filled by</th>
             </tr>
           </thead>
           <tbody>
             {ranked.map((r) => (
-              <tr key={r.id}>
-                <td><span className="mono">{r.id}</span><div className="sub">{r.label}</div></td>
+              <tr key={r.id} style={r.enabled ? undefined : { opacity: 0.62 }}>
+                <td>
+                  <span className="mono">{r.id}</span>
+                  <div className="sub">{r.label}</div>
+                  <div className="sub muted">{r.note}</div>
+                </td>
+                <td className="muted">
+                  {r.enabled ? "live" : "held back"}
+                  <div className="sub">{r.kinds.join(" → ")}</div>
+                  <div className="sub">cap {r.cap}/session</div>
+                </td>
                 <td className="muted">{r.cost}</td>
                 <td>{r.imp.toLocaleString()}</td>
                 <td>{r.view.toLocaleString()}</td>
@@ -160,7 +212,8 @@ export default async function RevenuePage() {
             ))}
             {orphans.map((k) => (
               <tr key={k}>
-                <td><span className="mono">{k}</span><div className="sub">not in the slot table — check AD_SLOTS</div></td>
+                <td><span className="mono">{k}</span><div className="sub">not in the inventory — a slot was renamed or removed while its rows survive</div></td>
+                <td className="muted">?</td>
                 <td className="muted">?</td>
                 <td>{bySlot.get(k)!.imp}</td>
                 <td>{bySlot.get(k)!.view}</td>
@@ -173,10 +226,16 @@ export default async function RevenuePage() {
           </tbody>
         </table>
         <p className="muted">
-          A slot showing zero has either not rendered yet or is held back in{" "}
-          <span className="mono">AD_SLOTS</span>. The pick row itself is deliberately not
-          in this table and never will be: an ad on or beside a call implies the partner
-          endorses it.
+          Every slot in <span className="mono">app/ads.ts</span> is listed, live or not,
+          and every one of them is <b>wired</b> — a held-back slot&apos;s call site exists
+          and renders nothing, so turning it on is a one-word config change rather than
+          new code. &quot;Filled by&quot; is the fill ladder&apos;s answer in practice:{" "}
+          <span className="mono">house</span> means nobody paid for it.
+        </p>
+        <p className="muted">
+          <b>Not inventory, and never will be:</b> {AD_NEVER.join("; ")}. An ad on or
+          beside a call implies the partner endorses it, and an ad on a graded result
+          implies they vouch for it.
         </p>
       </div>
 
