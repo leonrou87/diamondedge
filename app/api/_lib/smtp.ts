@@ -111,27 +111,6 @@ export async function sendMail(opts: {
   }
 }
 
-/** Connect + authenticate only — proves the creds without sending anything. */
-export async function verifySmtp(): Promise<MailResult> {
-  const missing = smtpMissing();
-  if (missing.length) return { ok: false, error: `unset env: ${missing.join(", ")}` };
-  let sock: TLSSocket | null = null;
-  try {
-    sock = await new Promise<TLSSocket>((resolve, reject) => {
-      const s = connect({ host: HOST, port: PORT, servername: HOST }, () => resolve(s));
-      s.once("error", reject);
-      s.setTimeout(15000, () => reject(new Error("smtp connect timeout")));
-    });
-    await once(sock);
-    await cmd(sock, `EHLO diamondedge.kytepush.com`, [250]);
-    await cmd(sock, `AUTH LOGIN`, [334]);
-    await cmd(sock, Buffer.from(USER).toString("base64"), [334]);
-    await cmd(sock, Buffer.from(PASS).toString("base64"), [235]);
-    try { sock.write("QUIT\r\n"); } catch {}
-    return { ok: true };
-  } catch (e: any) {
-    return { ok: false, error: String(e?.message || e).slice(0, 200) };
-  } finally {
-    try { sock?.destroy(); } catch {}
-  }
-}
+/* verifySmtp() DELETED (2026-08-16) — exported, zero importers anywhere in the repo.
+   A credentials smoke-test with no caller is a second SMTP dialogue to keep correct;
+   sendMail() is the one that runs, and it reports its own failures. */

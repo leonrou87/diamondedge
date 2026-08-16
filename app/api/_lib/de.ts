@@ -112,19 +112,10 @@ export async function upsertUser(u: {
   return r.ok && Array.isArray(r.json) && r.json[0] ? r.json[0] : null;
 }
 
-/** Mark a user premium (idempotent: only flips rows that are not yet premium). */
-export async function markPremium(uid: string, source: string): Promise<void> {
-  if (!uid) return;
-  await supa(`de_users?id=eq.${encodeURIComponent(uid)}&premium=is.false`, {
-    method: "PATCH",
-    prefer: "return=minimal",
-    body: {
-      premium: true,
-      premium_since: new Date().toISOString(),
-      premium_source: String(source || "").slice(0, 24),
-    },
-  });
-}
+/* markPremium() DELETED (2026-08-16). Its only caller was the redeem handler in
+   /api/session, which had no client and is now gone. It was the single write path to
+   de_users.premium — nothing can set that column any more. The column itself stays:
+   the admin console reads it as history of who paid while there was something to buy. */
 
 /** Bump last_seen; fire-and-forget semantics (errors swallowed inside supa). */
 export async function touchUser(uid: string): Promise<void> {
