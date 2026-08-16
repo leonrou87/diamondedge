@@ -1104,15 +1104,22 @@ export default function Home() {
 
     // Graded result for a game's surfaced pick — handles result as an object {status} (de_plays)
     // OR a bare string (raw display_pick, which normPlay can drop). Returns hit|miss|push|null.
-    const pickResult = (g: any, pl: any) => {
-      const raw: any = pl && pl.result;
-      let r = typeof raw === "string" ? raw : (raw && raw.status) || null;
-      if (!r && g && g.display_pick && typeof g.display_pick.result === "string") r = g.display_pick.result;
-      if (!r) {
-        const pr = provisionalResult(g, pl);
-        if (pr && pr.status) r = pr.status;
-      }
-      return r;
+    /* THE SIXTEENTH READER OF `result`, AND IT WAS NOT USING THE VOCABULARY (2026-08-16).
+       gradeOf() exists because fifteen surfaces each had their own idea of what a graded
+       result looks like; it absorbs win/won/w/hit, loss/lost/l/miss, push/p/tie/pushed.
+       This helper was written for the same problem — its own comment said it handles "a
+       bare string (raw display_pick)" — and then returned that string RAW. Its caller
+       tests `=== "hit"` / `=== "miss"` and renders anything else as "Push", so a served
+       "win" or "won" printed ✗ Push on a finished game we actually won. A wrong claim
+       about a graded pick is the one thing this app may not make.
+       It now goes through gradeOf and is mapped to the hit/miss/push dialect once. */
+    const pickResult = (g: any, pl: any): "hit" | "miss" | "push" | null => {
+      const dp = g && g.display_pick;
+      const v =
+        gradeOf(pl) ||
+        (dp ? gradeOf(dp) : null) ||
+        (() => { const pr = provisionalResult(g, pl); return pr ? gradeOf({ result: pr.status }) : null; })();
+      return v === "win" ? "hit" : v === "loss" ? "miss" : v === "push" ? "push" : null;
     };
 
     // ===================== SUGGESTED ACTIONS (fallback source for plays) =====================
@@ -1255,6 +1262,8 @@ export default function Home() {
       return {
         market: mk, action,
         side: raw.side != null ? String(raw.side) : null,
+        // THE DIRECTION IS RESOLVED HERE, OFF THE SERVED SIDE, AND NEVER AGAIN. See dirOf().
+        dir: normalizeSide(raw.side),
         line: raw.line != null ? Number(raw.line) : null,
         price: raw.price != null ? raw.price : null,
         p: raw.p_correct != null ? Number(raw.p_correct) : (raw.meta_p != null ? Number(raw.meta_p) : null),
@@ -1366,9 +1375,41 @@ export default function Home() {
        coincidence, not a contract, so this is now the same test the backend makes:
        trim, lowercase, and accept NOTHING but the two exact words. Anything else is not a
        side we recognise, and an unrecognised side grades nothing. */
+    /* …AND THE STRICT TEST WAS BEING FED THE WRONG STRING (found 2026-08-16).
+       The rule above is right about the SERVED side — the payload carries bare "over" /
+       "under" (measured: 139 over, 114 under, and no other totals spelling in
+       picks_unified_live.json). But `v4ToPlay` rewrites the side into a DISPLAY string
+       before any renderer or predicate sees it:
+
+           side = `${/over/i.test(pk.side) ? "OVER" : "UNDER"} ${lineStr(ln)}`   // "OVER 8.5"
+
+       and "OVER 8.5" is not "over", so this returned null for every v4 board pick. Which
+       means `totalDecided` returned null, which means `liveDecided` returned null, which
+       means THE LIVE OVER-CLINCH NEVER FIRED ON THE BOARD — the "a dead bet is a loss now,
+       not at the final whistle" rule Leon asked for on 2026-08-09, silently inert on the
+       very picks it was written for. `provisionalResult` did not share the outage only
+       because it used a LOOSER test (/over/i), which is the fork this comment was written
+       to close: two readings, and the strict one was the one that was wrong in practice.
+
+       So the parse accepts the app's own display shape — the word, optionally followed by
+       its number — and still refuses everything else. "Over/Under" remains null rather
+       than matching the `over` branch and returning an outright mis-grade.
+
+       THE REAL FIX IS `dirOf` BELOW: the direction is resolved ONCE, from the SERVED side,
+       and carried on the play. This function is the parser of last resort for a play that
+       only ever had a display string. */
     function normalizeSide(side: any): "over" | "under" | null {
-      const s = String(side ?? "").trim().toLowerCase();
-      return s === "over" || s === "under" ? s : null;
+      const m = String(side ?? "").trim().toLowerCase().match(/^(over|under)(?:\s+[-+]?\d+(?:\.\d+)?)?$/);
+      return m ? (m[1] as "over" | "under") : null;
+    }
+    /* ONE READING OF "WHICH SIDE IS THIS", FOR EVERY SURFACE THAT ASKS.
+       `dir` is stamped by the normalisers (v4ToPlay, normPlay) off the side the SERVER sent,
+       before any display string is built, so the answer never depends on how a card chose to
+       spell it. Everything that grades, marks or tints a total reads this. */
+    function dirOf(pl: any): "over" | "under" | null {
+      if (!pl) return null;
+      if (pl.dir === "over" || pl.dir === "under") return pl.dir;
+      return normalizeSide(pl.side);
     }
     function totalDecided(side: any, line: any, runsSoFar: any): "win" | "loss" | null {
       const ln = Number(line), rs = Number(runsSoFar);
@@ -1385,7 +1426,7 @@ export default function Home() {
       if (String(g.status || "").toLowerCase() !== "live") return null;
       const ca = g.current_actuals || {};
       if (ca.total_so_far == null) return null;
-      return totalDecided(pl.side, pickLineOf(pl), ca.total_so_far);
+      return totalDecided(dirOf(pl), pickLineOf(pl), ca.total_so_far);
     }
     /* THE ONE ANSWER TO "HAS THIS PICK SETTLED, AND HOW". Served grade first (the backend's
        written word, which for a dead bet now arrives within one serve cycle), the final score
@@ -1428,11 +1469,19 @@ export default function Home() {
       if (!sc) return null;
       const sideLine = () => { const m = String(pl.side || "").match(/([+-]?\d+(\.\d+)?)/); return m ? Number(m[1]) : null; };
       if (pl.market === "total" && sc.total != null) {
-        const line = pl.line != null ? Number(pl.line) : sideLine();
-        if (line == null) return null;
-        const over = /over/i.test(String(pl.side));
+        /* ONE READING, NOT A SECOND ONE (2026-08-16). This branch used to test
+           `/over/i.test(pl.side)` and parse its own line — a looser side test and a
+           different line precedence than `totalDecided`, the function three screens up
+           that declares itself the single reading. On "Over/Under" the loose test took
+           the `over` branch and returned an outright mis-grade; on a line carried in
+           `pl.line` the two disagreed about which number wins. Both now read dirOf()
+           and pickLineOf(), so the final-score grade and the live clinch cannot
+           disagree about the same ticket. */
+        const dir = dirOf(pl);
+        const line = pickLineOf(pl);
+        if (!dir || line == null) return null;
         if (sc.total === line) return { status: "push", pnl: null };
-        return { status: (sc.total > line) === over ? "hit" : "miss", pnl: null };
+        return { status: (sc.total > line) === (dir === "over") ? "hit" : "miss", pnl: null };
       }
       const side = String(pl.side || "");
       const backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
@@ -1715,9 +1764,15 @@ export default function Home() {
       const unit = SPORT_UNIT[g.sport] || "runs";
       // ---- TOTAL: the validated edge — the richest live read. ----
       if (pl.market === "total") {
-        const line = pl.line != null ? Number(pl.line) : Number((String(pl.side || "").match(/[\d.]+/) || [])[0]);
+        /* THE THIRD READING OF THE SAME SIDE, CLOSED (2026-08-16). This branch had its own
+           line parse (`/[\d.]+/`, a THIRD regex) and its own `/over/i` side test, so the
+           live tracking card could describe a ticket the tile and the day ledger were
+           grading differently. Both now come from the one place. */
+        const line = pickLineOf(pl);
         if (line == null || isNaN(line)) return null;
-        const over = /over/i.test(String(pl.side || ""));
+        const dir = dirOf(pl);
+        if (!dir) return null;
+        const over = dir === "over";
         // Live combined total from real fields; final falls back to the graded final total.
         const ca = g.current_actuals || {};
         let runs: number | null = ca.total_so_far != null && !isNaN(Number(ca.total_so_far)) ? Number(ca.total_so_far)
@@ -1767,9 +1822,16 @@ export default function Home() {
       const ourMargin = backedHome ? sc.margin : -sc.margin;   // + = our side ahead on the scoreboard
       const when = live ? liveWhenPhrase(g, gs) : "";
       if (fin) {
-        // Grade the lean off the real final where we can (spread w/ line, ML off the winner).
-        const r = provisionalResult(g, pl) || (pl.result || null);
-        const st = r && (r.status || r);
+        /* THE SERVED GRADE OUTRANKS THE COMPUTED ONE, HERE TOO (2026-08-16). This read
+           `provisionalResult(g, pl) || (pl.result || null)` — the computed grade FIRST —
+           while `settledVerdict`, which every other counting surface calls, is
+           `pl.result || provisionalResult(...)`, the served grade first. Two opposite
+           precedences over one ticket: on a corrected line, a void, or any game where the
+           backend's written grade differs from the local score arithmetic, the live
+           tracking card and the day ledger would state different outcomes side by side.
+           settledVerdict is the one answer; this asks it. */
+        const v = settledVerdict(g, pl);
+        const st = v === "win" ? "hit" : v === "loss" ? "miss" : v === "push" ? "push" : null;
         if (st === "hit" || st === "miss" || st === "push")
           return { kind: "lean", cls: st === "hit" ? "done-hit" : st === "miss" ? "done-miss" : "close",
             head: `Final · our ${esc(side)} lean ${st === "hit" ? "landed" : st === "miss" ? "came up short" : "pushed"}`, sub: "" };
@@ -2647,8 +2709,12 @@ export default function Home() {
          (nothing renders it, and Q_RANK no longer ranks it) and the `premium`/
          `premium_locked` flags this object re-published for gates that no longer exist. */
       const ln = pk.line != null ? pk.line : pk.vegas_line;
+      /* `dir` IS TAKEN FROM THE SERVED SIDE, BEFORE THE DISPLAY STRING EXISTS. `side` below
+         is presentation ("OVER 8.5"); re-parsing it downstream is what made the strict
+         grader and the loose grader disagree. Every predicate reads `dir` via dirOf(). */
+      const dir = normalizeSide(pk.side);
       const side = take && hasSide
-        ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim()
+        ? `${dir === "under" ? "UNDER" : "OVER"} ${ln != null ? lineStr(ln) : ""}`.trim()
         : null;
       const res = gradeOf(pk) === "win" ? { status: "hit" } : gradeOf(pk) === "loss" ? { status: "miss" } : gradeOf(pk) === "push" ? { status: "push" } : null;
       const stars = pk.stars != null ? Number(pk.stars) : 0;
@@ -2670,7 +2736,7 @@ export default function Home() {
       };
       return {
         market: mk, action: take ? "TAKE" : "PASS",
-        side: take ? side : null,
+        side: take ? side : null, dir,
         line: ln, price: pk.price != null ? pk.price : null,
         p: pk.our_prob != null ? pk.our_prob : null,
         q, stars,
@@ -14957,9 +15023,15 @@ export default function Home() {
           .filter((g: any) => g.pick && (gradeOf(g.pick) === "win" || gradeOf(g.pick) === "loss"))
           .sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
         if (!graded.length) return "";
-        let bw = 0, bl = 0, run = 0; let last = "";
+        /* THE FILTER SPOKE THE VOCABULARY AND THE LOOP DID NOT (2026-08-16). The filter
+           above is `gradeOf(g.pick) === "win" || === "loss"` — which accepts won/w/hit and
+           lost/l/miss — and then this loop compared the RAW string to "win". So a served
+           "won" passed the filter and fell into the `else`, landing in the LOSS streak: a
+           winning run counted as a skid, printed as "longest skid" on Insights. Same
+           reading in both places now. */
+        let bw = 0, bl = 0, run = 0; let last: string | null = null;
         graded.forEach((g: any) => {
-          const r = g.pick.result;
+          const r = gradeOf(g.pick);
           if (r === last) run++; else { run = 1; last = r; }
           if (r === "win") bw = Math.max(bw, run); else bl = Math.max(bl, run);
         });
