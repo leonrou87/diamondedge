@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { adminState } from "../../../api/_lib/admin";
 import { Shell, Login } from "../ui";
 import { recentEvents, unreadSupport } from "../data";
-import { AD_SLOTS, AD_NETWORK, AD_NEVER, adLivePartners } from "../../../ads";
+import { AD_SLOTS, AD_NETWORK, AD_NEVER, adLivePartners, adDarkPartners } from "../../../ads";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /admin/kp-desk/revenue — REVENUE READINESS.
@@ -92,6 +92,12 @@ export default async function RevenuePage() {
      One of those is a config the owner controls and the other is a broken
      pipe, so the page asks the config directly. */
   const livePartners = adLivePartners();
+  /* A CONFIGURED PARTNER THAT STILL CANNOT RENDER IS THE ONE FAILURE MODE THAT
+     LOOKS LIKE NOTHING. The owner pastes an approved link, records the states the
+     book is licensed in, and every slot quietly stays on the house card — the
+     numbers below keep counting, they just never say "paid". So the reason is
+     printed, here, in the place he already looks. */
+  const darkPartners = adDarkPartners();
   const networkLive = !!(AD_NETWORK && AD_NETWORK.id && AD_NETWORK.src);
   const revenueLive = livePartners.length > 0 || networkLive;
   const paidPartners = [...partnersSeen].filter((p) => p !== "house");
@@ -163,6 +169,25 @@ export default async function RevenuePage() {
         </div>
       )}
 
+      {!!darkPartners.length && (
+        <div className="panel">
+          <h2>⚠ Configured, but held dark</h2>
+          <p className="muted" style={{ lineHeight: 1.6 }}>
+            {darkPartners.length === 1 ? "This partner has" : "These partners have"} an
+            approved tracking URL and still cannot render, so{" "}
+            {darkPartners.length === 1 ? "it earns" : "they earn"} nothing and every slot
+            falls through to the house card:
+          </p>
+          <ul className="muted" style={{ lineHeight: 1.6 }}>
+            {darkPartners.map((d) => (
+              <li key={d.partner.id}>
+                <span className="mono">{d.partner.id}</span> — {d.why}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <div className="panel">
         <h2>Totals · {DAYS}d</h2>
         <div className="cards">
@@ -174,8 +199,15 @@ export default async function RevenuePage() {
         </div>
         <p className="muted">
           Viewable = at least 50% of the unit&apos;s pixels on screen for one continuous
-          second (IAB display standard). Counted first-party; no third-party tracker is
-          loaded anywhere in this app.
+          second (IAB display standard). Every number on this page is counted first-party,
+          in our own table, by our own code — <b>the ad system loads no third-party script
+          at all</b> and will not until <span className="mono">AD_NETWORK</span> is set.
+          One precise caveat, because it is the sort of thing that gets repeated to a
+          partner: the <i>app</i> is not third-party-free — every page already carries{" "}
+          <span className="mono">kytepush.com/track.js</span> from{" "}
+          <span className="mono">app/layout.tsx</span>. That is the platform&apos;s own
+          site analytics, it predates all of this, and it has nothing to do with the ad
+          numbers below.
         </p>
       </div>
 

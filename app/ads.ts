@@ -22,9 +22,11 @@
        do. This is why the game sheet has exactly one slot and it is on the
        Odds tab: that tab is about the MARKET, and the pick lives on another.
     2. NO AD MAY BE MISTAKEN FOR EDITORIAL. Every unit — including the house
-       card — carries an eyebrow saying what it is, renders in the app's aside
-       language rather than the article or card voice, and links with
-       rel="noopener sponsored".
+       card — carries an eyebrow saying what it is and renders in the app's aside
+       language rather than the article or card voice. Every PAID unit also links
+       with rel="noopener sponsored" and target="_blank". The house card does not,
+       and should not: it is an internal link to our own /record, where
+       rel="sponsored" would be a false declaration in the other direction.
     3. THE ONLY NUMBER A UNIT MAY QUOTE IS OUR OWN PUBLISHED LINE, and the
        partner is named as somewhere to shop it — never as a voice on it.
     4. NO THIRD-PARTY SCRIPT LOADS UNTIL A NETWORK IS CONFIGURED. `AD_NETWORK`
@@ -42,14 +44,17 @@ export type AdPartner = {
   tagline: string;
   /** The approved tracking URL. "#" means DARK — the partner never renders. */
   url: string;
-  /** Per-state licensing. null = "no restriction recorded", NOT "allowed everywhere". */
+  /** Per-state licensing. null = "no restriction recorded", NOT "allowed everywhere".
+      A POPULATED array makes the partner dark everywhere — see adPartnerDark. */
   states?: string[] | null;
 };
 
 /* OWNER: paste approved affiliate tracking links here. A partner with url "#"
    is DARK — it never renders, and every slot falls through to the house card.
-   `states` matters the day a second book lands: a book licensed in some
-   jurisdictions must not be shown as though it were available everywhere. */
+   LEAVE `states` NULL for a nationally-available offer. Record states only for a
+   book with partial licensing, and know what that does: it makes the partner dark
+   everywhere, because this app cannot tell where the reader is (see below). The
+   revenue console names any partner dark for that reason. */
 export const AD_PARTNERS: AdPartner[] = [
   { id: "book-a", label: "Your Sportsbook", tagline: "Compare totals and prices on today's board", url: "#", states: null },
   { id: "book-b", label: "Second Book",     tagline: "Line-shop the slate before first pitch",     url: "#", states: null },
@@ -66,9 +71,53 @@ export const AD_PARTNERS: AdPartner[] = [
    network configured without a `src` stays dark rather than rendering a hole. */
 export const AD_NETWORK: { id: string; src: string } | null = null;
 
-/** Partners that can actually render — i.e. someone approved us and we pasted the link. */
+/** CONFIGURED = the owner has pasted an approved tracking URL over "#". */
+const adConfigured = (p: AdPartner) => !!(p && p.label && p.url && p.url !== "#");
+
+/* ═══ LICENSING ELIGIBILITY — WHY `states` FAILS CLOSED ═══
+   `states` was a decorative field: the type documented it, the owner checklist
+   told him to populate it the day a book landed with partial licensing, and
+   NOTHING READ IT. That is the worst kind of safeguard — it reads like one, so
+   the restriction gets recorded, believed, and never enforced, and the failure
+   is invisible until a regulator makes it visible.
+
+   Enforcing it properly needs to know which state the reader is in, and THIS APP
+   HAS NO GEO SIGNAL: no IP lookup, no permission prompt, and the analytics
+   discipline here is two requests per session, so buying one for a geo endpoint
+   is not free either. There is no honest way to satisfy a restriction we cannot
+   evaluate — and a timezone guess is worse than nothing, because the harm is
+   entirely in the direction of a wrong "allowed".
+
+   So the field is enforced by refusing to render rather than by guessing:
+     states: null / []   no restriction recorded — the partner renders. This is
+                         the default, and what a nationally-available offer uses.
+     states: ["NJ", …]   a restriction IS recorded and cannot be evaluated, so
+                         the partner is DARK everywhere until a geo source exists.
+   Dark is a real cost, so it is never silent: adDarkPartners() hands the reason
+   to the revenue console, which prints it beside the partner. The owner finds out
+   from his own dashboard rather than from a month of zeroes. */
+const adReaderState = (): string | null => null;   // no geo source today — see above
+
+/** null = this partner may render. A string = why it cannot, in the owner's words. */
+export const adPartnerDark = (p: AdPartner): string | null => {
+  if (!adConfigured(p)) return 'no approved tracking URL yet — still url: "#"';
+  if (p.states && p.states.length) {
+    const st = adReaderState();
+    if (!st) return `licensing recorded for ${p.states.join(", ")}, and this app has no geo signal to check a reader against — dark everywhere until one exists`;
+    if (!p.states.includes(st)) return `not licensed in ${st}`;
+  }
+  return null;
+};
+
+/** Partners that can actually render — approved, pasted, and with no unmet restriction. */
 export const adLivePartners = (): AdPartner[] =>
-  AD_PARTNERS.filter((p) => p && p.label && p.url && p.url !== "#");
+  AD_PARTNERS.filter((p) => p && adPartnerDark(p) === null);
+
+/** Partners the owner HAS configured that still cannot render, and why. Console prints these. */
+export const adDarkPartners = (): { partner: AdPartner; why: string }[] =>
+  AD_PARTNERS.filter(adConfigured)
+    .map((p) => ({ partner: p, why: adPartnerDark(p) || "" }))
+    .filter((r) => !!r.why);
 
 export type AdSlot = {
   /** Where it is, in the reader's words — the console prints this. */

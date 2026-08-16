@@ -1952,8 +1952,12 @@ export default function Home() {
        tab-hide/close carrying everything since. NEVER per-click streaming, NEVER a third
        party — rows land in our own de_events table (RLS-deny to the public anon key) and
        are read only by the owner's console at /admin/kp-desk. Event vocabulary is tiny:
-       session · tab · game · unlock · upgrade · signout. Every call here is fire-and-forget
-       and failure-silent: analytics must never cost the reader anything. */
+       session · tab · game · signout · ad_impression · ad_view · ad_click. (`unlock` and
+       `upgrade` were in this list until 2026-08-16 and are gone with the paywall — nothing
+       emits them, and the console no longer counts them.) Every call here is fire-and-forget
+       and failure-silent: analytics must never cost the reader anything — which is also why
+       the three ad events RIDE THIS QUEUE rather than buying a request each. Ad measurement
+       costs the reader zero extra network. */
     const anSid = (() => { try { return crypto.randomUUID().replace(/-/g, "").slice(0, 16); } catch { return "s" + Math.random().toString(36).slice(2, 12) + Date.now().toString(36); } })();
     let anQ: any[] = [];
     let anStarted = false;
@@ -2238,7 +2242,18 @@ export default function Home() {
        So the unit of both the cap and the impression is a PLACEMENT — a slot in a
        context — not a render. Re-rendering `odds-shop` for the same game is the
        same placement; opening a different game is a new one. */
-    const AD_SESSION_MAX = 8;
+    /* THE GLOBAL CEILING, AND WHY IT IS BELOW THE SUM OF THE SLOTS.
+       The five enabled slots cap out at 12 placements between them, so this
+       number is what actually decides density — and it is set against the one
+       asset this product has. A reader who browses the board, opens two games,
+       reads two articles and checks the Desk hits eight units under a ceiling of
+       8, which is a slate of game tiles interrupted every few screens. A graded
+       record is credible in inverse proportion to how much the page looks like a
+       spam farm, and the money is not in the eighth unit: the two board slots and
+       odds-shop carry nearly all the intent, while article-end at cap 4 is what
+       pushes a long session toward the ceiling. Six costs nothing at today's fill
+       (every slot is the house card) and little at full fill. */
+    const AD_SESSION_MAX = 6;
     /* THE CONTEXT IS THE OTHER HALF OF A PLACEMENT, and getting it wrong is a
        measurement bug rather than a visible one — which is why it is spelled out.
        A placement is "this slot, in this thing the reader is looking at":
@@ -2303,6 +2318,15 @@ export default function Home() {
             el._adViewT = setTimeout(() => {
               el._adViewT = null;
               if (adViewed.has(pk)) return;
+              /* THE ELEMENT MUST STILL BE ON THE PAGE. The board rebuilds its whole
+                 slate on every live cycle, so a unit can be destroyed part-way
+                 through its viewable second — and IntersectionObserver does not
+                 report a removal, it just stops reporting. Without this the timer
+                 still fires and claims a viewable for a unit that left the page
+                 before it earned one, inflating the exact number a partner pays
+                 against. The rebuilt element gets observed again on the next wire,
+                 so a reader genuinely looking at the slot still counts. */
+              if (el.isConnected === false) return;
               adViewed.add(pk);
               track("ad_view", `${el.dataset.adSlot}|${el.dataset.adPartner || "house"}`);
               try { adObserver.unobserve(el); } catch {}
