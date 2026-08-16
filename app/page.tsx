@@ -1836,17 +1836,17 @@ export default function Home() {
          redacted pick; returning it here (rather than falling through to the
          legacy `value_tier` guesses, which would land on "lean" and tint it
          anyway) is what makes every locked card look identical. */
-      if (pl.q === "locked" || servedRedacted(pl)) return "locked";
       if (pl.q === "strong" || pl.q === "good" || pl.q === "lean") return pl.q; // served quality wins
       if (pl.value_tier === "value-a" || pl.tier === "featured") return "strong";
       if (pl.value_tier === "value-b" || pl.tier === "high") return "good";
       return "lean";
     }
-    const Q_LABEL: any = { strong: "Strong", good: "Good", lean: "Lean", locked: "Premium" };
-    const Q_RANK: any = { strong: 0, good: 1, lean: 2, locked: 3 };
-    const qDiamonds = (q: any) => {
-      return "";
-    };
+    /* Q_LABEL AND qDiamonds ARE GONE (2026-08-16). Q_LABEL's only reader was confWord(),
+       which had no callers at all; its `locked: "Premium"` entry was the last table in the
+       app that could put the word Premium in front of a reader. qDiamonds was a stub that
+       returned "". Q_RANK survives because the sort at L1865 and the ladder at L10479 both
+       read it — but its `locked` rank goes with the tier it ranked. */
+    const Q_RANK: any = { strong: 0, good: 1, lean: 2 };
     // A small, always-legible tier legend — states what each word means so "Good vs Lean"
     // is never ambiguous. Rendered on the board and inside the detail sheet.
     // Gold = the headline plays: any winning-recipe (VALUE) play + the surest accuracy tier.
@@ -2170,21 +2170,14 @@ export default function Home() {
        and enormous sales value — it is the receipt behind the W–L, and hiding it would hide
        the sales case itself. So it stays public, everywhere, for everyone.
 
-       ONE SWITCH. If that call is ever wrong, GATE_SETTLED_PICKS flips it: true redacts
-       graded picks too, and every surface follows automatically, because nothing else in
-       this file decides who may see a side. */
-    const GATE_SETTLED_PICKS = false;
-    /* ONE SETTLED VOCABULARY. There were two, because the two feeds speak differently:
-       `playState()` returns {won, lost, pushed} for a graded board pick, while the unified
-       feed's `pick.result` says {win, loss, push}. Each gate knew only its own dialect, so
-       "is this pick settled" — the single question the paywall turns on — had two answers
-       depending on which surface asked. VOID (a postponed game) is settled in both: it will
-       never grade, so nothing is being sold. Note `playState` never returns "void", so the
-       old SETTLED_STATES.void entry was unreachable; the unified feed is where void arrives. */
-    const SETTLED_STATES: any = { won: 1, lost: 1, pushed: 1, win: 1, loss: 1, push: 1, void: 1, voided: 1 };
-    // A pick is settled when the game is done and the ticket graded — NOT when it is merely
-    // "clinched" or "cooked" live, which are in-flight reads on a game still being played.
-    const pickSettled = (st: any) => !!SETTLED_STATES[String(st || "").toLowerCase()];
+       THE SWITCH IS GONE (2026-08-16). GATE_SETTLED_PICKS was a `const … = false` that
+       nothing read: the only surfaces that would have consulted it are the lock gates, and
+       those now return false unconditionally. A flag with one value everywhere is not a
+       switch, it is a comment that compiles — and this one advertised a control the file
+       no longer has. SETTLED_STATES and pickSettled went with it: their only readers were
+       pickLocked and unifiedPickLocked, which passed the answer into sideLocked(_pick,
+       _settled) — a function that ignores both of its parameters. A whole settled-state
+       vocabulary was being computed and thrown away on every card. */
     /* ═══ THE SERVED CONTRACT WINS ═══
        `payload.premium_spec` describes a field-level, single-payload scheme: a non-premium
        client is served the PUBLIC variant, in which every premium field is ABSENT (not null,
@@ -2207,9 +2200,9 @@ export default function Home() {
        the honest answer for one of those is still "show the pick" — the bytes
        either have a side or they do not, and a lock chip over a board nobody
        is selling is just a broken promise. */
-    function servedRedacted(_pl: any) {
-      return false;
-    }
+    /* servedRedacted DELETED (2026-08-16) — it returned a hard false, and its callers
+       spent real work asking. v4ToPlay no longer marks a pick redacted at all, so there is
+       nothing left for it to answer about. */
     /* ═══════════════════ THE AD SURFACE — the revenue foundation (2026-08-16) ═══════════════════
        The picks are free now, so advertising is how this pays for itself. This is
        the ENGINE: fill logic, frequency caps, the house fallback, the display
@@ -2510,69 +2503,29 @@ export default function Home() {
       return "";
     }
 
-    /* ═══ THE ONE GATE. NOTHING ELSE IN THIS FILE DECIDES WHO MAY SEE A SIDE ═══
-       That sentence was in this file already, as a claim about GATE_SETTLED_PICKS — and it
-       was FALSE as written. There were FOUR independent implementations:
+    /* ═══ THE GATE IS GONE, NOT DISARMED (2026-08-16) ═══
+       For one day this file held a gate that always opened: sideLocked() returned a hard
+       false, and pickLocked / gameLocked / unifiedPickLocked / dayRuleLocked all funnelled
+       into it. That was the right first move — it killed the paywall at a single line, where
+       no surface could miss it — but it left ~60 call sites still ASKING, each carrying the
+       markup for an answer that could no longer come back: lock chips, "call locked" copy,
+       ●●● redaction dots, blurred confidence, `tier = "locked"`, unlock rows.
 
-         · pickLocked()        the board / game pages — the full rule.
-         · unifiedPickLocked() the Record surfaces — the same rule, re-expressed against the
-                               unified feed's pick shape, in a second settled vocabulary.
-         · newsAngle()         a bare `true`. It never consulted servedRedacted(), so a
-                               SERVER-REDACTED payload still published the side on the News
-                               front; and it never treated a settled pick as public, so the
-                               record's own receipts were hidden there but shown everywhere
-                               else. Wrong in both directions at once.
-         · ppdCard()           no gate function at all. Consistent with intent today (a void
-                               pick IS public), but the switch could not reach it.
+       Dead branches are not free. Every one is a second place a fact lives, and it is the
+       branch a future reader trusts when they wire the condition back up — which is exactly
+       how this file has shipped disagreeing numbers before. A `false` that fans out to sixty
+       conditionals also hides the real shape of the code: the board looked like it had two
+       modes when it has one.
 
-       Now every one of them ends up in `sideLocked`. Flipping GATE_SETTLED_PICKS moves all
-       four, which is the only thing that makes the claim above true. */
-    /* ═══ NOTHING IS LOCKED (2026-08-16) ═══
-       Every pick, every side, every line and every write-up is free, to every
-       reader, signed in or not. This was the ONE gate the whole app funnelled
-       through — pickLocked, gameLocked, unifiedPickLocked and newsAngle all
-       end here — so the paywall dies at this line and cannot come back through
-       a surface that forgot to ask. The server no longer redacts, no longer
-       stamps `premium_locked`, and there is no entitled/unentitled reader to
-       tell apart. */
-    function sideLocked(_pick: any, _settled: boolean) {
-      return false;
-    }
-    function pickLocked(pl: any, st: string) {
-      if (!pl) return false;
-      // A PASS has no side to hide — there is no ticket, so there is nothing to sell.
-      if (String(pl.action || "").toUpperCase() !== "TAKE" && !servedRedacted(pl)) return false;
-      return sideLocked(pl, pickSettled(st));
-    }
-    // The same rule for surfaces that hold a GAME rather than a play (stories, cards, sheets).
-    function gameLocked(g: any, pl?: any) {
-      const p = pl || displayPick(g);
-      return p ? pickLocked(p, playState(g, p)) : false;
-    }
-    /* The unified feed's pick shape is different — { status, side, line, price, result } — so
-       the Record surfaces (which read it directly) need the same rule expressed against it.
-       Same gate, same vocabulary; only the settled test differs, because settlement arrives
-       here as `result` (or a VOID status) rather than as a playState. */
-    function unifiedPickLocked(p: any) {
-      if (!p) return false;
-      if (!p.side && !servedRedacted(p)) return false;
-      const settled = pickSettled(p.result) || String(p.status || "").toUpperCase() === "VOID";
-      return sideLocked(p, settled);
-    }
-    // The redacted stand-in every Record surface uses in place of a side. Crisp, never a blur,
-    // and it carries no direction in text, class, title or aria.
-    const lockedSideChip = (tight = false) =>
-      `<span class="lockside${tight ? " sm" : ""}">${lockSvg}<i>Premium</i></span>`;
-    /* THE FINAL→GRADED WINDOW SAYS SO (deferred list, 2026-08-13). A locked chip on a
-       game that has already gone FINAL is not withholding a bet anyone can still place —
-       the grade lands with the next intraday cycle and the side then ships whole to every
-       reader, free. "Unlock" in that window sells a pick that is minutes from being
-       public, which reads as a stale board the moment the grade appears. So the chip says
-       what is actually happening. Keyed on the GAME state alone — never on the pick — so
-       pass chips and pick chips on the same final slate stay pixel-identical (the uniform-
-       slate rule: chip text must not leak the pass/withheld distinction). */
-    const gameFinalNow = (g: any) =>
-      ["final", "post"].includes(String((g && g.status) || "").toLowerCase());
+       So the gates and every branch under them are deleted rather than left returning false.
+       There is now no function in this file that decides who may see a side, because there is
+       no such decision — every pick, every side, every line and every write-up is free, to
+       every reader, signed in or not. Bringing a paywall back means writing one, not flipping
+       one; that is the honest cost and it belongs in the open.
+
+       Deleted with them: lockedSideChip (the "Premium" stand-in), GATE_SETTLED_PICKS,
+       SETTLED_STATES, pickSettled, gameFinalNow, Q_LABEL, confWord, pickGrade,
+       pickStrengthPill, qDiamonds. */
     // ===================== VIG / +EV GATE =====================
     // A bet is only worth taking when our win probability clears the PRICE's break-even (the
     // vig-inclusive hurdle). "Right side of the line" at a bad price (e.g. 64% at -196, which
@@ -2743,29 +2696,29 @@ export default function Home() {
          still stamp it `premium_locked` (the redactor used to treat its rule-record block as a
          direction) — ignore that here so no surface dresses a game-we-have-not-run as a premium
          tile a reader could pay to reveal. `picksPending()` routes it to the "pick coming" copy. */
-      const notDecidable = String(pk.pass_why || "").toLowerCase() === "forge_not_decidable";
-      const redacted = !notDecidable && (pk.premium_locked === true || (pk.premium === true && !hasSide));
-      /* THE LINE IS PART OF THE PICK (Leon's list, 2026-08-10). `line` is in
-         PREMIUM_FIELDS and the locked tile printed it anyway — and on the 13-pick
-         board measured that day, 2 picks sat at a DIFFERENT number from the market
-         (9.5 against a market 9; 8 against a market 8.5). Accepting the higher
-         total is an under tell. A locked surface shows the MARKET number, which is
-         free at every book, and never ours. */
-      const ln = redacted
-        ? (pk.vegas_line != null ? pk.vegas_line : null)
-        : (pk.line != null ? pk.line : pk.vegas_line);
+      /* THE CLIENT NO LONGER RE-HIDES WHAT THE SERVER SENT IT (2026-08-16).
+         `redacted` was this normaliser's copy of the paywall: when a payload carried
+         `premium_locked`, it nulled out line, price, probability, stars, star_tier, ev,
+         grade, signals, suggested_units and the pass shim, and stamped `q = "locked"`.
+
+         That was correct while the server served two variants. It is not correct now. The
+         server stopped redacting and stopped emitting the flags, so the ONLY payload that
+         can still trip this is a stale CDN-pinned one — and on that payload the premium
+         fields are ABSENT, not present. Re-nulling absent fields buys nothing; what the
+         ladder could still do is take a line the reader was given and throw it away. A
+         client that hides data it actually holds is the same broken promise as a lock chip
+         over a free board, one layer down.
+
+         So the pick is now whatever the bytes say. Gone with it: the "locked" quality tier
+         (nothing renders it, and Q_RANK no longer ranks it) and the `premium`/
+         `premium_locked` flags this object re-published for gates that no longer exist. */
+      const ln = pk.line != null ? pk.line : pk.vegas_line;
       const side = take && hasSide
         ? `${/over/i.test(String(pk.side)) ? "OVER" : "UNDER"} ${ln != null ? lineStr(ln) : ""}`.trim()
         : null;
       const res = gradeOf(pk) === "win" ? { status: "hit" } : gradeOf(pk) === "loss" ? { status: "miss" } : gradeOf(pk) === "push" ? { status: "push" } : null;
       const stars = pk.stars != null ? Number(pk.stars) : 0;
-      /* THE QUALITY CLASS IS A TINT, AND A TINT IS A DISCLOSURE. `q` becomes
-         `q-strong|q-good|q-lean` on the tile and drives the hero's colour and the
-         story slide's `tier-gold|tier-green|tier-blue`. On a locked card that is
-         the star band shown in the one channel a redaction bar cannot cover —
-         and `stars` is in PREMIUM_FIELDS. A withheld pick gets the neutral class,
-         so every locked tile looks identical to every other locked tile. */
-      const q = redacted ? "locked" : stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
+      const q = stars >= 4 ? "strong" : stars === 3 ? "good" : "lean";
       const be = pk.price != null ? beFromAmerican(pk.price) : null;
       const why: string[] = [];
       if (take && pk.our_prob != null && be != null && pk.price != null)
@@ -2784,31 +2737,22 @@ export default function Home() {
       return {
         market: mk, action: take ? "TAKE" : "PASS",
         side: take ? side : null,
-        line: ln, price: redacted ? null : (pk.price != null ? pk.price : null),
-        p: redacted ? null : (pk.our_prob != null ? pk.our_prob : null),
-        /* THE TWO FLAGS THE SERVER SENDS TO SAY "THIS COPY IS THE REDACTED ONE".
-           They were the one thing this normaliser had to carry and the one thing
-           it did not, which made `servedRedacted()` unreachable from the board
-           and the game page — the server's authority was dead code. */
-        premium: pk.premium === true, premium_locked: redacted,
-        premium_note: pk.premium_note || null,
-        q, stars: redacted ? null : stars,
-        star_tier: redacted ? null : pk.star_tier,
-        ev: redacted ? null : pk.ev, grade: redacted ? null : grade,
+        line: ln, price: pk.price != null ? pk.price : null,
+        p: pk.our_prob != null ? pk.our_prob : null,
+        q, stars,
+        star_tier: pk.star_tier,
+        ev: pk.ev, grade,
         why, result: res, src: "v4",
         // "WHAT'S LIGHTING UP" context chips (served pick.signals) — carried through
         // defensively; may not be in the payload yet, every renderer degrades to nothing.
-        signals: redacted ? null : (Array.isArray(pk.signals) ? pk.signals : null),
-        v4pass: redacted ? null : passShim,
+        signals: Array.isArray(pk.signals) ? pk.signals : null,
+        v4pass: passShim,
         // provenance for the "vs Vegas + when" strip: the exact Vegas line judged + when
         vegas_line: pk.vegas_line != null ? pk.vegas_line : ln,
-        /* THE PASS SHIM AND THE SIGNALS carry model numbers too; on a redacted
-           card the server sent none, but the local recomputation would happily
-           print a break-even from a price that is no longer there. */
         lead_time: pk.lead_time || null,
         fp_utc: g.first_pitch_utc || null,
         locked: !!pk.locked, locked_at_utc: pk.locked_at_utc || null,
-        suggested_units: redacted ? null : (pk.suggested_units != null ? pk.suggested_units : null),
+        suggested_units: pk.suggested_units != null ? pk.suggested_units : null,
         /* PICK STRENGTH — carried forward, never recomputed. This normaliser builds a fresh
            object and therefore silently drops every served block it does not name, which is
            why the tier was invisible on the board while sitting in the payload. Only the
@@ -2825,7 +2769,7 @@ export default function Home() {
           const c = blk("engine_strategy") || blk("owner_strategy");
           const s = c && typeof c === "object" && c.strength && typeof c.strength === "object"
             ? c.strength : null;
-          return take && !redacted && s && s.tier ? s : null;
+          return take && s && s.tier ? s : null;
         })(),
         /* THE 0–100 CONFIDENCE — carried, never rebuilt. Same trap as `strength` above: this
            normaliser names its fields, so anything it does not name is dropped on the floor,
@@ -2833,16 +2777,16 @@ export default function Home() {
            while sitting in the payload. The three keys travel TOGETHER (the backend's own
            contract: `confidence`, `confidence_score`, `confidence_basis`) or not at all, so
            they are copied together and only onto a pick that was actually taken. */
-        confidence: take && !redacted && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
-        confidence_score: take && !redacted && pk.confidence_score != null ? pk.confidence_score : null,
-        confidence_basis: take && !redacted && pk.confidence_basis != null ? pk.confidence_basis : null,
+        confidence: take && pk.confidence && typeof pk.confidence === "object" ? pk.confidence : null,
+        confidence_score: take && pk.confidence_score != null ? pk.confidence_score : null,
+        confidence_basis: take && pk.confidence_basis != null ? pk.confidence_basis : null,
         /* THE STAR RATING — carried, never rebuilt, same trap as the two blocks above.
            The backend decides how many stars a pick has and what they mean (see
            v4/serve/rule_fit.py); the app has stopped mapping a score onto stars locally,
            because the two bases are on different scales and only the producer knows which
            map belongs to which. Both keys travel together or not at all. */
-        pick_rating: take && !redacted && pk.pick_rating && typeof pk.pick_rating === "object" ? pk.pick_rating : null,
-        pick_rating_stars: take && !redacted && pk.pick_rating_stars != null ? pk.pick_rating_stars : null,
+        pick_rating: take && pk.pick_rating && typeof pk.pick_rating === "object" ? pk.pick_rating : null,
+        pick_rating_stars: take && pk.pick_rating_stars != null ? pk.pick_rating_stars : null,
       };
     }
     // ═══════════ SPREAD STREAM — run lines RETURN (Leon, 2026-07-26; live 2026-07-27) ═══════════
@@ -3408,13 +3352,12 @@ export default function Home() {
        desk_policy.redact_day_strategy). This reads that flag first and falls
        back to "is it today, and is anything on today's board still open" for
        payloads built before the contract and for locally cached ones. */
-    /* The day's rule — the exact sentence the search wrote — used to be
-       withheld until the night it governed had graded. It is free now, on open
-       and graded dates alike, so this is a constant. Kept as a named function
-       because five surfaces ask the question and one place should answer it. */
-    function dayRuleLocked(_s: any, _dateISO?: string): boolean {
-      return false;
-    }
+    /* dayRuleLocked DELETED (2026-08-16). The day's rule — the exact sentence the search
+       wrote — used to be withheld until the night it governed had graded. It is free now on
+       every date, so the function had become `return false` and its five callers were five
+       surfaces asking a question with one answer. Worse, the strategy accessor below it was
+       still STRIPPING `plain_english_rule`, `summary_line`, `reason` and `rule_key` off the
+       block in its unreachable arm — a redaction kept warm for a gate that never fires. */
     const stratUnits = (v: any) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(2)}u`);
     // ═══════════════════ THE ANALYST DESK — four named models on every game ═══════════════════
     // The home screen is THE ANALYST DESK: four named analysts (VEGA · ATLAS · NOVA · SCOUT)
@@ -4161,8 +4104,7 @@ export default function Home() {
        GATED LIKE THE PICK. Locked (unpaid) renders nothing at all: "0% to cash" next to a
        redacted call reconstructs the side. A PASS renders nothing either — there is no bet to
        report on, and an empty slot is the honest shape of that. */
-    function pickLiveLine(g: any, locked = false) {
-      if (locked) return "";
+    function pickLiveLine(g: any) {
       const pl = displayPick(g);
       if (!isPick(pl)) return "";
       const side = String(pl.side || "").trim();
@@ -4241,7 +4183,7 @@ export default function Home() {
        screen. Compact keeps exactly the four things a banner is for: whose call it is, what
        the call is, what it cost, and (once graded) how it went. Everything it drops is
        rendered in full by deCallDetail() inside the Odds tab, which is the tab about it. */
-    function deCallBlock(g: any, locked = false, compact = false) {
+    function deCallBlock(g: any, compact = false) {
       const chief = deskChief(g);
       // THE CONCLUSION IS RESOLVED BY tileVerdict(), not by reading `action` here — one
       // resolver, obeyed identically by the board tile and the game page, so the two can
@@ -4253,7 +4195,7 @@ export default function Home() {
       const pg = pregameLine(g);
       const gs = gameState(g);
       const st = pl ? playState(g, pl) : "open";
-      const state = pl && !locked ? pickStateTxt(g, pl, st) : null;
+      const state = pl ? pickStateTxt(g, pl, st) : null;
       const act = vd ? (vd.kind === "play" ? "PLAY" : vd.kind === "lean" ? "LEAN" : "AVOID") : "AVOID";
       const cls = act === "PLAY" ? "de-play" : act === "LEAN" ? "de-lean" : "de-avoid";
       const word = act === "PLAY" || act === "LEAN" ? "DIAMONDEDGE PICK" : "MARKET LINE";
@@ -4266,35 +4208,33 @@ export default function Home() {
       // the total" and any directional lean rides underneath it, quiet and labelled.
       const avoid = act === "AVOID";
       const marketTxt = priced != null ? `O/U ${lineStr(priced)}` : "O/U";
-      const callHtml = locked
-        ? `<span class="de-side locked"><span class="de-dots" aria-hidden="true">●●●● ●</span></span>`
-        : avoid
+      const callHtml = avoid
           ? `<span class="de-side de-pass"><b>${esc(marketTxt)}</b><em class="de-leanonly">No DiamondEdge Pick here.</em></span>`
           : side
-            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<span class="de-callcol"><b>${esc(side)}</b>${strengthPct(pl, !locked && !avoid)}</span>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
+            ? `<span class="de-side ${dirCls}">${arrow ? `<i aria-hidden="true">${arrow}</i>` : ""}<span class="de-callcol"><b>${esc(side)}</b>${strengthPct(pl, !avoid)}</span>${pl && pl.price != null ? `<em>${fmtOdds(pl.price)}</em>` : ""}</span>`
             : "";
       // only state the priced line when the call itself doesn't already contain that number
       const inSide = priced != null && side ? side.indexOf(lineStr(priced)) >= 0 : false;
-      const atLine = !locked && !avoid && priced != null && !inSide
+      const atLine = !avoid && priced != null && !inSide
         ? `<span class="de-at">priced at ${esc(lineStr(priced))}</span>` : "";
       // run line — a real second call, or an honest no-call
       // BUILT ONLY WHEN VISIBLE. The run-line call ("CHC -1.5") and the predicted final
       // score ("LAA 5 — 7 SEA") are both directional: the score, read against the market
       // total this same block prints, gives away the over/under. They sat outside every
       // `locked` guard, so a signed-out game page published the answer twice.
-      const sp = !locked && chief ? chief.spread : null;
+      const sp = chief ? chief.spread : null;
       const rlHtml = sp
         ? (sp.side
           ? `<div class="de-row"><span class="de-rk">Run line</span><b class="de-rv">${esc([(sp.side === "home" ? (g.home_abbr || mlbAbbr(sp.side_team)) : sp.side === "away" ? (g.away_abbr || mlbAbbr(sp.side_team)) : String(sp.side).toUpperCase()), sp.line != null ? sgn(sp.line) : ""].filter(Boolean).join(" "))}</b></div>`
           : `<div class="de-row"><span class="de-rk">Run line</span><b class="de-rv nocall">No call</b></div>`)
         : "";
-      const predHtml = !locked && chief && chief.pred
+      const predHtml = chief && chief.pred
         ? `<div class="de-row"><span class="de-rk">Predicted final</span><b class="de-rv de-score">${esc(g.away_abbr || "AWY")} ${num(chief.pred.away, 0)} — ${num(chief.pred.home, 0)} ${esc(g.home_abbr || "HOM")}</b><i class="de-rsrc">by ${esc(chief.pred.source)}</i></div>`
         : "";
       const rat = (chief && chief.rationale) || (sp && sp.rationale) || "";
       // graded verdict — the past-tense sentence, so a finished pick doesn't collapse to a tick
       let verdict = "";
-      if (pl && !locked && (st === "won" || st === "lost" || st === "pushed") && gs.kind === "final") {
+      if (pl && (st === "won" || st === "lost" || st === "pushed") && gs.kind === "final") {
         const tr = liveTrackingRead(g, pl);
         if (tr && tr.head) verdict = `<div class="de-verdict ${st}">${esc(tr.head)}</div>`;
       }
@@ -4308,7 +4248,6 @@ export default function Home() {
       const actChip = word === "DIAMONDEDGE PICK" ? "" : `<span class="de-act">${esc(word)}</span>`;
       const head = `<div class="de-head"><span class="de-brand"><i class="de-dia" aria-hidden="true">◆</i>The DiamondEdge Pick</span>${actChip}${state ? `<span class="de-res ${state.cls}">${state.txt}</span>` : ""}</div>`;
       const callRow = callHtml ? `<div class="de-callrow">${callHtml}${atLine}</div>` : "";
-      const unlockRow = "";   // nothing is locked since 2026-08-16
       /* ═══════ THE HERO'S BETTING STRIP — the SAME pick language as the board ═══════
          Leon asked whether the pick cleanup covers the game page. It does, and this is where.
 
@@ -4318,31 +4257,31 @@ export default function Home() {
          says in one. It is the board's row here too:  O/U 8.5 │ ◆DE ▲ OVER  ·  −110  ·  ✓
          — market number, then our call, then the price, then the seal at the far right where
          it covers nothing. Premium gating is unchanged (the row redacts the WORD, keeps the
-         market number) and the whole strip stays the unlock affordance when locked. */
+         market number). */
       if (compact) {
         const stamp = st === "won" || st === "lost" || st === "pushed" ? resultStamp(st, "mini", correctionOf(pl)) : "";
-        const priceTxt = !locked && !avoid && pl && pl.price != null ? `<span class="destrip-price">${fmtOdds(pl.price)}</span>` : "";
+        const priceTxt = !avoid && pl && pl.price != null ? `<span class="destrip-price">${fmtOdds(pl.price)}</span>` : "";
         return `<section class="decall ${cls} is-strip" aria-label="The DiamondEdge pick">
           <div class="destrip">
-            ${compactDePickHtml(g, pl, locked, "strip", avoid, stamp)}
+            ${compactDePickHtml(g, pl, "strip", avoid, stamp)}
             ${priceTxt}
           </div>
         </section>`;
       }
       return `<section class="decall ${cls}" aria-label="The DiamondEdge pick">
-        ${head}${callRow}${unlockRow}
-        ${locked ? "" : unobtainableRow(g)}
+        ${head}${callRow}
+        ${unobtainableRow(g)}
         ${/* THE CONFIDENCE, WHERE THERE IS ROOM TO SAY WHAT IT IS. The board tag prints the
              bare number; this is the surface a reader stopped on, so it gets the served score
              with its basis and its vote counts. Gated on `locked` and on `avoid` exactly like
              the side is — the vote counts reconstruct the direction, so a redacted call must
              not carry them, and a game we passed on has no pick to be confident about. */
-          !locked && !avoid ? confidenceBlock(pl) : ""}
-        ${!locked && (rlHtml || predHtml) ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
-        ${rat && !locked ? `<p class="de-rat">${esc(rat)}</p>` : ""}
-        ${locked ? "" : coherenceBlock(chief)}
+          !avoid ? confidenceBlock(pl) : ""}
+        ${(rlHtml || predHtml) ? `<div class="de-rows">${rlHtml}${predHtml}</div>` : ""}
+        ${rat ? `<p class="de-rat">${esc(rat)}</p>` : ""}
+        ${coherenceBlock(chief)}
         ${verdict}
-        ${!locked && pl ? signalRow(pl) : ""}
+        ${pl ? signalRow(pl) : ""}
       </section>`;
     }
     /* THE COHERENCE TABLE — what else pointed where, and what a bet actually is.
@@ -4725,13 +4664,10 @@ export default function Home() {
            text AND in the row class, for TODAY's board as readily as for last month's. A
            GRADED row is the analyst's record and stays open; an ungraded one is a live read
            on a live game and is redacted like everything else. */
-        const anLocked = false && !(gradeOf(a) === "win" || gradeOf(a) === "loss" || gradeOf(a) === "push");
-        const dirCls = anLocked ? "" : a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const res = gradeOf(a) === "win" ? resultStamp("won", "sm") : gradeOf(a) === "loss" ? resultStamp("lost", "sm") : gradeOf(a) === "push" ? resultStamp("pushed", "sm") : `<span class="ppres open">Open</span>`;
-        const callHtml = anLocked
-          ? lockedSideChip(true)
-          : `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>`;
-        return `<div class="anl-row"><span class="anl-d">${esc(dd)}</span><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span>${callHtml}${a.conv != null && !anLocked ? `<span class="anl-conv">${Math.round(a.conv * 100)}%</span>` : ""}${res}</div>`;
+        const callHtml = `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>`;
+        return `<div class="anl-row"><span class="anl-d">${esc(dd)}</span><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span>${callHtml}${a.conv != null ? `<span class="anl-conv">${Math.round(a.conv * 100)}%</span>` : ""}${res}</div>`;
       }).join("");
       const graded = rec && rec.win + rec.loss + rec.push > 0;
       // THEIR WEEK — the weekly-race row (+ the crown when they're analyst of the week).
@@ -4777,17 +4713,16 @@ export default function Home() {
       }));
       // TODAY'S TAKES ARE TODAY'S CALLS. The persona quote is character and stays; the
       // direction chip beside it is the call, and today's calls are never graded yet.
-      const takesLocked = false;
       const takesHtml = takesToday.slice(0, 3).map(({ g, a }: any) => {
         const aAb = g.away_abbr || mlbAbbr(g.away) || "—", hAb = g.home_abbr || mlbAbbr(g.home) || "—";
-        const dirCls = takesLocked ? "" : a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
+        const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
         const callHtml = !a.side ? ""
-          : takesLocked ? lockedSideChip(true)
           : `<span class="anl-call ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}${a.line != null ? ` ${lineStr(a.line)}` : ""}</span>`;
-        // The persona quote often NAMES the side in prose ("I'm on the under here"), so a
-        // locked view drops any take that trips the same pick-word test the composed
-        // matchup headlines are held to. Character that gives away the call is the call.
-        const say = takesLocked && leaksPick(String(a.take || "")) ? "" : a.take;
+        /* THE PERSONA SAYS THE WHOLE QUOTE NOW. It used to be filtered through leaksPick()
+           — drop any take whose prose names the side — because character that gives away
+           the call was the call. The call is free, so naming it costs nothing, and half a
+           quote was never the better read. */
+        const say = a.take;
         return `<div class="anl-take">
           <div class="anl-take-top"><span class="anl-mu">${esc(aAb)} @ ${esc(hAb)}</span>${callHtml}</div>
           ${say ? `<p class="anl-take-say">“${esc(say)}”</p>` : ""}
@@ -6504,27 +6439,11 @@ export default function Home() {
     function pickStars(pl: any) {
       return "";
     }
-    // The decimal CONFIDENCE SCORE chip ("3.72") shown beside the stars everywhere a pick
-    // renders — the model's continuous 0–5 grade (payload `score`), formatted to 2 decimals.
-    // Ranks every pick against every other, across and within star tiers.
-    function pickGrade(pl: any) {
-      if (!pl || pl.grade == null || !(pl.grade > 0)) return "";
-      return "";
-    }
-    function pickStrengthPill(pl: any, compact = false) {
-      /* THE PILL READS `pl.stars` DIRECTLY, so it must ask about the lock first
-         — otherwise a redacted pick whose `q` is "locked" still gets banded
-         here off a star count that should not have travelled. On a redacted
-         card `v4ToPlay` nulls `stars`, so this is belt to that brace. */
-      const n = pl && !servedRedacted(pl) && pl.stars != null && isFinite(Number(pl.stars))
-        ? Math.max(1, Math.min(5, Math.round(Number(pl.stars)))) : null;
-      const q = n == null ? qualityOf(pl) : n >= 4 ? "strong" : n === 3 ? "good" : "lean";
-      const txt = q === "lean" ? "Line" : (compact ? "Pick" : "DiamondEdge Pick");
-      return `<span class="str-pill q-${q}${compact ? " compact" : ""}" title="${esc(txt)}">${esc(txt)}</span>`;
-    }
-    // A pass's sub-2.00 score, muted — passes carry a score too (the model rates every row).
-    // The score for a game whether or not it's a playable pick — the model rates every game, so
-    // passes can show their muted score on tiles too.
+    /* pickGrade AND pickStrengthPill DELETED (2026-08-16) — both had zero callers.
+       pickGrade was a two-line stub whose every path returned "". pickStrengthPill was a
+       live-looking renderer whose comment explained how it asks about the lock before
+       reading `pl.stars`: a careful answer to a question nobody asks any more, on a surface
+       with no door. It was also the last reader of servedRedacted() outside the gates. */
     // LOW CONFIDENCE = a Lean-tier pick, OR a spread/ML lean whose price doesn't clear break-even.
     // We still SHOW these (Leon: include the slightest picks) but flag them clearly.
     function isLowConf(pl: any) {
@@ -6532,12 +6451,15 @@ export default function Home() {
       if (qualityOf(pl) === "lean") return true;
       return pl.market !== "total" && !pickPlusEV(pl);
     }
-    // The confidence word shown next to the stars: Strong / Good / Low confidence.
-    function confWord(pl: any) {
-      if (isLowConf(pl)) return "Low confidence";
-      return Q_LABEL[qualityOf(pl)] || "";
-    }
-    const lockSvg = `<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
+    /* confWord DELETED (2026-08-16) — zero callers, and the only reader of Q_LABEL, whose
+       `locked` entry rendered the literal word "Premium" to a reader. isLowConf survives:
+       it still has a real caller at the detail sheet. */
+    /* lockSvg SURVIVES ON ONE JOB. Its two paywall uses (the "Premium" side chip and the
+       news-angle "pick inside" teaser) are gone; what is left is pick-freeze PROVENANCE —
+       "locked at this line", the padlock that means a price was stamped and will not be
+       restated. Same glyph, opposite meaning: not "you may not see this" but "this cannot
+       change now". */
+    const lockSvg =`<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>`;
 
     // ===================== EDITORIAL ICON SET (inline SVG, stroke = currentColor) =====================
     const IC: any = {
@@ -6700,7 +6622,7 @@ export default function Home() {
          which band it is in, in an inline style, on a page whose pick strip
          said "Sign in to unlock". A withheld pick tints from the article like
          any other game. */
-      if (pl && pl.action === "TAKE" && !servedRedacted(pl) && qualityOf(pl) !== "locked") {
+      if (pl && pl.action === "TAKE") {
         const q = qualityOf(pl);
         if (q === "strong") return "gold";
         if (q === "good") return "green";
@@ -9135,7 +9057,7 @@ export default function Home() {
          a market 8.5), and accepting the higher total is an under tell.
          A locked card falls through to the MARKET line below, which is free at
          every book and is the frame the upsell needs. */
-      if (pl && pl.line != null && !servedRedacted(pl)) return lineStr(pl.line);
+      if (pl && pl.line != null) return lineStr(pl.line);
       const pg = pregameLine(g);
       if (pg && pg.total && pg.total.line != null) return lineStr(pg.total.line);
       const v = vegasLine(g, "total");
@@ -9537,18 +9459,10 @@ export default function Home() {
         ${rateRow}
       </div>`;
     }
-    function compactDePickHtml(g: any, pl: any, locked = false, cls = "", noPick = false, stamp = "") {
+    function compactDePickHtml(g: any, pl: any, cls = "", noPick = false, stamp = "") {
       const line = noPick ? (ouLineForPick(g, null) || ouLineForPick(g, pl)) : ouLineForPick(g, pl);
       const sideRaw = String((pl && pl.side) || "");
-      /* THE REDACTION IS COMPUTED, NOT PAINTED OVER.
-         This unit used to derive `dir` from pl.side and then drop "over"/"under" into the
-         class list REGARDLESS of `locked` — so a signed-out reader's tile carried the answer
-         in its own markup, one View Source away, on every game on the board. The direction is
-         now resolved to "" the moment the pick is locked, so the side is not in the class, not
-         in the title, not in the aria-label and not in any attribute. The lock dots are drawn
-         from the `locked` class alone. Same rule everywhere: redact at the source, never with
-         a filter over a real value. */
-      const reveal = !locked && !noPick;
+      const reveal = !noPick;
       const over = reveal && /over/i.test(sideRaw);
       const under = reveal && /under/i.test(sideRaw);
       const dir = over ? "over" : under ? "under" : "";
@@ -9574,11 +9488,9 @@ export default function Home() {
          The `liveChip` probe that gated it is gone with it rather than left dangling: it had
          no other caller, and the title and aria-label were never gated on it. */
       const title = noPick ? `Market total${line ? ` ${line}` : ""}`
-        : locked ? "DiamondEdge Pick locked"
-          : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}${strTxt ? ` · ${strTxt}` : ""}` : "DiamondEdge Pick";
+        : word ? `DiamondEdge Pick: ${word}${line ? ` ${line}` : ""}${strTxt ? ` · ${strTxt}` : ""}` : "DiamondEdge Pick";
       const aria = noPick ? `Market total ${line || ""}`.trim()
-        : locked ? "DiamondEdge Pick — locked"
-          : `DiamondEdge Pick ${word || ""} ${line || ""}${strTxt ? `, ${strTxt}` : ""}`.trim();
+        : `DiamondEdge Pick ${word || ""} ${line || ""}${strTxt ? `, ${strTxt}` : ""}`.trim();
       /* THE RIGHT SLOT. A pick fills it with the DiamondEdge diamond and a direction mark;
          a no-pick game leaves it EMPTY — no logo, no word, no "Pass". The slot itself is the
          signal, so a reader scanning a column of tiles sees "we are on this one" as a shape
@@ -9643,8 +9555,7 @@ export default function Home() {
          The hairline separator is gone — a black tag against paper does not need a rule to
          say it is a different object. */
       const mark = noPick ? ""
-        : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i>${
-          locked ? `<i class="de-mini-lockdots"></i>` : `<i class="de-mini-arrow"></i>`}</span>`;
+        : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i><i class="de-mini-arrow"></i></span>`;
       // the market total — ALWAYS rendered, always meaning the market
       const ouCell = `<span class="de-mini-ou"><i>O/U</i>${line ? `<b>${esc(line)}</b>` : `<b>—</b>`}</span>`;
       /* our call — the tag. A game we PASSED on leaves the slot empty (the emptiness is the
@@ -9655,10 +9566,8 @@ export default function Home() {
       const callCell = upcoming
         ? `<span class="de-mini-call incoming"><span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i></span><b class="de-mini-word">${esc(picksEtaShort(g))}</b></span>`
         : noPick ? ""
-        : `<span class="de-mini-call">${mark}${locked
-            ? `<i class="de-mini-redact" aria-hidden="true"></i>`
-            : `<span class="de-callcol"><b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal)}</span>`}</span>`;
-      return `<span class="de-mini-pick ${dir}${locked ? " locked" : ""}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
+        : `<span class="de-mini-call">${mark}<span class="de-callcol"><b class="de-mini-word">${esc(word || "PICK")}</b>${strengthPct(pl, reveal)}</span></span>`;
+      return `<span class="de-mini-pick ${dir}${noPick ? " nopick" : ""}${upcoming ? " upcoming" : ""}${mod}${stamp ? " has-seal" : ""}" title="${esc(upcoming ? picksEtaLong(g) : title)}" role="img" aria-label="${esc(upcoming ? picksEtaLong(g) : aria)}">
         ${ouCell}${callCell || stamp ? `<span class="dmp-right">${callCell}${stamp}</span>` : ""}
       </span>`;
     }
@@ -10233,7 +10142,6 @@ export default function Home() {
       const pick = displayPick(g);
       const q = pick ? qualityOf(pick) : null;
       const st = pick ? playState(g, pick) : "open";
-      const locked = pick ? pickLocked(pick, st) : false;
       const vd = tileVerdict(g);
       const pg = pregameLine(g);
       const lockedTot = pg && pg.total && pg.total.line != null ? lineStr(pg.total.line) : null;
@@ -10244,8 +10152,8 @@ export default function Home() {
          (dirCls / arrow were computed here and used nowhere — the compact pick draws its own
          direction mark. Removed with the leak they would have become.) */
       const resCls0 = st === "won" ? " res-won" : st === "lost" ? " res-lost" : st === "pushed" ? " res-push"
-        : locked ? "" : st === "clinched" ? " res-won" : st === "cooked" ? " res-lost" : "";
-      const state = pick && !locked ? pickStateTxt(g, pick, st, "mini") : null;
+        : st === "clinched" ? " res-won" : st === "cooked" ? " res-lost" : "";
+      const state = pick ? pickStateTxt(g, pick, st, "mini") : null;
       const passLine = lockedTot || (pg && pg.total && pg.total.line != null ? lineStr(pg.total.line) : "");
       /* THE VERDICT LINE — ONE ROW, NOT FOUR.
          WAS: a kicker row ("DIAMONDEDGE PICK" in 10px caps + a result chip) stacked above a
@@ -10257,7 +10165,7 @@ export default function Home() {
          whole tile stays the unlock affordance (redaction contract unchanged). */
       const callHtml = !vd ? ""
         : vd.kind === "pass"
-          ? compactDePickHtml(g, null, false, "tile", true)
+          ? compactDePickHtml(g, null, "tile", true)
           /* THE TILE'S LIVE STATE WAS A BARE STRING. `stamp` is injected as raw HTML into
              the pick row, and a SETTLED state arrives as a real element (resultStamp's sealed
              glyph). Every UNSETTLED state — OUR WAY / CHASING / HOLDING / TIGHT / ✓ CLINCHED /
@@ -10266,7 +10174,7 @@ export default function Home() {
              it as unstyled text next to the price. Leon, looking at exactly this: it "reads
              as bare unformatted text". Wrap it in the chip and hand the class through; the
              settled case is already an element and passes untouched. */
-          : compactDePickHtml(g, vd.pl || pick, locked, "tile", false, stateChipHtml(state));
+          : compactDePickHtml(g, vd.pl || pick, "tile", false, stateChipHtml(state));
       /* liveCashChip RETIRED HERE: the % to cash lives inside the cushion pill now (the
          clinch meter, stateChipHtml) — two chips reading the same number on one tile is
          the duplication rule this board was scrubbed for. */
@@ -10350,7 +10258,7 @@ export default function Home() {
               era's signature. */,
       ].filter(Boolean).join("");
       return `<article class="tile ${gs.kind}${gs.delayed && gs.kind !== "delayed" ? " delayed" : ""}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (locked && vd.kind !== "pass" ? " — the desk's call is locked" : vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${verdictBlk}
@@ -10382,7 +10290,7 @@ export default function Home() {
           <span class="ppd-mid">PPD</span>
           <span class="ppd-team"><b>${esc(hAb)}</b><span class="t-crest">${gCrest(g, "home")}</span></span>
         </div>
-        ${hasPick ? `<div class="ppd-pickrow">${bStars(p.stars)}<span class="ppd-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` ${fmtOdds(p.price)}` : ""}`}</span><span class="void-chip">VOID — no action</span></div>` : ""}
+        ${hasPick ? `<div class="ppd-pickrow">${bStars(p.stars)}<span class="ppd-side">${esc(side)}${p.price != null ? ` ${fmtOdds(p.price)}` : ""}</span><span class="void-chip">VOID — no action</span></div>` : ""}
         <div class="ppd-note">${esc((bg.postponed && bg.postponed.note) || "Postponed — pick void, no action")}</div>
         ${spBit}
       </article>`;
@@ -11003,15 +10911,7 @@ export default function Home() {
         const rows = Array.isArray(daily) ? daily : [];
         const row = rows.find((r: any) => r && String(r.date || "") === dateISO);
         const st = row && row.strategy;
-        if (st && typeof st === "object" && st.status !== "ERROR" && (st.label || st.plain_english_rule)) {
-          if (!dayRuleLocked(st, dateISO)) return st;
-          /* Locked: hand back the block MINUS the two fields that argue the
-             side, so the bar still renders its name, window and record — the
-             evidence the lock sells against — and `dayRuleLocked` still reads
-             true on it downstream. */
-          const { plain_english_rule, summary_line, reason, rule_key, ...rest } = st;
-          return { ...rest, premium_locked: true };
-        }
+        if (st && typeof st === "object" && st.status !== "ERROR" && (st.label || st.plain_english_rule)) return st;
       }
       return null;
     }
@@ -11350,9 +11250,7 @@ export default function Home() {
                  being bet both are the board's every pick. See
                  `dayRuleLocked`; the upsell replaces them, and everything
                  around it (the name, the record, the "so far" stat) stays. */""}
-            ${dayRuleLocked(s, dateISO)
-              ? ""
-              : (voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : ""))}
+            ${voiceHtml || (rule ? `<p class="stgy-rule"><span>${isPast ? "How it read that day's games" : "How it reads a game"}</span>${esc(rule)}</p>` : "")}
             ${/* THE "NOT RUNNING NOW" LINE BELONGS ON EVERY SETTLED DAY, not only on the days
                   whose prose came from the forge. Its first half is a statement about SERVED
                   prose — true of the generated voice, which is reproduced verbatim, and NOT
@@ -11361,11 +11259,7 @@ export default function Home() {
                   first half is gated on the branch it describes and the second half, which
                   is a fact about the machine on any finished day, is not. */""}
             ${isPast && (voiceHtml || rule) ? `<p class="stgy-past">${voiceHtml ? "This is how that day's strategy was described on the day it played. " : ""}It is not running now — the search picks again every night.</p>` : ""}
-            ${/* THE LOCKED FOLD SAYS THE RECORD ONCE. dayRuleUpsellHtml's evidence line is
-                  this same fact — record over window — so printing whyTxt under it stated
-                  131-44-8 twice in adjacent paragraphs. The upsell owns the fact when it
-                  renders; whyTxt owns it the rest of the time. */""}
-            ${whyTxt && !dayRuleLocked(s, dateISO) ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
+            ${whyTxt ? `<p class="stgy-why">${esc(whyTxt)}</p>` : ""}
             <!-- THE LABEL KEEPS ITS NAME AND GAINS ITS DESTINATION. It is the phrase Leon
                  refers to this link by, so it stays; what follows the dash is where it now
                  goes — the Desk, and specifically the record on it. -->
@@ -12397,7 +12291,6 @@ export default function Home() {
       const pl = displayPick(g);
       const mu = g.matchup || `${g.away_team || g.away_abbr} @ ${g.home_team || g.home_abbr}`;
       if (!pl || pl.action !== "TAKE" || !pl.side) return mu;
-      if (pickLocked(pl, playState(g, pl))) return `${mu} — ◆ DiamondEdge Pick on this game`;
       return `${mu} — DiamondEdge Pick: ${pl.side}${pl.price != null ? ` (${fmtOdds(pl.price)})` : ""}`;
     }
     async function shareGame(g: any) {
@@ -13645,7 +13538,7 @@ export default function Home() {
         const meter = gs.kind === "live"
           ? safeHtml("live pick line", () => {
               const pl = displayPick(detail);
-              return pickLiveLine(detail, pl ? pickLocked(pl, playState(detail, pl)) : false);
+              return pickLiveLine(detail);
             }, "")
           : "";
         players.innerHTML = meter + boxScoreTab(detail, "players");
@@ -13793,7 +13686,7 @@ export default function Home() {
     // A one-line entry point on the Preview pane — the counts, then straight to the panel.
     // The DiamondEdge reasoning tab: a plain-English narrative FIRST, then the divergence, the
     // data visuals (graphs), the model-vs-market read, and the driving factors. Easy to follow, deep.
-    function diamondEdgeReasoning(g: any, lead: any, leadLocked: boolean) {
+    function diamondEdgeReasoning(g: any, lead: any) {
       const why = lead && lead.action === "TAKE" ? whySentences(g, lead) : composedPreview(g).paras;
       const narrative = why && why.length ? `<div class="de-sec"><div class="de-h">The read</div>${why.slice(0, 4).map((w: string) => `<p>${mdBold(w)}</p>`).join("")}</div>` : "";
       const div = deDivergence(g, lead);
@@ -13955,11 +13848,11 @@ export default function Home() {
        green mean won and lost and nothing else (the colour-system rule). Position and words
        carry it. And all of it is gated with the pick — a locked or passed game gets the
        plain step line it always had, with no side stated anywhere. */
-    function oddsMoveChart(g: any, lead: any, leadLocked: boolean) {
+    function oddsMoveChart(g: any, lead: any) {
       const w = totalWalls(g);
       if (w.length < 2) return "";
       // OUR SIDE, read once off the served pick. A premium-locked pick reveals nothing.
-      const take = !leadLocked && lead && String(lead.action || "").toUpperCase() === "TAKE";
+      const take = lead && String(lead.action || "").toUpperCase() === "TAKE";
       const sideRaw = take && lead.side != null ? String(lead.side) : "";
       const isOver = /over/i.test(sideRaw), isUnder = /under/i.test(sideRaw);
       const sided = !!take && isOver !== isUnder;          // exactly one side, or none
@@ -14116,7 +14009,7 @@ export default function Home() {
       }
       return null;
     }
-    function oddsPane(g: any, lead: any, leadLocked: boolean) {
+    function oddsPane(g: any, lead: any) {
       // (1) THE NUMBER THE GAME STARTED AT — the one every read on this game is graded
       //     against. It shares the grid's re-render slot (see `repaintOddsMove`) because
       //     what it prints depends on whether the wall grid arrived.
@@ -14125,7 +14018,7 @@ export default function Home() {
       //     It shares the grid's re-render slot (see `repaintOddsMove`) because the total
       //     it quotes can arrive with the wall grid, after first paint.
       return `<div class="oddspane"><div id="odds-linecard">${oddsLineCard(g)}</div>${
-        `<div id="odds-move">${oddsMoveBody(g, lead, leadLocked)}</div>`}${leadLocked ? "" : unobtainableRow(g)}<div id="odds-partner">${adSlot("odds-shop", adGameCtx(g), g)}</div></div>`;
+        `<div id="odds-move">${oddsMoveBody(g, lead)}</div>`}${unobtainableRow(g)}<div id="odds-partner">${adSlot("odds-shop", adGameCtx(g), g)}</div></div>`;
     }
     function oddsLineCard(g: any) {
       const raw = pregameLineRaw(g);
@@ -14185,9 +14078,9 @@ export default function Home() {
        (The checks are the app's own wall schedule, the same T-24h → T-1h ladder the countdown
        chip counts down to; nothing here is guessed. The copy names no count and speaks the
        sport's own start noun — "first pitch" on an MLS page was wrong twice over.) */
-    function oddsMoveBody(g: any, lead: any, leadLocked: boolean) {
+    function oddsMoveBody(g: any, lead: any) {
       const startNoun = WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "start";
-      const chart = oddsMoveChart(g, lead, leadLocked);
+      const chart = oddsMoveChart(g, lead);
       const table = oddsWallTable(g);
       if (!chart && !table) {
         if (wallGridPending) return `<div class="omv-wait">Loading the market's record…</div>`;
@@ -14223,8 +14116,7 @@ export default function Home() {
       const slot = document.getElementById("odds-move");
       if (!slot || !detail) return;
       const pl = displayPick(detail);
-      const locked = pl ? pickLocked(pl, playState(detail, pl)) : false;
-      slot.innerHTML = safeHtml("odds move", () => oddsMoveBody(detail, pl, locked), "");
+      slot.innerHTML = safeHtml("odds move", () => oddsMoveBody(detail, pl), "");
       // THE LINE CARD REPAINTS WITH IT, because what it prints depends on whether the
       // grid arrived: with a chart on the page the open belongs to the chart's caption,
       // and without one the card is the only place it can be said. The grid loads on
@@ -14291,7 +14183,6 @@ export default function Home() {
       // PREVIEW-FIRST: the detail opens with the game-preview headline + setup prose. The
       // hero image leads WITHOUT the pick cover (no spoiler up top); the pick surfaces later
       // as the article's payoff. Locked free-mode still shows the unlock cover.
-      const leadLocked = lead ? pickLocked(lead, playState(g, lead)) : false;
       const tintSheet = heroTintFor(g, lead);
       const art = gameArticle(g);
       // The masthead headline: served article.headline (backend now writes preview-first),
@@ -14336,7 +14227,7 @@ export default function Home() {
          nothing. It is the same false verdict the board's pass panel was making, on the surface
          where a reader goes to find out what we think — so it says the true thing instead, and
          it says WHEN. */
-      const passBlock = (!lead && !leadLocked)
+      const passBlock = !lead
         ? (() => {
             if (picksPending(g)) {
               return `<div class="callcard pass pending"><div class="cc-k">${pickLabel(g)}</div>
@@ -14363,8 +14254,15 @@ export default function Home() {
                it — not to invent a pass, and not to sell anything. */
             if (g && (g.premium_locked === true
                       || (g.pick && (g.pick.premium_locked || g.pick.premium)))) {
-              return `<div class="callcard pass locked"><div class="cc-k">${pickLabel(g)}</div>
-              <p class="cc-passwhy">This game is decided and the call is frozen — it locked at this game's own wall, before ${esc(WALL_NOUN[String(sp || "").toLowerCase()] || "the start")}. It is on the board with the rest of the day's picks; this pane just could not load it.</p>
+              /* NOTHING IS WITHHELD, SO THE SENTENCE MAY NOT SAY SO (2026-08-16). This arm
+                 fires only on a stale CDN payload still carrying the retired `premium_*`
+                 marker, and it used to read "the call is frozen — it locked at this game's
+                 own wall". Both halves now describe a paywall that does not exist: the pick
+                 is free and it is not being kept from anyone. What is actually true is the
+                 narrow thing — a decision exists, this pane failed to load it, the board
+                 has it. That is all it says now. */
+              return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
               </div>`;
             }
             const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
@@ -14444,8 +14342,8 @@ export default function Home() {
          the backend has not written yet — every game on the board before the morning
          serve. Declared here rather than inline so `previewBlock` can tell a written game
          from a composed one and drop its section heading accordingly. */
-      const narrativeParas: string[] = (!leadLocked && forgeCase) ? forgeCase.paras : [];
-      const bodyParas = leadLocked ? [] : (narrativeParas.length ? narrativeParas : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras)));
+      const narrativeParas: string[] = forgeCase ? forgeCase.paras : [];
+      const bodyParas = narrativeParas.length ? narrativeParas : (art && art.paras.length ? art.paras : (lead ? whySentences(g, lead) : composedPreview(g).paras));
       /* ══════ THE LAST SURFACE WHERE A NAME WAS NOT A TAP ══════
          Every other place this app prints a player prints him through `playerLink` —
          the box score, the lineup, the matchup rail — because every one of those is
@@ -14480,8 +14378,8 @@ export default function Home() {
         }
         return out + mdBold(txt.slice(at));
       };
-      const facts = leadLocked ? [] : factRows(g, art);
-      const stks = leadLocked ? "" : gameStreaks(g).slice(0, 4).map((s: any) =>
+      const facts = factRows(g, art);
+      const stks = gameStreaks(g).slice(0, 4).map((s: any) =>
         `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
       /* THE SECOND PICK CALLOUT IS GONE. A `.art-pick` band used to sit at the top of the
          Preview pane restating the exact call the conclusion block already carried — the
@@ -14664,11 +14562,11 @@ export default function Home() {
          permanent record of what we served is the point. */
       const isVoid = gs.kind === "void";
       const gpBanner = isVoid
-        ? ((lead || leadLocked) ? `<div class="gp-void">
+        ? (lead ? `<div class="gp-void">
              <div class="gp-void-k">${esc(gs.label)} — pick void, no action</div>
              <p>This game will not be played as scheduled, so the call we served on it is not graded and counts in no record.</p>
            </div>` : "")
-        : (lead || leadLocked) ? deCallBlock(g, leadLocked, true) : "";
+        : lead ? deCallBlock(g, true) : "";
       /* A DELAYED GAME IS STILL COMING, and its first-pitch time is now in the
          past — which the page used to print with no acknowledgement at all. */
       /* TWO DELAYS, TWO SENTENCES, AND THE READER'S QUESTION IS THE SAME ONE: what happens to
@@ -14703,7 +14601,7 @@ export default function Home() {
          THE BOX SCORE IS NOT A TAB ANY MORE. "Once the game starts, there should always be
          a box score on the top" — always, meaning on whichever tab you are standing on. The
          line score is pinned above the tab bar (see boxTop) and the player lines head Stats. */
-      const liveVsLineHtml = showLive && !isFinal ? safeHtml("live pick line", () => pickLiveLine(g, leadLocked), "") : "";
+      const liveVsLineHtml = showLive && !isFinal ? safeHtml("live pick line", () => pickLiveLine(g), "") : "";
       // Normalise a tab that no longer exists in this game's state: "box"/"live" are retired
       // keys (an old URL, a back-button restore), and Stats does not exist before first pitch.
       if (detailTab === "live" || detailTab === "box") detailTab = showLive ? "stats" : "preview";
@@ -14744,7 +14642,7 @@ export default function Home() {
               stays is the totals trend, which is a different fact (how the OVER/UNDER has
               gone lately), retitled so the heading matches what is under it. */""}
         ${vizFormStrip(g) ? `<section class="st-sec"><h3 class="st-h">Recent totals</h3>${vizFormStrip(g)}</section>` : ""}
-        ${!leadLocked && (vizPredScore(g) || vizWinProb(g)) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
+        ${(vizPredScore(g) || vizWinProb(g)) ? `<section class="st-sec"><h3 class="st-h">The projection</h3>${vizPredScore(g)}${vizWinProb(g)}</section>` : ""}
         ${vizH2H(g) ? `<section class="st-sec"><h3 class="st-h">Head to head</h3>${vizH2H(g)}</section>` : ""}
         ${intelSection(g)}
         ${(facts.length || stks) ? `<section class="st-sec"><h3 class="st-h">Game notes</h3>${stks ? `<div class="pv-stks">${stks}</div>` : ""}${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}</section>` : ""}`;
@@ -14773,8 +14671,8 @@ export default function Home() {
          the morning serve). It said so quietly on the old Odds tab; this section is the
          first thing a reader meets, so the fold stands down until there is a judgement to
          open, and the pending block above it says what is actually true. */
-      const fullRead = (leadLocked || (!lead && picksPending(g)))
-        ? "" : safeHtml("the full read", () => diamondEdgeReasoning(g, lead, leadLocked), "");
+      const fullRead = (!lead && picksPending(g))
+        ? "" : safeHtml("the full read", () => diamondEdgeReasoning(g, lead), "");
       /* THE SECTION ALWAYS NEEDS A NAME NOW. This kicker used to stand down whenever the
          rationale card was present, because that card's own title said what the section
          answered. The card is gone — the narrative moved into the preview, where it belongs
@@ -14789,9 +14687,7 @@ export default function Home() {
          already carries the redacted ticket and IS the unlock affordance, and `previewBlock`
          states in plain words what the paywall is holding. A second locked slab here would
          be the same redaction twice on one screen. */
-      const whySection = leadLocked
-        ? ""
-        : `${whyHead}
+      const whySection = `${whyHead}
            ${""/* THE CONFIDENCE BOX IS GONE (Leon, 2026-08-10: "we still have a pick
                  confidence box — it should just be narrative and the links").
                  It was a slab stating a score against a scale, with a meter and a basis line
@@ -14823,7 +14719,7 @@ export default function Home() {
              message). The narrative is the preview; a banner explaining that the preview
              is a preview was furniture. */}
         ${whySection}
-        ${leadLocked ? "" : previewMasthead}
+        ${previewMasthead}
         ${previewBlock}
         ${!showLive ? referenceSections : ""}
         ${""/* THE FOUR ANALYSTS NO LONGER SPEAK ON A GAME PAGE (Leon, 2026-08-09: "the analyst
@@ -14835,7 +14731,7 @@ export default function Home() {
              no longer makes the call. The analysts keep the surfaces where they are the
              SUBJECT (their own pages, their records on the Desk); they lose the surface where
              they used to be the ARGUMENT. */}
-        ${lead && !leadLocked ? signalBlock(lead) : ""}
+        ${lead ? signalBlock(lead) : ""}
       </div>`;
       /* ═══════════ STATS — THE SPORTS-REFERENCE TAB, AND THE BOX SCORE'S DEPTH ═══════════
          Only exists once the game does. It opens with what a reader watching a game wants
@@ -14887,7 +14783,7 @@ export default function Home() {
          market's own record of how it got there (see the note on oddsPane for what left and
          where it went). The argument moved to the Preview's "why" section. */
       const dePane = `<div class="gp-pane" data-pane="odds" style="display:${detailTab === "odds" ? "block" : "none"}">
-        ${safeHtml("odds pane", () => oddsPane(g, lead, leadLocked), "")}
+        ${safeHtml("odds pane", () => oddsPane(g, lead), "")}
       </div>`;
       // THE GAME PAGE LEADS WITH THE SAME THREE BEATS AS THE CARD: the locked pregame line
       // (big), the live read measured against it, then the desk's conclusion — all above the
@@ -15364,7 +15260,7 @@ export default function Home() {
               <div class="dsec-h">Where the edge comes from</div>
               <div class="dsec-b rcp-steps">
                 <div class="rcp-step"><span class="rh-n">1</span><div><b>We model every game ourselves</b> — weather, form, travel, rest, matchups — and land on our own number before the books' numbers matter to us.</div></div>
-                <div class="rcp-step"><span class="rh-n">2</span><div><b>We audit the market, not just the matchup.</b> When the market's own behavior tells us a number is soft, that's when we get interested. The exact triggers are the house blend — that's the part you're subscribing to.</div></div>
+                <div class="rcp-step"><span class="rh-n">2</span><div><b>We audit the market, not just the matchup.</b> When the market's own behavior tells us a number is soft, that's when we get interested. The exact triggers are the house blend — that part we keep to ourselves.</div></div>
                 <div class="rcp-step"><span class="rh-n">3</span><div><b>Only when everything lines up do we publish a DiamondEdge Pick</b>.</div></div>
               </div>
             </div>
@@ -15818,7 +15714,7 @@ export default function Home() {
              competing signals: a gold star count, a tier-tinted side, a green/red W/L
              letter and a void chip — four vocabularies for one pick. It now carries three
              plain facts in a fixed order: who played, what we called, how it went. */
-          return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}" data-ppdate="${esc(String(g.date || k))}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${unifiedPickLocked(p) ? lockedSideChip(true) : `${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}`}</span>${res}</button>`;
+          return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}" data-ppdate="${esc(String(g.date || k))}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span>${res}</button>`;
         }).join("");
         const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length;
         const nP = list.length - nV;
@@ -15925,13 +15821,12 @@ export default function Home() {
       const g = gameAnywhere(a.game_id);
       const pl = g ? displayPick(g) : null;
       if (!pl || !isBet(pl)) return "";
-      const locked = pickLocked(pl, playState(g, pl));
       // Keep the chip SHORT (side + line only) — matchup lives in the headline, so no
       // wrap/cut-off. The board's side usually already carries its number ("UNDER 8.5"),
       // so the line is appended only when it doesn't, never twice.
       const side = String(pl.side || "");
       const lineTxt = !/\d/.test(side) && pl.line != null ? " " + lineStr(pl.line) : "";
-      const pick = locked ? `<span class="nf-lock">${lockSvg} pick inside</span>` : `${esc(side)}${esc(String(lineTxt))}`;
+      const pick = `${esc(side)}${esc(String(lineTxt))}`;
       return `<span class="nf-angle ${pl.q === "lean" || a.quality === "lean" ? "lean" : "edge"}">◆ ${pick}</span>`;
     }
     // Humanize a story timestamp — raw ISO / "SAT, 04 JUL 2026 16:40:00 GMT" → "2h ago" / "Jul 4".
@@ -16335,7 +16230,7 @@ export default function Home() {
          the feed's sentence is the fallback for a game we can no longer resolve. One source,
          one voice; the deck card and this sheet cannot disagree. */
       const artPl = g ? displayPick(g) : null;
-      const artBlurb = g && artPl ? pickBlurb(g, artPl, pickLocked(artPl, playState(g, artPl))) : "";
+      const artBlurb = g && artPl ? pickBlurb(g, artPl) : "";
       /* AND THE FALLBACK ONLY RUNS WHEN THE BOARD AGREES WITH IT (2026-08-09).
          `s.take` names a SIDE, and the side it names comes from `pregame_picks.total_pick`
          while the board serves the unified pick — two lanes that disagreed outright on
@@ -16702,9 +16597,8 @@ export default function Home() {
              the product. (`consensusBanner` itself has since gone with the committee-era
              surfaces, which makes this the LAST place that gate is written down — so it is
              load-bearing now rather than a second copy, and must not be relaxed.) */
-          const consLocked = gameLocked(g, pl);
-          const sideWord = consLocked ? "" : String(c.side || "").toUpperCase();
-          head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""}${consLocked ? " — the desk leans one way." : "."}`;
+          const sideWord = String(c.side || "").toUpperCase();
+          head = `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""}.`;
         }
         return { g, rank, kicker, head, tot, stars };
       }).filter((r: any) => r.rank > 0);
@@ -16884,8 +16778,7 @@ export default function Home() {
        `game_case` — already in the backend's PREMIUM_FIELDS — and is dropped from the payload
        for a reader who has not paid. `locked` is belt and braces on top of that: a locked
        slide shows the reason to care and not the call. */
-    function pickBlurb(g: any, pl: any, locked: boolean) {
-      if (locked) return "";
+    function pickBlurb(g: any, pl: any) {
       const gc = pl && typeof pl.game_case === "object" ? pl.game_case : null;
       const bl = gc && typeof gc.blurb === "object" ? gc.blurb : null;
       const txt = bl && typeof bl.text === "string" ? bl.text.trim() : "";
@@ -16897,8 +16790,8 @@ export default function Home() {
         ${rec ? `<i class="sts-blurb-rec">${esc(rec)}</i>` : ""}
       </div>`;
     }
-    function storyVoiceQuote(g: any, pl: any, locked: boolean) {
-      if (locked || !pl || pl.action !== "TAKE") return "";
+    function storyVoiceQuote(g: any, pl: any) {
+      if (!pl || pl.action !== "TAKE") return "";
       const ans = deskAnalysts(g);
       if (!ans.length) return "";
       const dir = /under/i.test(String(pl.side || "")) ? "under" : /over/i.test(String(pl.side || "")) ? "over" : "";
@@ -16994,7 +16887,6 @@ export default function Home() {
       const g = sl.g, pl = sl.pl;
       const gs = gameState(g);
       const st = playState(g, pl);
-      const locked = pickLocked(pl, st);
       /* THE CARD'S TIER FOLLOWS THE SERVED LADDER, NOT A LADDER SPELLED HERE.
          This read `pl.stars` and cut at `>= 4 ? gold : === 3 ? green : blue` — a
          five-rung map, hardcoded, on a different field from the one the star row
@@ -17007,14 +16899,7 @@ export default function Home() {
       const _r = servedRating(pl);
       const stars = _r ? _r.stars : (pl.stars != null ? Math.max(0, Math.min(5, Math.round(Number(pl.stars)))) : 0);
       const _of = _r ? _r.of : 5;
-      /* …AND THE TIER IS COMPUTED BEFORE THE LOCK BRANCH, SO IT TINTED A LOCKED
-         CARD BY ITS STAR BAND (2026-08-10). Observed live on three signed-out
-         slides: `tier-gold`, `tier-green`, `tier-blue`. `stars` is in
-         PREMIUM_FIELDS, and this is it, rendered as the card's colour — the one
-         channel a "●●●● ●" placeholder cannot cover. A locked slide gets the
-         neutral band, so every locked slide looks like every other one. */
-      const tier = locked ? "locked"
-        : !stars ? "blue"
+      const tier = !stars ? "blue"
         : stars >= _of ? "gold"
         : stars >= _of - 1 ? "green" : "blue";
       const over = /(^|\s)over/i.test(String(pl.side || ""));
@@ -17032,14 +16917,7 @@ export default function Home() {
       const mid = gs.score && gs.score.split && gs.score.home != null
         ? `<div class="sts-score${gs.kind === "final" ? " fin" : ""}">${num(gs.score.away, 0)}–${num(gs.score.home, 0)}</div>`
         : `<div class="sts-at">@</div>`;
-      // A LOCKED SLIDE STILL HAS TO SAY SOMETHING. Redacted, the slide was two crests, two
-      // grey chips, five stars and a sign-in button — a whole screen of the morning briefing
-      // that told a signed-out reader nothing about the game. The composed matchup headline
-      // is written never to leak the side (see leaksPick), so it rides here.
-      const lockHead = locked ? matchupHeadline(g, pl) : "";
-      const call = locked
-        ? `${lockHead ? `<h3 class="sts-head sm">${esc(lockHead)}</h3>` : ""}
-           `
+      const call =
         /* ═══ ONE PERCENT ON A CARD, AND IT IS THE LIVE ONE (Leon, 2026-08-10: "why is
            there 2 percents now that we have stars?") ═══
            This card was the last pick surface in the app still printing the served
@@ -17056,8 +16934,8 @@ export default function Home() {
            exactly one percent and it is the live one.
            (`pickStars` and `pickGrade` were retired stubs returning "" — dropped with the
            call rather than left as furniture.) */
-        : `<div class="sts-call ${dir}">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</div>
-           <div class="sts-meta">${strengthPct(pl, !locked)}${state ? stateChipHtml(state) : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
+        `<div class="sts-call ${dir}">${pickArrow(pl)} ${esc(pl.side || "—")}${pl.price != null ? `<i>${fmtOdds(pl.price)}</i>` : ""}</div>
+           <div class="sts-meta">${strengthPct(pl, true)}${state ? stateChipHtml(state) : (gs.kind === "pre" ? countdownChip(g, gs) : "")}</div>
            ${signalRow(pl)}
            ${pickMadeMeta(pl)}`;
       /* COMPOSITION: eyebrow, then ONE dominant element (the call, set at up to 72px), with
@@ -17071,10 +16949,10 @@ export default function Home() {
           <div class="sts-open" data-go="pick" data-gid="${esc(g.game_id)}" role="button" tabindex="0" aria-label="Open the full pick">
             <div class="sts-mu rail">${team("away")}${mid}${team("home")}</div>
             <div class="sts-callwrap">${call}</div>
-            ${locked ? "" : `<span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>`}
+            <span class="sts-openchip" aria-hidden="true">The full pick <i>↗</i></span>
           </div>
-          ${pickBlurb(g, pl, locked)}
-          ${storyVoiceQuote(g, pl, locked)}
+          ${pickBlurb(g, pl)}
+          ${storyVoiceQuote(g, pl)}
         </div>
       </div>`;
     }
@@ -17228,7 +17106,7 @@ export default function Home() {
       const pos = dayTone(r) !== "down";
       const rows = (sl.games || []).map((g: any) => {
         const p = g.pick;
-        const side = unifiedPickLocked(p) ? "" : `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim();
+        const side = `${/over/i.test(String(p.side)) ? "OVER" : "UNDER"} ${p.line != null ? lineStr(p.line) : ""}`.trim();
         const res = gradeOf(p) === "win" ? `<span class="sts-rres won">W</span>` : gradeOf(p) === "loss" ? `<span class="sts-rres lost">L</span>` : `<span class="sts-rres pushed">P</span>`;
         return `<div class="sts-rrow"><span class="sts-rmu">${esc(teamShort(g.away))} @ ${esc(teamShort(g.home))}</span><span class="sts-rside">${esc(side)}</span>${bStars(p.stars)}${res}</div>`;
       }).join("");
@@ -17305,10 +17183,9 @@ export default function Home() {
       };
       // WHO SPOKE IS NOT THE PAYWALL; WHAT THEY SAID IS. Every other desk surface redacts
       // direction to a neutral mark when locked — this one put it in the class AND the title.
-      const hypeLocked = gameLocked(g);
       const marks = deskAnalysts(g).filter((a: any) => a.dir).map((a: any) => {
-        const dc = hypeLocked ? "lock" : a.dir === "over" ? "up" : "down";
-        const said = hypeLocked ? "call locked" : a.dir;
+        const dc = a.dir === "over" ? "up" : "down";
+        const said = a.dir;
         return `<span class="sts-hmark an-${esc(a.key)} ${dc}" data-an="${esc(a.key)}" role="button" tabindex="0" title="${esc(a.name)} — ${esc(said)}">${deskGlyph(a.key, 17)}<i aria-hidden="true"></i></span>`;
       }).join("");
       return `<div class="sts sts-hype">
@@ -17374,8 +17251,7 @@ export default function Home() {
     function storySummarySlide(sl: any) {
       const rows = (sl.picks || []).slice(0, 4).map((r: any, i: number) => {
         const g = r.g, pl = r.pl;
-        const locked = pickLocked(pl, playState(g, pl));
-        const side = locked ? `<span class="sts-dots sm" aria-hidden="true">●●●</span>` : `${esc(pl.side || "")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
+        const side = `${esc(pl.side || "")}${pl.price != null ? ` <i>${fmtOdds(pl.price)}</i>` : ""}`;
         return `<div class="sts-srow" data-gid="${esc(g.game_id)}" role="button" tabindex="0"><span class="sts-srank">#${i + 1}</span><span class="sts-smu">${esc(g.away_abbr)} @ ${esc(g.home_abbr)}</span><span class="sts-sside">${side}</span>${bStars(pl.stars != null ? pl.stars : 1)}</div>`;
       }).join("");
       const n = (sl.picks || []).length;
@@ -17409,45 +17285,39 @@ export default function Home() {
       const c = sl.c || deskConsensus(g);
       const ans = deskAnalysts(g);
       const pl = displayPick(g);
-      /* ═══ A PASS IS NOT A FREE PASS (Leon's list, 2026-08-10) ═══
-         `pickLocked` returns false early for a PASS — "a PASS has no side to
-         hide" — which is true of the TICKET and false of this card, because
-         this card is not the ticket. Captured signed out on an unstarted game:
-         "All four say OVER", four `sts-dcall ou-over` chips reading "▲ OVER
-         52%", and a chief verdict explaining that all four lean over. No bet
-         was sold on that game and the brief still names analyst leans and the
-         desk's direction as leaks: it is a same-day directional read on a game
-         a reader can still bet, with `ou-over` in the DOM for anyone who looks
-         past the pixels.
+      /* THE GARBLED GATE THAT SAID THE OPPOSITE OF ITS COMMENT (fixed 2026-08-16).
+         What stood here was:
 
-         So this slide asks its own question — is the GAME still open — rather
-         than borrowing the ticket's. Settled games are untouched: the desk's
-         read on a finished game is the record and is the interesting half. */
-      const _gs = gameState(g);
-      const _settled = _gs.kind === "final" || _gs.kind === "void";
-      const locked = true || _settled
-        ? (pl ? pickLocked(pl, playState(g, pl)) : false)
-        : true;
+             const locked = true || _settled ? (pl ? pickLocked(...) : false) : true;
+
+         `true || _settled` short-circuits, so the whole expression collapsed to
+         `pickLocked(...)`, which had itself collapsed to false — while fourteen lines of
+         comment above it explained that this slide deliberately asks its OWN question ("is
+         the GAME still open") rather than borrowing the ticket's. The code did neither
+         thing the comment described, and `_gs`/`_settled` were computed and discarded.
+
+         This was the one place in the sweep where folding the constant out changes nothing
+         but reading it wrong would have changed everything: mechanically "restoring" the
+         documented behaviour would have re-hidden the desk's leans behind a gate that no
+         longer has a reason to exist. The desk's read is free like every other pick, so the
+         slide simply shows it, and the comment no longer describes absent machinery. */
       const chief = deskChief(g);
       const state = (c && c.state) || "PENDING";
-      const sideWord = locked ? "" : String((c && c.side) || "").toUpperCase();
-      const plDir = !locked && pl ? (/under/i.test(String(pl.side || "")) ? "UNDER" : /over/i.test(String(pl.side || "")) ? "OVER" : "") : "";
+      const sideWord = String((c && c.side) || "").toUpperCase();
+      const plDir = pl ? (/under/i.test(String(pl.side || "")) ? "UNDER" : /over/i.test(String(pl.side || "")) ? "OVER" : "") : "";
       const deskVsTicket = plDir && sideWord && plDir !== sideWord;
       const head = state === "UNANIMOUS" ? (sideWord ? (deskVsTicket ? `All four say ${sideWord}. Ticket is ${plDir}.` : `All four say ${sideWord}.`) : "All four analysts agree.")
         : state === "MAJORITY" ? `${Math.max(c.nOver, c.nUnder)}–${Math.min(c.nOver, c.nUnder)}${sideWord ? ` ${sideWord}` : ""} — the desk leans.`
         : state === "SPLIT" ? "The desk is divided." : "The desk convenes soon.";
       const rows = ans.map((a: any) => {
-        const hide = locked; // a.locked = frozen at its wall (provenance), never a redaction
         const dirCls = a.dir === "over" ? "ou-over" : a.dir === "under" ? "ou-under" : "";
-        const call = hide ? `<span class="dsk-dots" aria-hidden="true">●●</span>`
-          : a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">No read</b>`;
-        return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${!hide && a.conv != null && a.dir ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
+        const call = a.side ? `<b class="sts-dcall ${dirCls}">${a.dir === "over" ? "▲" : a.dir === "under" ? "▼" : ""} ${esc((a.dir || a.side).toUpperCase())}</b>` : `<b class="sts-dcall none">No read</b>`;
+        return `<div class="sts-drow an-${esc(a.key)}">${deskGlyph(a.key, 14)}<span class="sts-dnm"><b>${esc(a.name)}</b><i>${esc(a.title)}</i></span>${call}${a.conv != null && a.dir ? `<span class="sts-dconv">${Math.round(a.conv * 100)}%</span>` : ""}</div>`;
       }).join("");
-      const ticket = !locked && isBet(pl) ? ticketLabel(pl) : "";
-      const stars = !locked && isBet(pl) ? pickStars(pl) : "";
-      const why = !locked ? deskTicketWhy(g) : "";
+      const ticket = isBet(pl) ? ticketLabel(pl) : "";
+      const why = deskTicketWhy(g);
       const verdict = chief && chief.action
-        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${ticket ? `<i>Ticket: ${esc(ticket)}</i>` : ""}${stars ? `<em class="sts-stars">${stars}</em>` : ""}${(locked ? "" : (why || chief.rationale)) ? `<span>${esc(why || chief.rationale)}</span>` : ""}</div>`
+        ? `<div class="sts-chief ${chief.action === "PLAY" ? "ch-play" : chief.action === "LEAN" ? "ch-lean" : "ch-avoid"}"><b>◆ ${chief.action === "AVOID" ? "WE PASS" : chief.action}</b>${ticket ? `<i>Ticket: ${esc(ticket)}</i>` : ""}${(why || chief.rationale) ? `<span>${esc(why || chief.rationale)}</span>` : ""}</div>`
         : "";
       const stCls = state === "UNANIMOUS" ? "unan" : state === "MAJORITY" ? "maj" : "split";
       return `<div class="sts sts-desk cons-${stCls}">
@@ -18018,8 +17888,8 @@ export default function Home() {
        "We make no representation or warranty that any content is accurate, complete, current or free from error, and no guarantee of any outcome, win rate, return or profit. Models can be wrong. Data feeds can be wrong, delayed or incomplete. Published records describe what has already happened, and past performance does not guarantee or indicate future results."],
       ["Your jurisdiction, and your age",
        "You are solely responsible for knowing and complying with the laws that apply to you, including any age restrictions (21+ in many jurisdictions) and any prohibition on gambling where you live. This product is not directed at anyone for whom such activity is unlawful, and nothing in it is a solicitation to gamble where it is prohibited."],
-      ["Subscriptions and billing",
-       "Premium is a recurring subscription billed in advance at the rate shown at purchase, renewing automatically each period until cancelled. You may cancel at any time and keep access until the end of the period already paid for. Fees are not refundable on the basis of the outcome of any pick, run of picks, or published record."],
+      ["What it costs",
+       "Nothing. Every pick, every side, every line and every write-up on DiamondEdge is free, to every reader, signed in or not. There is no subscription, no tier and no paid upgrade — nothing here is sold to you, and you are never asked for a card."],
       ["Play responsibly",
        "If gambling stops being entertainment for you, stop and get help. In the United States, call or text 1-800-GAMBLER (1-800-426-2537) for free, confidential support, 24 hours a day. Elsewhere, contact your national helpline."],
     ];
@@ -18158,7 +18028,10 @@ export default function Home() {
                   this one said "we answer same day" — adjacent rows, different claims. The
                   address is the information this row adds. */""}
             <a class="acct-link" href="mailto:kytepush@gmail.com?subject=DiamondEdge%20support">Email support<span class="al-sub">kytepush@gmail.com</span><em>→</em></a>
-            <button class="acct-link" id="acct-billing">Billing question<span class="al-sub">Charges, refunds, receipts</span><em>→</em></button>
+            ${/* NO BILLING ROW, BECAUSE THERE IS NO BILL (2026-08-16). "Billing question —
+                  charges, refunds, receipts" outlived the paywall by a day and was the last
+                  place the app implied a reader might have paid us something. Nobody can be
+                  charged, so nobody can have a charge to ask about. */""}
           </section>
 
           <!-- ── LEGAL ── always reachable, never buried, and nowhere near a pick ── -->
@@ -18192,7 +18065,6 @@ export default function Home() {
       bindClick("acct-record", () => goDeskResults());
       bindClick("acct-how", () => openRecipeSheet());
       bindClick("acct-support", () => { accountMode = "support"; pushAcctEntry(); renderSupport(); });
-      bindClick("acct-billing", () => { location.href = "mailto:kytepush@gmail.com?subject=DiamondEdge%20billing"; });
       bindClick("acct-terms", () => openTermsSheet());
       bindClick("plan-terms", () => openTermsSheet(), { optional: "only on the free-member plan card" });
       bindClick("acct-signout", () => { signOut(); refreshAccountButton(); accountMode = "signin"; renderSignIn(); });
@@ -19577,20 +19449,11 @@ export default function Home() {
       const rule = strategySentence(s);
       if (!label && !rule) return "";
       const dateTxt = new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" });
-      /* THE THIRD PLACE THE SAME SENTENCE IS PRINTED (2026-08-10). The Research
-         surface names today's play too, and a rule leaked on a research page is
-         leaked exactly as hard as one leaked on the board. Same gate. */
-      const rLocked = dayRuleLocked(s, todayISO());
-      return `<section class="lab-today${rLocked ? " locked" : ""}">
+      return `<section class="lab-today">
         <div class="lab-today-k"><span class="lab-today-mk">${strategyMark()}</span>Today's strategy<i>${esc(dateTxt)}</i></div>
         ${label ? `<h3 class="lab-today-h">${esc(label)}</h3>` : ""}
         ${rule ? `<p class="lab-today-p">${esc(rule)}</p>` : ""}
-        ${/* Locked, the upsell one line up already says what it did over the window and that
-              it froze before first pitch — the process line then repeats both within four
-              lines. So the locked variant keeps only what the upsell does not say. */""}
-        <p class="lab-today-w">${rLocked
-          ? "Chosen by last night's run from the finished games of the past few weeks. The conditions it is written in are on the Desk."
-          : "Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk."}</p>
+        <p class="lab-today-w">Chosen by last night's run from the finished games of the past few weeks, and locked before the first pitch. What it did over that window, and the conditions it is written in, are on the Desk.</p>
       </section>`;
     }
     /* ══════════════════ THE NIGHTLY SEARCH — "How we chose today's strategy" ══════════════════
@@ -21085,25 +20948,15 @@ export default function Home() {
       const summary = proseDates(humanNote(s.summary_line));
       const exact = humanNote(s.plain_english_rule);
       const dateTxt = stratDateTxt(dateISO) || dateISO;
-      /* ═══ THE DESK HAD NO GATE OF ANY KIND ═══ (see `dayRuleLocked`)
-         This section published "The exact rule, as the search wrote it" —
-         both branches of tonight's decision procedure, in plain English,
-         behind one tap, signed out. The three paragraphs above it restate the
-         same thing ("It takes the OVER when… the UNDER when…"), so gating the
-         <details> alone would have left the leak in prose. Both go, and the
-         upsell takes their place. Everything else on this card — the rule's
-         NAME, its dated frame, its window and its record — stays, because that
-         is the evidence the lock is selling against. */
-      const locked = dayRuleLocked(s, dateISO);
-      return `<section class="dp-today${locked ? " locked" : ""}">
+      return `<section class="dp-today">
         <div class="dp-today-k"><span class="dp-today-mk">${strategyMark()}</span>${isToday ? "Today's strategy" : "The last strategy we played"}<i>${esc(dateTxt)}</i></div>
         ${name ? `<h3 class="dp-today-h">${esc(name)}</h3>` : ""}
-        ${locked ? "" : paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
+        ${paras.map((p: string) => `<p class="dp-today-p">${esc(p)}</p>`).join("")}
         ${summary ? `<p class="dp-today-w">${esc(summary)}</p>` : ""}
         ${/* NO FOOT ON THE DESK'S UPSELL: the record hero is directly above this section
               saying the record is public, and dp-cta below closes with "The record on this
               page is public." A third assurance between them was the same fact again. */""}
-        ${!locked && exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p></details>` : ""}
+        ${exact ? `<details class="stgy-exact dp-today-x"><summary>The exact rule, as the search wrote it</summary><p>${esc(exact)}</p></details>` : ""}
       </section>`;
     }
     function renderDesk() {
