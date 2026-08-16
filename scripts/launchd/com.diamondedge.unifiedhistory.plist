@@ -18,6 +18,6 @@
 	<key>StandardOutPath</key>
 	<string>/Users/leonrou/Library/Logs/diamondedge-sync/com.diamondedge.unifiedhistory.log</string>
 	<key>StartInterval</key>
-	<integer>300</integer>
+	<integer>900</integer>
 </dict>
 </plist>

@@ -18,6 +18,6 @@
 	<key>StandardOutPath</key>
 	<string>/Users/leonrou/Library/Logs/diamondedge-sync/com.diamondedge.researchroadmap.log</string>
 	<key>StartInterval</key>
-	<integer>600</integer>
+	<integer>1800</integer>
 </dict>
 </plist>
