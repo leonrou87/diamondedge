@@ -9583,8 +9583,27 @@ export default function Home() {
        ambiguous, so the sentence is built from the date and the served TIME, and it cannot go
        out of date sitting in a cache. */
     function picksEtaLong(g: any) {
-      const d = gameDateISO(g);
+      /* ═══ THE READINESS WALL SAYS WHAT IT IS WAITING FOR (Leon, 2026-08-16:
+         "for the ones that don't, just state what data you are still looking for
+         in the UX"). Under the readiness era the server freezes each game the
+         first hour its inputs are all present and provable, and a held game's
+         pick carries `picks_eta.why` — the SPECIFIC input still missing, in a
+         reader's sentence ("waiting on tonight's confirmed starter", "no posted
+         total yet"). When that is served, the pending copy leads with it. The
+         sentence is safe to render verbatim precisely because it carries no
+         RELATIVE day word (the trap the comment above this function documents) —
+         the day/time half is still composed here from the date and the contract,
+         so it cannot go stale in a cache either. Absent the field (older eras,
+         older payloads), the copy is exactly what it was. */
+      const pe = (g && ((g.pick && g.pick.picks_eta) || g.picks_eta)) || null;
+      const why = pe && String(pe.basis || "") === "readiness_wall"
+        && typeof pe.why === "string" ? pe.why.trim() : "";
       const t = picksEtaTime(g);
+      if (why) {
+        const cap = why.charAt(0).toUpperCase() + why.slice(1);
+        return `${cap.replace(/\.+$/, "")} — the pick posts the moment it lands, no later than ${t}.`;
+      }
+      const d = gameDateISO(g);
       if (!d) return `Our picks for this game post by ${t}.`;
       const when = d === todayISO() ? "today" : d === shiftDate(todayISO(), 1) ? "tomorrow"
         : new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
