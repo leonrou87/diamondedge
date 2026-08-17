@@ -847,6 +847,33 @@ export default function Home() {
        any network error and the app keeps showing what it already holds. */
     let snapDirectSpent = 0;
     const SNAP_DIRECT_BUDGET = 12;
+    /* ═══ THE DEMOTION PATH WAS ROUTING THE WHOLE SESSION AT THE CAPPED ORIGIN ═══
+       2026-08-17, MEASURED against a mock 402 origin (dev server, cold Data Cache,
+       one page load): the browser issued 10+ direct
+       `slate_snapshots?key=eq.…&select=payload` requests — picks_unified_live five
+       times, pitchers_v4, teams_v4 — while /api/snap was answering 502 with
+       `x-snap-err: snap 402` on every key.
+
+       WHY, AND IT IS NOT THE GUARD BELOW BEING WRONG. The `x-snap-err` 402 check
+       sits INSIDE `if (snapProxyUsable())`. The first key to fail calls
+       `snapProxyFailed()`, which shuts the proxy off for 60 s — and for those 60 s
+       every other `snap()` skips that whole block and falls straight through to
+       `snapDirect`, which never saw a 402 and has no reason to decline. So the
+       guard protected exactly ONE read: the one that happened to be holding the
+       header. Every read behind it went to the origin at full price, with the CORS
+       preflight back, against a project that is refusing everyone.
+
+       A 402 IS A FACT ABOUT THE PROJECT, SO IT IS REMEMBERED AS ONE. The free-tier
+       cap refuses the whole Supabase project, not one route and not one key, and
+       it does not clear on a 60-second timer — it clears when the owner upgrades or
+       the billing cycle resets. So the session records it once and stops asking.
+       `snapProxyOk` keeps its cooldown, because a BROKEN PROXY over a healthy
+       origin is a different outage and direct genuinely rescues that one.
+
+       WHAT THE READER LOSES BY THIS: nothing they had. Every caller already treats
+       a snap failure as "keep what we hold" or "fall back to the bundled file", and
+       the direct reads this suppresses could not have succeeded. */
+    let originCapped = false;
     function snapProxyUsable() {
       if (snapProxyOk) return true;
       if (Date.now() < snapProxyRetryAt) return false;
@@ -2608,6 +2635,19 @@ export default function Home() {
       const pk = vg && vg.pick;
       const w = String((pk && pk.pass_why) || "").trim().toLowerCase();
       return /^[a-z0-9_]+$/.test(w) ? w : "";
+    }
+    /* …AND THE DESK'S OWN SENTENCE FOR IT (UX M7, 2026-08-17). `pass_why` is a machine
+       code and `pass_reason` is the prose written beside it — "The day's rule read this
+       game and did not call a side." Measured on the live board the day this was added:
+       every one of the ten passed games carried that sentence, and no surface printed it.
+       The board printed the CODE instead (see passReadout). Served verbatim when it is a
+       plain sentence and never composed here: the frontend does not get to write a reason
+       for a pass it did not make. */
+    function passReasonProse(g: any) {
+      const vg = v4GameFor(g);
+      const pk = vg && vg.pick;
+      const s = String((pk && pk.pass_reason) || "").trim();
+      return s && s.length <= 200 && !/_/.test(s) ? s : "";
     }
     /* PRICE NOT OBTAINABLE — what we wanted vs what is really there.
        PREFERRED: a served structured block (`pick.price_unobtainable`, or the same block on
@@ -10110,10 +10150,17 @@ export default function Home() {
          glitch look alike; the game page has always had the honest reason, so the chip's
          hover says it too — the same PASS_KINDS words the pass board uses, never invented
          here. Absent reason ⇒ the plain sentence, exactly as before. */
+      /* …AND IT CARRIES THE SERVED ONE FIRST (2026-08-17, same pass). The map above is a
+         frontend translation of a machine code; `pass_reason` is the desk's own sentence
+         about THIS game, and when it is served it outranks our paraphrase. Ladder:
+         served sentence → mapped words → the plain fact. */
       const passWhy0 = vd && vd.kind === "pass" ? passWhyOf(g) : null;
       const passKind0 = passWhy0 && PASS_KINDS[passWhy0] ? PASS_KINDS[passWhy0] : null;
+      const passProse0 = vd && vd.kind === "pass" ? passReasonProse(g) : "";
+      const passWhyTxt = passProse0
+        || (passKind0 ? `${passKind0.lab} — the desk read this game and did not bet it` : "The desk read this game and did not bet it");
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
-        ? `<span class="tv-nobet" title="${esc(passKind0 ? `${passKind0.lab} — the desk read this game and did not bet it` : "The desk read this game and did not bet it")}">No bet</span>`
+        ? `<span class="tv-nobet" title="${esc(passWhyTxt)}">No bet</span>`
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}">
@@ -10156,8 +10203,21 @@ export default function Home() {
               not the argument, and a row of tiny triangles on every card was the committee
               era's signature. */,
       ].filter(Boolean).join("");
+      /* A PASSED TILE SAID NOTHING ABOUT THE PASS TO A SCREEN READER (UX M7, 2026-08-17).
+         The label read "ARI at BOS — market total 9 — open the game": the one word the
+         sighted reader sees on that card, NO BET, was in a `<span>` with no accessible
+         name of its own, and the market number arrived with no hint of why it was alone
+         there. The label now states the decision and then the reason, in the same
+         served-first order the chip's hover uses. */
+      const ariaVd = !vd ? ""
+        : vd.kind === "pass"
+          /* The served sentence ends in a full stop and this label goes on to say
+             "— market total 8.5 — open the game", so the stop is trimmed where it is
+             embedded: a screen reader should hear one sentence, not a stop mid-clause. */
+          ? ` — market total ${esc(passLine || "")}${passMark ? ` — no bet${passWhyTxt ? `: ${esc(passWhyTxt.replace(/\.\s*$/, ""))}` : ""}` : ""}`
+          : ` — ${vd.word}: ${esc(vd.side || "")}`;
       return `<article class="tile ${gs.kind}${gs.delayed && gs.kind !== "delayed" ? " delayed" : ""}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${g.__dh ? esc(` — ${g.__dh} of a doubleheader`) : ""}${vd ? (vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${g.__dh ? esc(` — ${g.__dh} of a doubleheader`) : ""}${ariaVd} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${verdictBlk}
@@ -10259,23 +10319,52 @@ export default function Home() {
       },
       junk_cell: { lab: "No usable market", blurb: "The market never posted a number we could judge this game against.", ord: 3 },
       no_line: { lab: "No line posted", blurb: "No pregame total arrived in time to price a call against.", ord: 4 },
+      /* THE ONE THE BOARD ACTUALLY SERVES, AND THE ONE THAT WAS MISSING (UX M7,
+         2026-08-17). Measured on production that afternoon: all ten passed games came
+         back `pass_why: "forge_no_bet"`, this map had no entry for it, and the fallback
+         below printed the machine code — so the largest slab on the mobile board read
+         "10  forge no bet", with a blank where the explanation goes. The words here are
+         the served `pass_reason` sentence ("The day's rule read this game and did not
+         call a side."), shortened for the label and kept whole for the blurb; nothing is
+         invented about a decision the engine made. */
+      forge_no_bet: {
+        lab: "No side to bet",
+        blurb: "The day's rule read this game and did not call a side. No side, no ticket — and a pass costs nothing.",
+        ord: 5,
+      },
     };
     // { n, kinds:[{key,lab,blurb,n}] } over the games on screen with a PASS. null when
     // there is nothing to say (no games, or a pick is live after all).
     function passReadout(games: any[]) {
       if (!Array.isArray(games) || !games.length) return null;
       const counts: any = {};
+      const prose: any = {};
       let read = 0;
       games.forEach((g: any) => {
         const vg = v4GameFor(g);
         if (!vg || !vg.pick) return;
         read++;
         const w = passWhyOf(g);
-        if (w) counts[w] = (counts[w] || 0) + 1;
+        if (!w) return;
+        counts[w] = (counts[w] || 0) + 1;
+        if (!prose[w]) { const s = passReasonProse(g); if (s) prose[w] = s; }
       });
       if (!read) return null;
+      /* A MACHINE CODE IS NOT A REASON (UX M7, 2026-08-17). This fell back to
+         `k.replace(/_/g," ")`, which turns an unmapped key straight into reader-facing
+         copy — and on the day it was found that was the whole slab: "10  forge no bet".
+         The ladder now goes mapped words → the desk's own served sentence for that key →
+         the one thing that is true of every row here by construction. The raw key never
+         reaches the DOM again, and an unmapped reason still COUNTS, so the rows keep
+         footing to the tally in the lede above them. */
       const kinds = Object.keys(counts)
-        .map((k) => ({ key: k, n: counts[k], ...(PASS_KINDS[k] || { lab: k.replace(/_/g, " "), blurb: "", ord: 9 }) }))
+        .map((k) => {
+          const known = PASS_KINDS[k];
+          if (known) return { key: k, n: counts[k], ...known };
+          return prose[k]
+            ? { key: k, n: counts[k], lab: prose[k], blurb: "", ord: 9 }
+            : { key: k, n: counts[k], lab: "Read and passed", blurb: "", ord: 9 };
+        })
         .sort((a: any, b: any) => (a.ord - b.ord) || (b.n - a.n));
       return { n: read, total: games.length, kinds };
     }
