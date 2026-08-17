@@ -2172,6 +2172,18 @@ details.more[open]>summary::after{transform:rotate(180deg)}
    structural property; `min-width:0` on the right-hand group and `flex-shrink` on the CTA
    make the CTA the one element that yields if a future addition ever overruns. */
 .de-mini-pick.dmp-tile{flex-wrap:nowrap}
+/* …EXCEPT THE PENDING STATE, WHOSE WORDS THE SERVER OWNS (readiness era, 2026-08-16).
+   The nowrap rule above was written for rows whose contents this file controls — it can
+   promise one line because every element in it has a fixed budget. The incoming tag's
+   label is now a SERVED string ("Waiting on desk read", "No posted total yet"), and the
+   longest of them measures ~109px at the under-400 shrink — which put the pill 3px past
+   the card edge at 375 and ~11px past at 360. The tag must not truncate (the reason is
+   the content) and the market number is never what gives way, so the pending row is the
+   one place wrap is allowed: when the served words fit, nothing changes; when they do
+   not, the tag takes its own line, right-aligned, whole. The 7137 comment already ruled
+   the wrap "correct behaviour" — this scopes the exception to exactly the state that
+   needs it instead of un-promising one-line everywhere. */
+.de-mini-pick.dmp-tile.upcoming{flex-wrap:wrap}
 .de-mini-pick.dmp-tile .dmp-right{min-width:0}
 /* 1. THE "O/U" LABEL STAYS ON EVERY TILE. It was dropped here on tiles carrying a call, to
       buy the ~20px that got the row back onto one line — and Leon caught it immediately:
