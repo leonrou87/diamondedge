@@ -20591,6 +20591,120 @@ export default function Home() {
       }
       return `<div class="scopes">${rows.join("")}</div>`;
     }
+    /* ═══════════════ LEAGUE RECORDS — one row per league, never summed ═══════════════
+       Owner order (2026-08-17): "In the records / standing have a different one per
+       league." The record surface led with MLB and said nothing about the other tracks;
+       their records existed only inside each league's own tab (msRecordStripHtml). So the
+       record region now carries one row per league — MLB plus every de_ms_v1 league —
+       each showing that league's OWN served `record` block, in the scoperow language the
+       rows above it already speak.
+
+       THE RULES, RESTATED WHERE THEY BITE:
+         · Every number is the served record — nothing here is ever recomputed from cards,
+           and no two leagues' lines are ever added together, anywhere.
+         · Preseason and regular season stay separate lines (same chip-visibility logic as
+           the tab strip: the preseason line shows when preseason ball is on that board or
+           the line already has grades in it).
+         · record.eras (the adaptive era partition) renders as ITS OWN sub-line exactly as
+           the strip renders it — never folded into the legacy line beside it.
+         · Off-season leagues say the honest thing — the record starts with the season —
+           in the strip's own language, with the served season_note.
+         · A league whose payload has not arrived (or failed) renders NOTHING: no row, no
+           error card, exactly like every other tolerant surface on this page. */
+    const LG_RECORD_ORDER = ["nfl", "nba", "wnba", "nhl", "soccer"];
+    function msLeagueRecordRow(lg: string) {
+      const d = msData[lg];
+      const rec = d && d.record;
+      if (!rec) return "";
+      // The soccer tab's record IS the MLS record (key `mls`) — same labeling rule as the strip.
+      const lab = lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || lg.toUpperCase());
+      const line = (r: any) => (r && typeof r.record === "string" && /^\d+-\d+(-\d+)?$/.test(r.record))
+        ? r.record : (r ? `${r.wins || 0}-${r.losses || 0}${r.pushes ? `-${r.pushes}` : ""}` : "");
+      // served "3-1" rendered with the score dash — the same typographic move the hero makes
+      const dash = (s: string) => esc(s).replace(/-/g, "–");
+      const startISO = String(rec.started || "").slice(0, 10);
+      const startLab = isISO(startISO)
+        ? new Date(startISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+        : "";
+      const offSeason = !!(d.mode === "armed" || d.is_offseason);
+      const note = String(d.season_note || "").trim().replace(/\.$/, "");
+      // Off-season carries no "graded from <past date>" — same reasoning as the strip:
+      // the honest anchor for a track with nothing to grade is opening night.
+      const sub = offSeason
+        ? `off-season — the record starts with the season${note ? `. ${note}` : ""}`
+        : (startLab ? `graded from ${startLab}` : "graded in the open");
+      const prePlayed = rec.preseason && ((rec.preseason.wins || 0) + (rec.preseason.losses || 0) + (rec.preseason.pushes || 0) > 0);
+      const regPlayed = rec.regular && ((rec.regular.wins || 0) + (rec.regular.losses || 0) + (rec.regular.pushes || 0) > 0);
+      // preseason-now read includes the competition string, same as the strip (audit 2026-08-11)
+      const preNow = (((d && d.games) || []) as any[]).some((x: any) => x && (x.preseason || (x.meta && x.meta.preseason) || /preseason/i.test(String((x.competition ?? (x.meta && x.meta.competition)) || ""))));
+      const fig = (k: string, v: string) => v
+        ? `<span class="sc-wl"><b>${dash(v)}</b><i>${esc(k)}</i></span>` : "";
+      const figs = `${prePlayed || preNow ? fig("preseason", line(rec.preseason)) : ""}${regPlayed || !preNow ? fig("regular season", line(rec.regular)) : ""}`;
+      // ── the adaptive era's own line, rendered ONLY when served (record.eras) ──
+      const era = (() => {
+        const eras = rec.eras && typeof rec.eras === "object" ? rec.eras : null;
+        if (!eras) return "";
+        const legacyEra = (() => {
+          for (const x of ((d && d.games) || []) as any[]) {
+            const mt = x && x.model_type;
+            if (typeof mt === "string" && mt) return mt;
+          }
+          return "de_ms_v1";
+        })();
+        const newKeys = Object.keys(eras).filter((k) => k !== legacyEra && eras[k] && typeof eras[k] === "object");
+        if (!newKeys.length) return "";
+        const ast = d && d.adaptive && typeof d.adaptive === "object" ? d.adaptive : null;
+        const fromISO = String((ast && ast.adaptive_from) || "").slice(0, 10);
+        const fromLab = isISO(fromISO)
+          ? new Date(fromISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : "";
+        const chips = newKeys.map((k) => {
+          const e = (eras as any)[k];
+          const pPlayed = e.preseason && ((e.preseason.wins || 0) + (e.preseason.losses || 0) + (e.preseason.pushes || 0) > 0);
+          const rPlayed = e.regular && ((e.regular.wins || 0) + (e.regular.losses || 0) + (e.regular.pushes || 0) > 0);
+          return `${pPlayed || preNow ? fig("preseason", line(e.preseason)) : ""}${rPlayed || !preNow ? fig("regular season", line(e.regular)) : ""}`;
+        }).join("");
+        if (!chips) return "";
+        return `<div class="sc-era"><span class="sc-eratag">${fromLab ? `New era · ${esc(fromLab)}` : "New era"}</span><span class="sc-eratx">This era's picks grade on their own line — never added to the record above.</span><div class="sc-figs">${chips}</div></div>`;
+      })();
+      if (!figs && !era) return "";
+      return `<div class="scoperow lgr"><div class="sc-head"><span class="sc-k">${esc(lab)}</span><span class="sc-sub">${esc(sub)}</span></div>${figs ? `<div class="sc-figs">${figs}</div>` : ""}${era}</div>`;
+    }
+    function leagueRecordsSection() {
+      const rows: string[] = [];
+      // MLB leads — the headline record, exactly as served (same reader the hero uses).
+      const r = safeRun("mlb league record row", () => headlineRecordBlock());
+      if (r && r.wl) {
+        const sinceTxt = r.since ? stratDateTxt(r.since) : "";
+        rows.push(`<div class="scoperow lgr"><div class="sc-head"><span class="sc-k">MLB</span>${sinceTxt ? `<span class="sc-sub">graded from ${esc(sinceTxt)}</span>` : ""}</div><div class="sc-figs"><span class="sc-wl"><b>${esc(r.wl)}</b><i>record</i></span></div></div>`);
+      }
+      for (const lg of LG_RECORD_ORDER) {
+        const html = safeHtml(`${lg} league record row`, () => msLeagueRecordRow(lg), "");
+        if (html) rows.push(html);
+      }
+      /* Lazy-load: the sport payloads arrive through the SAME loader the tabs use
+         (loadMsSport → 5-min cache), and the section patches itself in place when one
+         lands. The patch fires only if something actually arrived, so a league whose
+         fetch failed simply stays absent — no retry loop, no error card. */
+      const missing = LG_RECORD_ORDER.filter((lg) => !(msData[lg] && msData[lg].record));
+      if (missing.length) {
+        Promise.allSettled(missing.map((lg) => loadMsSport(lg))).then(() => {
+          try {
+            if (tab !== "desk") return;
+            if (!missing.some((lg) => msData[lg] && msData[lg].record)) return;
+            const el = $("league-records");
+            if (el) el.outerHTML = safeHtml("league records section", () => leagueRecordsSection(), `<div id="league-records"></div>`);
+          } catch {}
+        }).catch(() => {});
+      }
+      // No rows yet ⇒ an invisible anchor, so the patch above has somewhere to land.
+      if (!rows.length) return `<div id="league-records"></div>`;
+      return `<section class="dp-lgrecs" id="league-records">
+        <div class="dp-section-k">League records</div>
+        <p class="dp-lgnote">One record per league. Each league is its own track, graded in the open on its own line — they are never added together.</p>
+        <div class="scopes">${rows.join("")}</div>
+      </section>`;
+    }
     /* ═════════════════ THE PROOF BLOCK — a curve and a calendar ═════════════════
        Leon: "the daily records become a CALENDAR widget, plus an ROI graph — make it sell
        itself… design them as the single most persuasive module in the app."
@@ -20897,6 +21011,11 @@ export default function Home() {
               <button class="dp-recbtn quiet" id="dp-share">Share the record ↗</button>
             </div>
           </header>
+
+          <!-- LEAGUE RECORDS — one row per league, right under the record region it
+               belongs to (owner order 2026-08-17). Every line is the league's own served
+               record; no two lines are ever added together. See leagueRecordsSection(). -->
+          ${safeHtml("league records section", () => leagueRecordsSection(), "")}
 
           <!-- EVERY PICK, DAY BY DAY — a section, not a destination (2026-08-09).
                This was a full-screen layer three clicks down (Desk → Record → Every pick)

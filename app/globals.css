@@ -5911,6 +5911,22 @@ a.acct-link{text-decoration:none}
 .sc-u.pos b{color:var(--g3)}
 .sc-u.neg b{color:var(--r3)}
 @media(max-width:400px){.sc-figs{gap:8px 18px}.sc-figs b{font-size:18px}}
+/* ══ LEAGUE RECORDS — one row per league, never summed (owner order 2026-08-17) ══
+   The scoperow chassis, one row per league on the Desk's record surface. The era
+   sub-line mirrors .msrec-erarow: the era's own served line, dashed off from the
+   cumulative line above it, never added to it. */
+.dp-lgrecs{margin:2px 0 0}
+.dp-lgrecs .dp-section-k{margin-top:18px}
+.dp-lgnote{font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink3);margin:0 2px}
+.dp-lgrecs .scopes{margin:10px 0 0}
+.scoperow.lgr .sc-figs b{font-size:18px}
+.scoperow.lgr .sc-head{margin-bottom:8px}
+.sc-era{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px dashed var(--goldline)}
+.sc-era .sc-eratag{flex-shrink:0;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);color:var(--golddeep);white-space:nowrap}
+.sc-era .sc-eratx{flex:1 1 170px;min-width:0;font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3)}
+.sc-era .sc-figs{flex-basis:100%;margin-top:2px}
+.sc-era .sc-figs b{font-size:16px}
+@media(max-width:400px){.scoperow.lgr .sc-figs b{font-size:16px}}
 /* ══ RESEARCH: A SCANNABLE STUDY INDEX ══
    One row per study: a status dot, the title, the finding in one line. Depth on tap. */
 .lab-card{border-radius:14px;background:var(--paper);border:1px solid rgba(var(--rimc),.09);box-shadow:var(--e0);overflow:hidden}
