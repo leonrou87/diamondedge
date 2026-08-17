@@ -11008,6 +11008,41 @@ export default function Home() {
       }
       return "";
     }
+    /* ═══════════ THE ADAPTIVE ERA, READ ONLY WHERE IT IS SERVED (ms_adaptive_v1) ═══════════
+       From 2026-08-17 the multisport engine re-checks its own recent GRADED results each
+       night and freezes ONE rule per league for that night's picks — the standard approach
+       holds until a challenger actually earns the night on graded picks. The payload can
+       carry this on three surfaces, ALL optional, and every reader here returns nothing
+       when its field is absent — a pre-era payload renders BYTE-IDENTICAL, and no sentence
+       below is ever composed without the served field behind it:
+         · record.eras — the record PARTITIONED by era stamp. The new era's line starts 0-0
+           at its first graded pick and renders as ITS OWN line, never summed with (or into)
+           the cumulative line beside it. Rides inside `record`, which the public gate
+           passes whole, so this arrives the moment the engine publishes it.
+         · payload.adaptive — the selector's own status (today's frozen rule per regime).
+           NOT on the public tracker allowlist yet (v4/serve/desk_policy.py
+           _TRACKER_PUBLIC_TOP) — entitled sessions may carry it; read tolerantly.
+         · games[].adaptive — the stamp on a frozen pick's card. Settled cards ship whole,
+           so it arrives publicly once a game grades; upcoming public cards drop it
+           (not on _TRACKER_CARD_PUBLIC) and render exactly as before. */
+    const MS_CANDIDATE_WORDS: any = {
+      v1_default: "the standard approach", fade_move: "fade the line move",
+      bar_half: "half the usual edge bar", bar_double: "double the usual edge bar",
+      move_only: "line move only", no_b2b: "no back-to-back adjustment",
+      result_bar_half: "half the usual result bar", result_bar_double: "double the usual result bar",
+      abstain: "sit the night out",
+    };
+    // the strategy name the engine emits, said like a person — an id we don't know yet
+    // still renders honestly as its own words, never as invented prose
+    const msCandidateWords = (id: any) =>
+      MS_CANDIDATE_WORDS[String(id || "")] || String(id || "").replace(/_/g, " ");
+    // The stamp on one card, validated — null unless the engine actually stamped it.
+    function msAdaptiveStampOf(card: any) {
+      const a = card && card.adaptive;
+      if (!a || typeof a !== "object") return null;
+      if (String(a.selector || "") !== "ms_adaptive" || !a.candidate_id) return null;
+      return a;
+    }
     function msRecordStripHtml(lg: string) {
       const d = msData[lg];
       const rec = d && d.record;
@@ -11055,7 +11090,52 @@ export default function Home() {
       const wallSentence = msWallH != null
         ? `every pick freezes at its own wall, about ${msWallH} hour${msWallH === 1 ? "" : "s"} before the game starts, and grades here in the open`
         : `every pick freezes at its own wall, before the game starts, and grades here in the open`;
-      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: ${esc(wallSentence)}. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
+      /* ── THE ADAPTIVE ERA'S OWN LINE (see the block note above MS_CANDIDATE_WORDS) ──
+         Rendered ONLY when the served payload carries the era. Its chips are the era's OWN
+         record — starting 0-0, exactly as served in record.eras — and are never the
+         cumulative chips beside the headline: the two lines never sum, here or anywhere. */
+      const eraRow = (() => {
+        const eras = rec.eras && typeof rec.eras === "object" ? rec.eras : null;
+        // the cards themselves say which engine line is the original one — read, not guessed
+        const legacyEra = (() => {
+          for (const x of ((d && d.games) || []) as any[]) {
+            const mt = x && x.model_type;
+            if (typeof mt === "string" && mt) return mt;
+          }
+          return "de_ms_v1";
+        })();
+        const newKeys = eras
+          ? Object.keys(eras).filter((k) => k !== legacyEra && eras[k] && typeof eras[k] === "object")
+          : [];
+        const ast = d && d.adaptive && typeof d.adaptive === "object" && typeof d.adaptive.era === "string" ? d.adaptive : null;
+        if (!newKeys.length && !ast) return "";
+        const fromISO = String((ast && ast.adaptive_from) || "").slice(0, 10);
+        const fromLab = isISO(fromISO)
+          ? new Date(fromISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
+          : "";
+        // today's frozen rule, straight off the selector's own served status — the one
+        // sentence here that names a strategy, and only when the payload names it first
+        let todayTx = "";
+        if (ast && ast.today && typeof ast.today === "object") {
+          const t = (Object.values(ast.today) as any[]).find((x: any) => x && x.candidate);
+          if (t) {
+            const w = Number(t.window_nights);
+            todayTx = t.below_floor
+              ? " Tonight the standard approach held — this league doesn't have enough graded nights yet to hand the night to anything else."
+              : ` Tonight's rule: ${esc(msCandidateWords(t.candidate))} — the best graded record here${isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} night${Math.round(w) === 1 ? "" : "s"}` : ""}.`;
+          }
+        } else if (ast && ast.status === "armed_no_history") {
+          todayTx = " Nothing has been chosen yet — this league has no graded history for the nightly check to read.";
+        }
+        const eraChips = newKeys.map((k) => {
+          const e = (eras as any)[k];
+          const pPlayed = e.preseason && ((e.preseason.wins || 0) + (e.preseason.losses || 0) + (e.preseason.pushes || 0) > 0);
+          const rPlayed = e.regular && ((e.regular.wins || 0) + (e.regular.losses || 0) + (e.regular.pushes || 0) > 0);
+          return `${pPlayed || preNow ? chip("Preseason", line(e.preseason)) : ""}${rPlayed || !preNow ? chip("Regular season", line(e.regular)) : ""}`;
+        }).join("");
+        return `<div class="msrec-erarow"><span class="er-tag">${fromLab ? `New era · ${esc(fromLab)}` : "New era"}</span><span class="er-tx">Each night the engine now re-checks its own graded results here and freezes the rule that has actually been winning — the standard approach holds until a challenger earns it.${todayTx} This era's picks grade on their own line, starting 0-0 — never added into the record above.</span>${eraChips}</div>`;
+      })();
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: ${esc(wallSentence)}. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}${eraRow}</div>`;
     }
     function metaRow() {
       if (MS_TABS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
@@ -14159,6 +14239,24 @@ export default function Home() {
             ? "First pitch has not happened and the scheduled time has passed."
             : `Play is stopped${halfInningPhrase(gs.label) ? ` in the ${esc(halfInningPhrase(gs.label))}` : ""}; the score and the line score are where it paused.`} The game and the call on it both stand.</div>`
         : "";
+      /* THE ADAPTIVE STAMP, SAID PLAINLY (ms_adaptive_v1 — see MS_CANDIDATE_WORDS). Only a
+         tracker card the engine actually stamped can produce this line: the stamp ships
+         publicly once the game settles (settled cards go out whole); an upcoming public
+         card carries none and this renders nothing — the page is byte-identical to before.
+         No MLB surface can reach here: only the tracker boards' cards carry `adaptive`,
+         and msCardFor never matches an MLB game. Nothing below is composed without its
+         served field — the below-floor sentence states the mechanism, never the numbers
+         inside the served reason string (those are the engine's own diagnostics). */
+      const adaptNote = safeHtml("adaptive pick note", () => {
+        const a = msAdaptiveStampOf(g) || msAdaptiveStampOf(msCardFor(g));
+        if (!a) return "";
+        const w = Number(a.selection_window);
+        const windowTx = isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} graded night${Math.round(w) === 1 ? "" : "s"}` : "";
+        const ruleTx = a.below_floor
+          ? `<b>${esc(msCandidateWords(a.candidate_id))}</b> — held by default: the nightly re-check of this league's graded results didn't have enough nights yet to promote anything else`
+          : `<b>${esc(msCandidateWords(a.candidate_id))}</b> — the rule with the best graded record in this league${windowTx}`;
+        return `<div class="gp-adaptnote">The rule frozen for this night: ${ruleTx}.</div>`;
+      }, "");
       const showLive = startedKind(gs.kind);
       const isFinal = gs.kind === "final";
       /* ════════ THE TAB SET FOLLOWS THE GAME (Leon, 2026-08-08) ════════
@@ -14422,8 +14520,8 @@ export default function Home() {
          another ~700px, so they head the Stats pane — the tab this page now opens on the
          moment the game starts. */
       const boxTop = showLive ? `<div class="gp-boxtop" id="gp-boxtop">${boxScoreTab(g, "top")}</div>` : "";
-      const remBody = `${delayNote}${gpBanner}`;
-      const reminder = (delayNote || gpBanner) ? `<div class="gp-lead">${remBody}</div>` : "";
+      const remBody = `${delayNote}${gpBanner}${adaptNote}`;
+      const reminder = (delayNote || gpBanner || adaptNote) ? `<div class="gp-lead">${remBody}</div>` : "";
       return `<div class="gp-heroblk">${gameHero}${boxTop}${reminder}</div>${tabsBar}${previewPane}${statsPane}${dePane}${livePane}`;
       }
 
