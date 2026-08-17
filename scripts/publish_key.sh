@@ -231,6 +231,17 @@ for ATTEMPT in 1 2 3; do
     --data-binary "@$TMP")
   if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then break; fi
   echo "$(date '+%F %T') $LABEL upsert attempt $ATTEMPT/3 http=$HTTP $(head -c 200 "$RESP")" >&2
+  # A 4xx IS AN ANSWER, AND RETRYING AN ANSWER IS JUST NOISE. The retry above
+  # exists for 500/57014 — a big payload meeting a busy row, which a pause
+  # genuinely fixes. A 402 is the org's egress cap refusing the whole project
+  # and a 401/403 is a bad credential; neither changes in 45 seconds. Retrying
+  # them re-uploads a multi-megabyte body twice more and holds this key's lock
+  # for the rest of the cycle, so on the one day the platform is already unwell
+  # every publisher spends two extra minutes proving a fact it was told at
+  # once. The failure still exits non-zero and still says why — nothing about
+  # what the fleet SEES changes, only how long it takes to say it. (Same rule
+  # /api/snap's supaRetry already follows on the read leg.)
+  case "$HTTP" in 4??) echo "$(date '+%F %T') $LABEL upsert http=$HTTP is a refusal, not a collision — not retrying" >&2; break ;; esac
   if [ "$ATTEMPT" != "3" ]; then sleep $((ATTEMPT * 15)); fi
 done
 

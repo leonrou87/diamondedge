@@ -885,6 +885,14 @@ export default function Home() {
       snapProxyRetryAt = Date.now() + SNAP_PROXY_COOLDOWN_MS;
     }
     async function snapDirect(k: string, ac: AbortController | null, opts: any = {}) {
+      /* THE ONE QUESTION WORTH ASKING BEFORE SPENDING A DIRECT READ. See
+         `originCapped`: a project over its egress cap refuses every request from
+         every client, so this read is not a fallback, it is a second 402 with a
+         CORS preflight in front of it. Checked BEFORE the budget so a capped
+         origin cannot drain the budget that a genuinely-broken-proxy outage needs. */
+      if (originCapped) {
+        throw new Error(`snap ${k}: origin over egress cap (402) — direct read suppressed`);
+      }
       if (snapDirectSpent >= SNAP_DIRECT_BUDGET) {
         throw new Error("snap: direct-read budget exhausted — keeping what we hold");
       }
@@ -898,6 +906,13 @@ export default function Home() {
           body: JSON.stringify({ p_key: k }), ...sig,
         });
         if (r.ok) return await r.json();
+        /* The RPC leg lands on the same meter and answers with the same 402, so it
+           is also a place the cap can be learned — and learning it here stops the
+           un-projected fallback three lines down from spending a second one. */
+        if (r.status === 402) {
+          originCapped = true;
+          throw new Error(`snap ${k}: origin over egress cap (402)`);
+        }
         // an RPC that is missing or not granted must not mean "no picks": fall through
       }
       const r = await fetch(`${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}&select=payload`,
@@ -926,6 +941,10 @@ export default function Home() {
          branch fifteen lines up has always checked `r.ok`; only this fallback did not, which
          is why the failure only showed up on the path taken when the projection is unavailable
          — the degraded path, i.e. exactly when things are already going wrong. */
+      /* A 402 HERE IS THE LAST ONE THIS SESSION WILL SPEND. The status is recorded
+         before it is thrown, so every later read declines at the top of this
+         function instead of re-proving the same fact at full price. */
+      if (r.status === 402) originCapped = true;
       if (!r.ok) throw new Error(`snap ${k}: HTTP ${r.status}`);
       const rows = await r.json();
       /* …and a well-formed error body at HTTP 200 is still not a row set. PostgREST shapes
@@ -1044,7 +1063,15 @@ export default function Home() {
                budget for outages where direct can actually help (a broken deploy
                of the proxy), and the caller renders the same honest load-error
                either way. Everything the app already holds stays on screen. */
+            /* REMEMBERED, NOT JUST THROWN (2026-08-17). Throwing protects THIS
+               read. `snapProxyFailed()` one line up has already shut the proxy off
+               for 60 s, so the very next `snap()` skips this whole block and lands
+               on `snapDirect` — which, before `originCapped`, had no idea a 402 had
+               ever been seen. Measured against a mock 402 origin: 10+ direct
+               full-price origin reads in a single page load, every one of them
+               guaranteed to fail. The flag is what makes the throw stick. */
             if (/\b402\b/.test(String(r.headers.get("x-snap-err") || ""))) {
+              originCapped = true;
               throw new Error(`snap ${k}: origin over egress cap (402)`);
             }
           } catch (e) {
@@ -1097,9 +1124,22 @@ export default function Home() {
             snapProxyFailed();
           }
         }
+        /* ═══ THE ONE ORIGIN LEG THAT NO BUDGET EVER COVERED (2026-08-17) ═══
+           This probe's direct fallback is not `snapDirect` — it is its own fetch,
+           outside SNAP_DIRECT_BUDGET and outside every guard around it. It is also
+           the one on a FOREVER TIMER: `pollPregame` calls it every 4 minutes for
+           the life of the tab, and once `snapProxyFailed()` has fired, the branch
+           above is skipped and this line runs unconditionally. During an egress-cap
+           outage that is a request straight at the refusing project every 4 minutes,
+           per open tab, for as long as the tab is open — the one leak that would
+           have outlived the page load. `originCapped` closes it, and "" is exactly
+           the answer this function documents for "I do not know", which makes the
+           caller fetch the payload through the proxy instead of assuming unchanged. */
+        if (originCapped) return "";
         const q = `${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}`
           + `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`;
         const r = await fetch(q, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });
+        if (r.status === 402) { originCapped = true; return ""; }
         const rows = await r.json();
         const row = rows && rows[0];
         return row ? String(row.gu || row.ga || row.updated_at || "") : "";
@@ -21634,6 +21674,30 @@ export default function Home() {
         // Boot data load failed (offline / Supabase blip): don't hang on the skeleton. Show a
         // retry state; the pollers set up below keep trying and replace it on recovery.
         dayLoading = false;
+        /* ═══ AND THE FAILURE MUST BE REMEMBERED, OR THE NEXT REPAINT UNSAYS IT ═══
+           2026-08-17, MEASURED against a mock 402 origin. `renderLoadError()` paints
+           "Couldn't reach the board" into BOTH panes and it did so correctly. Then
+           the `Promise.allSettled([loadBetaLive(), loadBeta()])` above resolved —
+           successfully, off the BUNDLED static files, which need no Supabase at
+           all — and its `.then()` called `renderSlate(true)`. `renderSlate` re-ran
+           with `payload` still null and `dayLoadFailed` still FALSE, so it took the
+           empty-day branch and painted over the honest error with:
+
+               "NO GAMES TO SHOW — Nothing's loaded for Monday, August 17 —
+                try another date or head back to today."
+
+           Screenshotted on a cold dev instance with every /api/snap route answering
+           502 `x-snap-err: snap 402`. This is the exact sentence, on the exact
+           failure, that snapDirect's big comment block says was fixed — the throw
+           reached `renderLoadError`, and a later repaint simply erased it.
+
+           The branch that tells the two states apart already exists and is already
+           right (`if (!payload && dayLoadFailed)` in renderSlate, "COULD NOT LOAD ≠
+           NOTHING TO SHOW"). It was only ever set by `selectDate()`, the
+           date-CHANGE path; the boot path never set it, so every repaint after a
+           boot failure re-derived "the date is empty" from a flag that had never
+           been told otherwise. One assignment, no new state, no new markup. */
+        dayLoadFailed = true;
         renderLoadError();
       }
       // ---- SMART SILENT AUTO-REFRESH (no pull-to-refresh, no spinners on loaded content) ----
