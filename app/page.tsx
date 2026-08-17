@@ -10400,7 +10400,9 @@ export default function Home() {
             <h3 class="pb-head">Nothing cleared the bar.</h3>
             <p class="pb-lede">${ro.n >= ro.total
               ? `The desk read all <b>${ro.n}</b> game${ro.n === 1 ? "" : "s"} on the board and priced every one of them.`
-              : `The desk priced <b>${ro.n}</b> of the <b>${ro.total}</b> games on the board — the other <b>${ro.total - ro.n}</b> carry no read yet.`
+              /* "the other 1 carry no read yet" — read off the live board 2026-08-17, where
+                 10 of 11 games were priced. The count is a variable and the verb was not. */
+              : `The desk priced <b>${ro.n}</b> of the <b>${ro.total}</b> games on the board — the other <b>${ro.total - ro.n}</b> ${ro.total - ro.n === 1 ? "carries" : "carry"} no read yet.`
             } None cleared the bar.</p>
           </div>
           <div class="pb-rows">${rows}</div>
