@@ -2930,6 +2930,25 @@ export default function Home() {
        an unknown label is NOT paraphrased — inventing a duration for a wall we don't recognise
        would be a guess wearing certainty — it stays raw, exactly as served. */
     const LEAD_WORDS: any = { "T-24h": "a day", "T-16h": "16 hours", "T-12h": "12 hours", "T-6h": "6 hours", "T-3h": "3 hours", "T-1h": "an hour" };
+    /* …AND THE SAME WALL, ON THE OTHER SURFACES THAT STILL SHOUTED THE CODE (round 2,
+       2026-08-17). LEAD_WORDS fixed the pick strip and nothing else, so a reader who
+       opened one game page met "T-1h" and "T-24h" three more times, in body text the
+       audit could read off the screen:
+           "prices from LowVig at the T-1h check"          (the graded-line card)
+           "Opened at 8.5 at the T-24h check"              (the movement chart's caption)
+           "the T-3h row below reads −104 on the under"    (the same caption's clash note)
+       One resolver, one vocabulary, the same rule LEAD_WORDS set: a wall we KNOW becomes
+       an hours-out phrase; a wall we do not know returns "" and every caller in prose
+       drops its clause rather than printing a code at a reader. (The wall TABLE is the
+       one exception and it says so at its own call site: a row's label is the row's only
+       identity, so an unrecognised wall keeps its served name there rather than becoming
+       an unlabelled row.) */
+    const WALL_HRS: any = { "T-24h": 24, "T-16h": 16, "T-12h": 12, "T-6h": 6, "T-3h": 3, "T-1h": 1 };
+    const wallHrsOf = (w: any) => WALL_HRS[String(w == null ? "" : w).trim()] || null;
+    // "the 3-hour check" / "the 1-hour check" — for prose that names a check.
+    const wallCheckWords = (w: any) => { const n = wallHrsOf(w); return n ? `${n}-hour check` : ""; };
+    // "3 hours out" / "1 hour out" — for the compact column of a table.
+    const wallOutShort = (w: any) => { const n = wallHrsOf(w); return n ? `${n}h out` : ""; };
     function pickMadeMeta(pl: any) {
       if (!pl || pl.src !== "v4") return "";
       const bits: string[] = [];
@@ -8875,7 +8894,9 @@ export default function Home() {
       if (!pk || passWhyOf(g) !== "price_not_obtainable") return "";
       const u = priceUnobtainable(pk);
       if (!u || u.best == null || u.served == null) return "";
-      const where = [u.nBooks != null ? `${u.nBooks} books read` : "", u.wall ? `at ${u.wall}` : ""].filter(Boolean).join(" ");
+      // the wall in a reader's words, or not at all — never its code (round 2)
+      const where = [u.nBooks != null ? `${u.nBooks} books read` : "",
+        wallCheckWords(u.wall) ? `at the ${wallCheckWords(u.wall)}` : ""].filter(Boolean).join(" ");
       return `<div class="unob">
         <span class="unob-k">Price not obtainable</span>
         <span class="unob-pair">
@@ -8929,8 +8950,27 @@ export default function Home() {
       // ticket; where it does not, the ticket is the fact and the star tier is the split.
       const stars = pl && pl.stars != null ? Math.round(Number(pl.stars)) : null;
       const byStars = isBet(pl) ? "play" : "lean";
+      /* ═══ A PASS THAT HAS GONE FINAL IS STILL A PASS (round 2, 2026-08-17) ═══
+         MEASURED on the live Aug 16 board: NYY@TOR, WSH@NYM and MIL@LAD each carry
+         `pick.status: "PASS"`, `pass_why: "forge_no_bet"` and the desk's own served
+         sentence — and each rendered a tile with a BLANK right half and an aria-label of
+         just "NYY at TOR — open the game". Three of fifteen cards on the only mixed board
+         the site has, saying nothing at all, on a board where an empty slot is how we say
+         "we passed" — so the reader could not tell a pass from a card that failed to load.
+
+         The cause: `pl` is null on a pass by construction (displayPick returns only TAKEs),
+         so this test fell through to `chief` — and the DESK block is dropped from the lite
+         history projection that past-date boards are drawn from. Today's board kept its
+         chief and looked right; every past board lost the state entirely.
+
+         The decision does not live in the desk block. It lives in the served pick object:
+         if the feed carries a pick for this game and it is not a TAKE, the desk read the
+         game and did not bet it, and that is a pass on any date. `passWhyOf` /
+         `passReasonProse` already read the same object, which is why the tile has had the
+         WORDS for this all along and no state to hang them on. */
+      const servedPk = (() => { const vg = v4GameFor(g); return vg && vg.pick && typeof vg.pick === "object" ? vg.pick : null; })();
       const kind = !served
-        ? (pl || chief ? "pass" : null)
+        ? (pl || chief || servedPk ? "pass" : null)
         : (act === "PLAY" || act === "LEAN" ? (act === "PLAY" ? "play" : "lean") : byStars);
       if (!kind) return null;
       return {
@@ -13872,9 +13912,13 @@ export default function Home() {
       // The chart caption speaks the sport's own start noun (the section header above it
       // already does) — "through first pitch" was printing on football and soccer charts.
       const startNoun = WALL_NOUN[String(g && g.sport || "").toLowerCase()] || "start";
+      // The check is named in a reader's words (see wallCheckWords); an unrecognised
+      // wall drops the clause rather than printing its code, and the caption still
+      // reads as a sentence without it.
+      const firstCk = wallCheckWords(first.wall);
       const cap = moved
-        ? `Opened at ${lineStr(first.line)} at the ${first.wall} check and started at ${lineStr(last.line)}.`
-        : `Held at ${lineStr(first.line)} from the ${first.wall} check through ${startNoun}.`;
+        ? `Opened at ${lineStr(first.line)}${firstCk ? ` at the ${firstCk}` : ""} and started at ${lineStr(last.line)}.`
+        : `Held at ${lineStr(first.line)}${firstCk ? ` from the ${firstCk}` : ""} through ${startNoun}.`;
       /* THE BET IN PROSE, AND WHOSE PRICE EACH NUMBER IS.
          This pane prints THREE prices and used to distinguish none of them. On a real game
          it read: a line card saying "over −110", this caption saying "we took over 8 at
@@ -13893,7 +13937,8 @@ export default function Home() {
       const clash = marked && pi >= 0 && rowPx != null && lead.price != null
         && (Math.round(Number(rowPx)) !== Math.round(Number(lead.price))
           || (!!rowSide && rowSide !== ourSide));
-      const bet = !marked ? "" : ` We took ${label.toLowerCase()}${lead.price != null ? ` at ${fmtOdds(lead.price)}` : ""}${pi >= 0 ? `, our price at the ${w[pi].wall} check` : ""} — the shaded half is our side of the number.${clash ? ` The ${w[pi].wall} row below reads ${fmtOdds(Number(rowPx))}${rowSide ? ` on the ${rowSide}` : ""}: that is the best price on the board at that check, not the price on our bet.` : ""}`;
+      const takeCk = pi >= 0 ? wallCheckWords(w[pi].wall) : "";
+      const bet = !marked ? "" : ` We took ${label.toLowerCase()}${lead.price != null ? ` at ${fmtOdds(lead.price)}` : ""}${takeCk ? `, our price at the ${takeCk}` : ""} — the shaded half is our side of the number.${clash ? ` The ${takeCk ? `${takeCk} row` : "row"} below reads ${fmtOdds(Number(rowPx))}${rowSide ? ` on the ${rowSide}` : ""}: that is the best price on the board at that check, not the price on our bet.` : ""}`;
       // The axis is hours before first pitch, said in the caption rather than as a label at
       // the right edge — at 375px that label lands on top of the last tick.
       return `<div class="omv">
@@ -13920,8 +13965,14 @@ export default function Home() {
          only once a book has posted a price. */
       const priced = w.filter((x: any) => x.price != null).length;
       if (!priced) return "";
+      /* THE CHECK COLUMN, IN HOURS RATHER THAN IN THE WALL'S CODE (round 2). "T-24h" down
+         a reader-facing column is the machine name of the check; "24h out" is the same
+         fact in the unit the caption underneath already speaks ("Each mark is a check,
+         that many hours out"). A wall we do not recognise KEEPS ITS SERVED LABEL here —
+         and only here: a row's label is the row's only identity, and blanking it would
+         leave a line of numbers belonging to nothing. */
       const rows = w.map((x: any) => `<tr>
-        <td class="owt-w">${esc(x.wall)}</td>
+        <td class="owt-w">${esc(wallOutShort(x.wall) || x.wall)}</td>
         <td class="owt-l">${esc(lineStr(x.line))}</td>
         <td class="owt-p">${x.price != null ? `${esc(fmtOdds(x.price))}${x.side ? `<i class="owt-side">${esc(x.side)}</i>` : ""}` : "—"}</td>
         <td class="owt-b">${x.book ? esc(bookName(x.book)) : "—"}</td>
@@ -13934,7 +13985,7 @@ export default function Home() {
         <thead><tr><th>Check</th><th>Total</th><th>Best price</th><th>Book</th></tr></thead>
         <tbody>${rows}</tbody></table>
         <p class="owt-foot">${w.length === 1
-          ? `The total and the best price we found at the ${esc(w[0].wall)} check, and the book showing it.`
+          ? `The total and the best price we found${wallCheckWords(w[0].wall) ? ` at the ${esc(wallCheckWords(w[0].wall))}` : ""}, and the book showing it.`
           : `At each check: the total, the best price we could find, which side that price was for, and the book showing it. The side moves as the market does, so the prices down this column are not all for the same bet.`}</p>
       </div>`;
     }
@@ -14002,39 +14053,75 @@ export default function Home() {
          labelled as what it is, instead of being passed off as the graded line. The
          stored data is untouched; a game with no pick renders exactly as before. */
       const _pl = displayPick(g);
-      const pkLine = _pl && isPick(_pl)
+      const hasTicket = !!(_pl && isPick(_pl));
+      const pkLine = hasTicket
         ? _fin(_pl.line != null ? _pl.line : (_pl as any).vegas_line) : null;
       const drift = pkLine != null && tot != null && Math.abs(pkLine - tot) > 0.001;
       const shown = pkLine != null ? pkLine : tot;
       const pkOver = _pl ? /(^|\s)over/i.test(String(_pl.side || "")) : false;
       const pkUnder = _pl ? /(^|\s)under/i.test(String(_pl.side || "")) : false;
-      // the check's over/under prices belong to the CHECK's total — they may not sit
-      // beside a different (the pick's) number. On a drifted card the price shown is
-      // the pick's own, or none.
-      const pxPair = !drift && (over != null || under != null) ? `<span class="oline-px">
+      /* ═══ THE PRICE UNDER THIS HEADING IS THE TICKET'S, OR IT IS NOBODY'S (round 2) ═══
+         The first pass only swapped the price on a card whose NUMBER had drifted — so on
+         the far more common card, where the number never moved, the CHECK's two prices
+         went on sitting under "The line we're graded at":
+             CHW@DET  pick pill OVER −104   ·  this card "OVER −105  UNDER −105"
+             COL@SF   ticket UNDER 8 @ −107 ·  this card "OVER −103  UNDER −106"
+         Two different graded prices on one screen is the same restatement the number's fix
+         was written for, one field to the right. A price only earns this heading if it is
+         the price the bet was struck at, so a game WITH a ticket prints that price alone,
+         and a game with no ticket prints the check's pair — which is then the only price
+         on the card, under a heading that no longer claims anything is being graded. */
+      const pxPair = hasTicket
+        ? (_pl.price != null && (pkOver || pkUnder) ? `<span class="oline-px">
+            <span><em>${pkOver ? "over" : "under"}</em>${esc(fmtOdds(_pl.price))}</span>
+          </span>` : "")
+        : (over != null || under != null) ? `<span class="oline-px">
             <span><em>over</em>${over != null ? esc(fmtOdds(over)) : "—"}</span>
             <span><em>under</em>${under != null ? esc(fmtOdds(under)) : "—"}</span>
-          </span>`
-        : drift && _pl && _pl.price != null && (pkOver || pkUnder) ? `<span class="oline-px">
-            <span><em>${pkOver ? "over" : "under"}</em>${esc(fmtOdds(_pl.price))}</span>
           </span>` : "";
+      /* ═══ AN OPEN NO BOOK EVER POSTED IS NOT PRINTED AS A POSTED LINE (round 2) ═══
+         `total_open` is a consensus across the books read — 8.25 on CHW@DET — and lineStr
+         rounds to one decimal, so this card shipped "opened 8.3": a total that does not
+         exist at any book, on the surface whose whole job is to be the number of record.
+         A real posted open (a whole or half point) reads exactly as it always did; an
+         average is said as an average, at the precision it actually has. */
+      const openTxt = open == null ? ""
+        : Math.abs(open * 2 - Math.round(open * 2)) < 1e-6
+          ? lineStr(open)
+          : `${num(open, 2)} on average across the books`;
+      /* ═══ ONE STATEMENT ABOUT THE MARKET, NEVER TWO THAT FIGHT (round 2) ═══
+         BOS@PIT shipped, under a headline of 8.5:
+             "never moved off the open · our last market check before the game read 8"
+         — because the open clause was measured against the CHECK's total and the drift
+         clause against the TICKET's. Three numbers, no way to reconcile them: never moved,
+         last read 8, graded at 8.5. The two clauses are now ONE sentence about the market's
+         own path, and the headline above is the only thing on this card that speaks for the
+         ticket.
+         AND IT CLAIMS NO TIMESTAMP IT CANNOT SEE. "before the game" was our word, not the
+         payload's: every T-1h row sampled carries a `captured_at` stamped AFTER first pitch
+         (18:03:10Z against a 17:40 start on CHW@DET), because that field is written by the
+         cycle that locks the record, not by the market read — the serve block's own note
+         says so. The wall's name is the only provenance this card can stand behind, so it
+         says "our last market check" and stops there. */
+      const marketPath = !drift
+        // THE OPEN HAS ONE HOME: it is printed here only when there is no chart below to
+        // own it (a past game, or a board with no wall grid) — the chart's caption says
+        // the same fact with its check attached.
+        ? (hasWalls || tot == null || open == null ? ""
+            : Math.abs(open - tot) > 0.001 ? `opened ${openTxt}` : "never moved off the open")
+        : (open == null || hasWalls) ? `our last market check read ${lineStr(tot!)}`
+          : Math.abs(open - tot) > 0.001
+            ? `the market opened ${openTxt} and our last check read ${lineStr(tot!)}`
+            : `the market opened ${openTxt} and never moved off it`;
       return shown == null ? "" : `<div class="oline">
-        <div class="oline-k">${msLive && pkLine == null ? "The market's number right now" : "The line we're graded at"}</div>
+        <div class="oline-k">${hasTicket ? "The line we're graded at"
+          : msLive ? "The market's number right now" : "The market's number at our last check"}</div>
         <div class="oline-main">
           <span class="oline-tot"><b>${esc(lineStr(shown))}</b><i>total</i></span>
           ${pxPair}
         </div>
         <div class="oline-foot">${[
-          // THE OPEN HAS ONE HOME. It was printed here AND again ~120px below as
-          // "Opened at 8.5 at the T-12h check", where it belongs — the chart is the
-          // movement surface and this card is the graded-line surface. So it stays here
-          // only when there is no chart to own it (a past game, or a board with no wall
-          // grid), and the "never moved" note stays either way because the chart states
-          // that case differently.
-          hasWalls || tot == null ? "" :
-            open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
-          // the drifted check, named as what it is — never as the graded line
-          drift ? `our last market check before the game read ${lineStr(tot!)}` : "",
+          marketPath,
           nBooks != null ? `${Math.round(nBooks)} books read` : "",
           // Say WHY it can still move, once, under the number it qualifies —
           // the same fact the heading carries, stated as the reason rather
@@ -14045,7 +14132,13 @@ export default function Home() {
           // The CHECK goes with it, because the chart's caption prints a
           // different price for the same bet and the two are told apart by
           // which book and which moment each was quoted at.
-          book && !drift ? `prices from ${book}${raw && raw.wall ? ` at the ${String(raw.wall)} check` : ""}` : "",
+          /* …AND IT BELONGS TO THE CHECK'S PRICES, SO IT PRINTS WHERE THEY DO (round 2).
+             On a card with a ticket the price above is OURS, and naming the check's book
+             beside it was the same mislabel one field over — "prices from LowVig" under a
+             price LowVig never quoted. The check's book rides the check's prices, and the
+             check named in a reader's words, not as the wall's internal code. */
+          !hasTicket && book
+            ? `prices from ${book}${raw && wallCheckWords(raw.wall) ? ` at the ${wallCheckWords(raw.wall)}` : ""}` : "",
         ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
       </div>`;
     }
@@ -15306,6 +15399,63 @@ export default function Home() {
     function gameById(gid: any) {
       return gameAnywhere(gid);
     }
+    /* ═══ A SHARED LINK TO AN OLDER GAME OPENS THAT GAME, OR SAYS WHY NOT (round 2) ═══
+       MEASURED on production, 2026-08-17: `?g=823268` and the canonical share form this app
+       hands out — `/g/2026-08-09-Houston Astros-San Diego Padres-823268` — BOTH answered 200
+       and rendered TODAY'S BOARD, with the shared URL still sitting in the address bar and
+       not one word about what had happened. Every link shared more than a couple of weeks
+       back was dead in the one way a reader can never diagnose: it looks like it worked.
+
+       The cause was this branch, which used to be an empty block with a comment reading
+       "game not in the loaded slate yet — leave URL, board loads it". The board never loads
+       it: `gameAnywhere` searches the pools in memory, and a past date is not one of them
+       until somebody taps that date.
+
+       So the link's own date is used to load its board — from the composite id when the
+       share form carries one, and from the unified history row (already in memory, and it
+       carries `date`) when the link is a bare pk. That is the same `loadDay` every date tap
+       already goes through, so the reader also lands on the right board when they close the
+       game, instead of on today's.
+
+       AND WHEN IT STILL CANNOT BE OPENED, THEY ARE TOLD. A link we cannot honour is an
+       honest "we couldn't open that", not a silent substitution of a different day's board;
+       the `?g=` is dropped at the same moment, so the address bar stops naming a game that
+       is not on the screen. */
+    let deepLinkTried = "";
+    async function openDeepLinkGame(gid: any) {
+      const id = String(gid == null ? "" : gid);
+      if (!id || deepLinkTried === id) return;
+      deepLinkTried = id;
+      const pk = gamePk(id);
+      let date = (id.match(/^(\d{4}-\d{2}-\d{2})/) || [])[1] || "";
+      if (!date) {
+        // a bare pk carries no date — the history feed's row for it does
+        try { await loadBeta(); } catch {}
+        const row = (((betaData && betaData.games) || []) as any[]).find((x: any) => sameGame(x, id, pk));
+        date = String((row && row.date) || "").slice(0, 10);
+      }
+      /* THE BOARD MOVES ONLY IF THE GAME IS REALLY THERE. The day is loaded and searched
+         FIRST: a link naming a date we have no game for must not leave the reader parked on
+         an empty board for a date they never asked to see — the failure says so instead. */
+      if (date && date !== curDate) {
+        let day: any = null;
+        try { day = await loadDay(date); } catch {}
+        const hit = (((day && day.games) || []) as any[]).find((x: any) => sameGame(x, id, pk));
+        if (hit) { curDate = date; try { await selectDate(); } catch {} }
+      }
+      // the reader may have opened something else while that load was in flight
+      let gid2: string | null = null;
+      try { gid2 = new URL(location.href).searchParams.get("g"); } catch {}
+      if (detail || String(gid2 || "") !== id) return;
+      const g = gameAnywhere(id);
+      if (g) { openDetail(g, undefined, true); return; }
+      toast("We couldn't open that game — it isn't on a board we can reach.");
+      try {
+        const u = new URL(location.href);
+        u.searchParams.delete("g");
+        history.replaceState(null, "", u.pathname + u.search + u.hash);
+      } catch {}
+    }
     function syncFromUrl(fromHistory: boolean) {
       let gid: string | null = null;
       try { gid = new URL(location.href).searchParams.get("g"); } catch {}
@@ -15319,7 +15469,7 @@ export default function Home() {
           if (bk && bk.game && String(bk.game.game_id) === String(gid)) { restoreGameDetail(bk); }
           else if (!detail || detail.game_id == null || String(detail.game_id) !== String(gid)) openDetail(g, undefined, true);
         }
-        else if (!detail) { /* game not in the loaded slate yet — leave URL, board loads it */ }
+        else if (!detail) { openDeepLinkGame(gid); }
       } else if (detail) {
         // No ?g= here and something of ours is open: its entry was just popped, so this is
         // the teardown side of the one door. (The old `_recipe` exemption is gone — every
