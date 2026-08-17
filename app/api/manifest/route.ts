@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { cachedManifest } from "../manifest-source";
+import { manifestWithFallback } from "../manifest-source";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /api/manifest — THE ONE THING IN THE SYSTEM THAT IS STILL ALLOWED TO BE
@@ -39,33 +39,47 @@ import { cachedManifest } from "../manifest-source";
 
 export async function GET() {
   try {
-    const m = await cachedManifest();
+    const { m, stale, ageS } = await manifestWithFallback();
+    const h: Record<string, string> = {
+      "Content-Type": "application/json; charset=utf-8",
+      /* 10 s at the edge is the freshness clock for the whole app. It is
+         affordable ONLY because a miss here costs a function invocation and
+         not a Supabase read: the miss lands on `cachedManifest` in the
+         function region, which one publisher hook drops for every POP. */
+      "Vercel-CDN-Cache-Control": "public, s-maxage=10, stale-while-revalidate=60",
+      "CDN-Cache-Control": "public, s-maxage=10, stale-while-revalidate=60",
+      /* Shorter in the browser than at the edge, deliberately — the same
+         layering rule /api/snap's TTL table records: a browser window
+         stacked on top of an edge window is two generations of lateness on
+         the one feed where lateness is visible. */
+      "Cache-Control": "public, max-age=5, stale-while-revalidate=60",
+    };
+    if (stale) {
+      /* THE ORIGIN IS UNREACHABLE AND THIS IS THE LAST GOOD MAP (2026-08-17,
+         the 402 degrade path — see manifestWithFallback). Serving it keeps
+         every reader on their pinned, CDN-immutable payload URLs instead of
+         sending the whole audience to an origin that is refusing everyone.
+         But it is NOT installed at the edge for the normal window: 10 s
+         shared is enough to absorb a burst, and no-store in the browser means
+         each tab re-asks and recovers the moment the origin does. The header
+         is the confession, same contract as x-snap-stale. */
+      h["Vercel-CDN-Cache-Control"] = "public, s-maxage=10";
+      h["CDN-Cache-Control"] = "public, s-maxage=10";
+      h["Cache-Control"] = "no-store";
+      h["x-manifest-stale"] = String(ageS);
+    }
     return new NextResponse(
-      JSON.stringify({ v: m.v, newest: m.newest, served_utc: new Date().toISOString() }),
-      {
-        status: 200,
-        headers: {
-          "Content-Type": "application/json; charset=utf-8",
-          /* 10 s at the edge is the freshness clock for the whole app. It is
-             affordable ONLY because a miss here costs a function invocation and
-             not a Supabase read: the miss lands on `cachedManifest` in the
-             function region, which one publisher hook drops for every POP. */
-          "Vercel-CDN-Cache-Control": "public, s-maxage=10, stale-while-revalidate=60",
-          "CDN-Cache-Control": "public, s-maxage=10, stale-while-revalidate=60",
-          /* Shorter in the browser than at the edge, deliberately — the same
-             layering rule /api/snap's TTL table records: a browser window
-             stacked on top of an edge window is two generations of lateness on
-             the one feed where lateness is visible. */
-          "Cache-Control": "public, max-age=5, stale-while-revalidate=60",
-        },
-      },
+      JSON.stringify({ v: m.v, newest: m.newest, served_utc: new Date().toISOString(), ...(stale ? { stale_s: ageS } : {}) }),
+      { status: 200, headers: h },
     );
   } catch {
     /* A MANIFEST FAILURE MUST NOT LOOK LIKE "NOTHING HAS CHANGED". An empty
        version map would be read by every client as "no surface moved", which is
        indistinguishable from a healthy quiet period and would freeze the board
        silently. 502 + no-store makes the client fall back to its unpinned
-       path — more expensive, correct, and self-healing. */
+       path — more expensive, correct, and self-healing. Reached only when this
+       instance has NEVER built a manifest (manifestWithFallback keeps the last
+       good one otherwise). */
     return new NextResponse(JSON.stringify({ error: "upstream" }), {
       status: 502,
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },

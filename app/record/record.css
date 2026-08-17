@@ -69,8 +69,21 @@
 .rec-caveat .rec-p + .rec-p{margin-top:11px}
 
 /* ── TABLES ─────────────────────────────────────────────────────────────── */
+/* THE SCROLL IS VISIBLE OR IT DOES NOT EXIST (2026-08-17). At 375px these tables
+   overflow their container, and an overflow with no cue reads as a table whose
+   HIT and UNITS columns simply are not there — on the one page whose whole value
+   is those columns. The layered background is the standard CSS scroll-shadow: the
+   paper-coloured covers scroll WITH the content (`local`) and slide off the edge
+   fades (`scroll`), so a fade appears only on a side that actually has more table,
+   and vanishes when the reader gets there. No JavaScript, per this page's rule. */
 .rec-tw{margin-top:18px;border:1px solid var(--line2);border-radius:14px;
-  background:var(--paper);overflow-x:auto;-webkit-overflow-scrolling:touch}
+  background:
+    linear-gradient(90deg,var(--paper) 35%,transparent) left/44px 100% no-repeat local,
+    linear-gradient(270deg,var(--paper) 35%,transparent) right/44px 100% no-repeat local,
+    linear-gradient(90deg,color-mix(in srgb,var(--ink) 16%,transparent),transparent) left/14px 100% no-repeat scroll,
+    linear-gradient(270deg,color-mix(in srgb,var(--ink) 16%,transparent),transparent) right/14px 100% no-repeat scroll,
+    var(--paper);
+  overflow-x:auto;-webkit-overflow-scrolling:touch}
 table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
 .rec-t th{font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.13em;
   text-transform:uppercase;color:var(--ink4);text-align:right;padding:12px 14px;
@@ -157,9 +170,13 @@ table.rec-t{width:100%;border-collapse:collapse;font-size:14px;min-width:520px}
 @media (max-width:560px){
   .rec-page{padding:0 16px 72px}
   .rec-hero,.rec-cta{padding:20px 18px;border-radius:15px}
-  .rec-t td.rule{display:none}
-  .rec-t th.rule{display:none}
+  /* THE RULE COLUMN COMES BACK ON PHONES (2026-08-17). It was display:none here —
+     but the copy above the night table points the reader straight at it ("the last
+     column is the rule that was in force"), so hiding it made the page promise a
+     column that was not there. It scrolls into view instead, and the container's
+     edge fade says so. */
   table.rec-t{min-width:0}
+  .rec-t td.rule{min-width:180px;font-size:12px}
   /* THE PROVENANCE TABLE IS THE POINT OF THE PAGE, so on a phone the row label
      gives up its width to the numbers rather than pushing the record and the
      units off the right edge. It wraps to two lines; nothing is hidden, and the

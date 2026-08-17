@@ -146,12 +146,66 @@ export const cachedManifest = unstable_cache(readManifest, ["manifest-v1"], {
   revalidate: MANIFEST_SAFETY_NET_S,
 });
 
-/* The current version of one key, for /api/snap's cache key. Never throws:
-   a manifest blip must degrade snap to its old time-driven behaviour, never
-   break it. "" means "I do not know", and every caller reads it that way. */
-export async function currentVersion(key: string): Promise<string> {
+/* ═══ THE LAST GOOD MANIFEST, KEPT SO A METERED-OUT ORIGIN IS NOT A DEAD SITE ═══
+
+   2026-08-17, the free-tier 402 emergency. When Supabase starts answering 402,
+   two layers already keep the board alive WITHOUT this: (1) a STALE
+   unstable_cache entry is served immediately and the failed background
+   revalidation is swallowed (verified in this Next version's
+   unstable-cache.js — the .catch logs and returns the cached response), and
+   (2) /api/snap's own `lkg` map. But both hang off ONE thread: /api/snap keys
+   its payload cache on the version THIS module reports. The moment
+   `cachedManifest` throws — a function instance whose Data Cache entry is
+   missing or evicted — `currentVersion` returned "", every snap cache key
+   rotated from (key, mv) to (key, ""), and every one of those entries was
+   COLD. So the exact instant the origin became unreachable was the instant we
+   threw away our warm cache of it and went asking again. The failure mode was
+   self-inflicted rotation, not staleness.
+
+   This is the module-level floor under that: the last manifest this instance
+   successfully built. Per-instance and unpersisted, exactly like /api/snap's
+   `lkg`, and for the same reason — a durable stale store would need its own
+   invalidation. During an egress-cap outage "nothing has changed" is also
+   TRUE: the publishers write through the same capped project, so no new
+   generation can exist while the cap holds.
+
+   `stale` rides on the answer so /api/manifest can SAY so (x-manifest-stale)
+   rather than dressing old versions up as fresh — the same honesty contract
+   as x-snap-stale. */
+let lkgManifest: Manifest | null = null;
+let lkgManifestAtMs = 0;
+
+export type ManifestAnswer = { m: Manifest; stale: boolean; ageS: number };
+
+export async function manifestWithFallback(): Promise<ManifestAnswer> {
   try {
     const m = await cachedManifest();
+    lkgManifest = m;
+    lkgManifestAtMs = Date.now();
+    return { m, stale: false, ageS: 0 };
+  } catch (e) {
+    if (lkgManifest) {
+      return {
+        m: lkgManifest,
+        stale: true,
+        ageS: Math.round((Date.now() - lkgManifestAtMs) / 1000),
+      };
+    }
+    throw e;
+  }
+}
+
+/* The current version of one key, for /api/snap's cache key. Never throws:
+   a manifest blip must degrade snap to its old time-driven behaviour, never
+   break it. "" means "I do not know", and every caller reads it that way.
+
+   Reads through the last-good fallback above ON PURPOSE: a stale version here
+   keeps /api/snap's cache key STABLE during an origin outage, which is what
+   lets its warm payload entries go on serving. "" would rotate every key cold
+   at the worst possible moment — see the block above. */
+export async function currentVersion(key: string): Promise<string> {
+  try {
+    const { m } = await manifestWithFallback();
     return String((m && m.v && m.v[key]) || "");
   } catch {
     return "";

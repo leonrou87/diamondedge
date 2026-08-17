@@ -28,6 +28,24 @@ const UID_SECRET = process.env.DE_SESSION_SECRET || "";
 
 export const dataConfigured = () => !!(SUPA_URL && SERVICE_KEY);
 
+/* ═══ THE CONSOLE MUST NOT PAINT AN OUTAGE AS AN EMPTY BUSINESS (2026-08-17) ═══
+   Every helper in kp-desk/data.ts fails soft to [] — right for the consumer
+   contract above, but the admin console renders those empties as "Users: 0",
+   which is a CONFIDENT WRONG NUMBER during a Supabase 402 (the free-tier
+   egress cap). This records the last failed call so the console's Shell can
+   say "the data layer is refusing" instead. Module-level and per-instance on
+   purpose: the console's own queries run in the same invocation as its
+   render, so by the time Shell reads this, the page's own reads have already
+   set it. Not a monitor — the platform's egress_watch owns alerting; this is
+   honesty in the one UI that would otherwise lie. */
+let lastDataFailure: { status: number; at: number } | null = null;
+
+export function dataLayerFault(withinMs = 15000): { status: number } | null {
+  if (!lastDataFailure) return null;
+  if (Date.now() - lastDataFailure.at > withinMs) return null;
+  return { status: lastDataFailure.status };
+}
+
 /** Raw PostgREST call with the service key. Never throws; never cached. */
 export async function supa(
   pathAndQuery: string,
@@ -50,8 +68,10 @@ export async function supa(
     });
     let json: any = null;
     try { json = await r.json(); } catch { /* 204s and HEADs have no body */ }
+    if (!r.ok) lastDataFailure = { status: r.status, at: Date.now() };
     return { ok: r.ok, status: r.status, json };
   } catch {
+    lastDataFailure = { status: 0, at: Date.now() };
     return { ok: false, status: 0, json: null };
   }
 }

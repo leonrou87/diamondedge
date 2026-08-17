@@ -1008,8 +1008,21 @@ export default function Home() {
               return j;
             }
             snapProxyFailed();
+            /* ═══ A CONFESSED 402 MAKES THE DIRECT FALLBACK FUTILE (2026-08-17) ═══
+               x-snap-err carries the upstream status (see the route's catch). 402
+               is the free-tier egress cap: the WHOLE Supabase project is refusing,
+               so snapDirect against the same project is a guaranteed second 402 —
+               plus a CORS preflight — that burns one of the session's 12 direct
+               reads on a request that cannot succeed. Throwing here keeps the
+               budget for outages where direct can actually help (a broken deploy
+               of the proxy), and the caller renders the same honest load-error
+               either way. Everything the app already holds stays on screen. */
+            if (/\b402\b/.test(String(r.headers.get("x-snap-err") || ""))) {
+              throw new Error(`snap ${k}: origin over egress cap (402)`);
+            }
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
+            if (/\b402\b/.test(String((e as any) && (e as any).message || ""))) throw e;
             snapProxyFailed();
           }
         }
@@ -2830,6 +2843,13 @@ export default function Home() {
     // "vs Vegas O/U 8.5 · picked 9:14 AM (T-3h)" — the Vegas number we judged, clearly
     // stated, plus a small timestamp of when the pick was FIRST made (that wall's clock).
     const LEAD_MS: any = { "T-24h": 864e5, "T-16h": 576e5, "T-12h": 432e5, "T-6h": 216e5, "T-3h": 108e5, "T-1h": 36e5 };
+    /* THE LEAD TIME IN A READER'S WORDS (UX H3, 2026-08-17). "picked 9:14 AM · T-3h" printed
+       the wall's internal name raw — jargon on a reader-facing strip, and one of four surfaces
+       each answering "when do picks post" in a different vocabulary. The known walls are said
+       as hours-before-first-pitch (this strip renders v4/MLB picks only, so the noun is safe);
+       an unknown label is NOT paraphrased — inventing a duration for a wall we don't recognise
+       would be a guess wearing certainty — it stays raw, exactly as served. */
+    const LEAD_WORDS: any = { "T-24h": "a day", "T-16h": "16 hours", "T-12h": "12 hours", "T-6h": "6 hours", "T-3h": "3 hours", "T-1h": "an hour" };
     function pickMadeMeta(pl: any) {
       if (!pl || pl.src !== "v4") return "";
       const bits: string[] = [];
@@ -2837,8 +2857,8 @@ export default function Home() {
       if (pl.lead_time && pl.fp_utc && LEAD_MS[pl.lead_time]) {
         const t = new Date(new Date(pl.fp_utc).getTime() - LEAD_MS[pl.lead_time]);
         if (!isNaN(t.getTime())) bits.push(`picked ${t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}`);
-        bits.push(pl.lead_time);
-      } else if (pl.lead_time) bits.push(`picked at ${pl.lead_time}`);
+        bits.push(LEAD_WORDS[pl.lead_time] ? `about ${LEAD_WORDS[pl.lead_time]} before first pitch` : pl.lead_time);
+      } else if (pl.lead_time) bits.push(LEAD_WORDS[pl.lead_time] ? `picked about ${LEAD_WORDS[pl.lead_time]} before first pitch` : `picked at ${pl.lead_time}`);
       // once first pitch passes, the pick and its judged line are FROZEN — say so.
       const frozen = !!(pl.fp_utc && Date.now() >= new Date(pl.fp_utc).getTime());
       if (!bits.length && !frozen) return "";
@@ -6543,6 +6563,20 @@ export default function Home() {
       const a = _v3s ? _v3s.away : (ps.away == null ? NaN : Number(ps.away));
       const h = _v3s ? _v3s.home : (ps.home == null ? NaN : Number(ps.home));
       if (isNaN(a) || isNaN(h)) return "";
+      /* AN EXPECTED FINAL THAT ARGUES AGAINST THE POSTED PICK DOES NOT RENDER (UX H4,
+         2026-08-17). The reconciled v3 number agrees with the pick by construction; the
+         LEGACY fallback can land on the other side of the line, and this card then showed
+         "~10.3 combined" one screen from an OVER 11 — the model contradicting its own
+         ticket with no reconciling sentence, which is the skeptic's smoking gun. We hold
+         no honest sentence that reconciles the two (the pick-time frozen projection is
+         what the pick surfaces already state), so the stale projection is omitted, never
+         argued. Passes and non-total picks are untouched. */
+      const _tpl = displayPick(g);
+      if (_tpl && isPick(_tpl) && String(_tpl.market || "total") === "total" && _tpl.line != null) {
+        const _o = /(^|\s)over/i.test(String(_tpl.side || ""));
+        const _u = /(^|\s)under/i.test(String(_tpl.side || ""));
+        if ((_o || _u) && ((a + h > Number(_tpl.line)) !== _o)) return "";
+      }
       const mx = Math.max(a, h, 1);
       const unit = SPORT_UNIT[g.sport] || "points";
       const bar = (ab: any, v: number, win: boolean) =>
@@ -7748,10 +7782,27 @@ export default function Home() {
        the pulsing dot and the bare inning, which together read as "this is happening right
        now"; the inning drops to the line below in small type, because it is still where the
        game is — it is simply no longer the headline. */
-    function heroScoreHtml(gs: any) {
+    /* ═══ THE GRADE RIDES THE FINAL HERO (UX M1, 2026-08-17) ═══
+       The board tile wears the ✓/✗ seal, the briefing says CASHED — and the game page, the
+       one surface a skeptic opens to audit the pick against the final score, said only
+       "Final". The hero now carries the SAME stamp every other graded surface uses
+       (resultStamp — one settled vocabulary), from the same frozen pick the page renders
+       and the same grader (playState). Nothing is recomputed or restated: no pick, or a
+       pick not yet graded, renders exactly the hero it always did. Both hero callers pass
+       through this ONE composer, so the open-paint and the live-tick repaint agree. */
+    function finalSealFor(g: any, gs: any, pl?: any) {
+      if (!g || !gs || gs.kind !== "final") return "";
+      let p = pl;
+      if (!p) { try { p = displayPick(g) || orderedTakes(g)[0] || null; } catch { p = null; } }
+      if (!p) return "";
+      const st = safeHtml("hero seal state", () => playState(g, p), "");
+      return st === "won" || st === "lost" || st === "pushed"
+        ? safeHtml("hero seal", () => resultStamp(st, "sm", correctionOf(p)), "") : "";
+    }
+    function heroScoreHtml(gs: any, seal = "") {
       const mid = gs.delayed
         ? `${esc(gs.delayReason ? `Delayed · ${gs.delayReason}` : "Delayed")}${gs.label && gs.label !== "Live" ? `<em>${esc(gs.label)}</em>` : ""}`
-        : gs.kind === "final" ? "Final"
+        : gs.kind === "final" ? `Final${seal}`
           : gs.kind === "suspended" ? esc(gs.label)
             : `<span class="livedot"></span>${esc(gs.label || "Live")}`;
       return `<div class="gp-score ${gs.delayed ? "delayed" : gs.kind}"><b>${num(gs.score.away, 0)}</b><span class="gp-scmid${gs.delayed ? " delayed" : ""}">${mid}</span><b>${num(gs.score.home, 0)}</b></div>`;
@@ -7760,7 +7811,7 @@ export default function Home() {
       const page = $("gamepage"); if (!page) return;
       const gs = gameState(g);
       const el = page.querySelector(".gp-center");
-      if (el && gs.score && gs.score.split && gs.score.home != null) el.innerHTML = heroScoreHtml(gs);
+      if (el && gs.score && gs.score.split && gs.score.home != null) el.innerHTML = heroScoreHtml(gs, finalSealFor(g, gs));
       /* THE SITUATION REPAINTS WITH THE SCORE, because it is part of the score (see the
          scorebug note in the hero builder). The count moves on every pitch and the bases on
          every hit — an inning behind on either is more obviously wrong than a stale run
@@ -8441,8 +8492,22 @@ export default function Home() {
          tile that already carries its pick promised motion that can no longer
          happen; the chip now says the truth: the pick is locked from the
          moment it exists, and the countdown belongs to games still waiting. */
-      const lead = !has ? `first look` : `pick locked in`;
-      return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}" data-noun="${esc(w.noun || "game time")}">⏱ ${esc(lead)} · ${esc(w.inTxt)}</span>`;
+      /* AND A LOCKED PICK'S COUNTDOWN COUNTS TO THE GAME, NOT TO A CHECK (UX H3,
+         2026-08-17). "pick locked in · 1h 22m" was the time to the NEXT MARKET CHECK —
+         a moment that can no longer change anything for this pick — printed with no
+         label, so it read as a countdown on a pick that was already final. The only
+         clock that still matters to a locked pick is the game itself, so that is the
+         one it shows, named ("first pitch in 4h 05m"). The waiting chip is unchanged:
+         its next check is a real event that can produce the pick. */
+      return `<span class="pk-count" data-fp="${fp}" data-has="${has ? 1 : 0}" data-noun="${esc(w.noun || "game time")}">⏱ ${esc(countChipTxt(fp, has, w))}</span>`;
+    }
+    // ONE composer for the chip's words — the first paint and the 60s ticker must never
+    // disagree (a chip may not say one thing at paint and another a minute later).
+    function countChipTxt(fp: number, has: boolean, w: any) {
+      if (!has) return `first look · ${w.inTxt}`;
+      const dm = Math.max(1, Math.round((fp - Date.now()) / 60000));
+      const h = Math.floor(dm / 60), m = dm % 60;
+      return `pick locked · ${w.noun || "game time"} in ${h ? `${h}h ${m}m` : `${m}m`}`;
     }
     const wallFromFp = (fp: number, noun = "game time") => {
       const now = Date.now();
@@ -8458,16 +8523,18 @@ export default function Home() {
       return { label: "final form", inTxt: `${Math.max(1, Math.round((fp - now) / 60000))}m to ${noun}`, final: true };
     };
     // shared 60s ticker: refresh every visible countdown chip without re-rendering views.
-    // Same words as countdownChip, by rule: a chip that says "pick locked in" at paint
-    // must never tick back to "next check" a minute later — a posted pick is write-once.
+    // Same words as countdownChip, BY CONSTRUCTION: both call countChipTxt, so a chip that
+    // says "pick locked" at paint can never tick back to a check countdown a minute later
+    // — a posted pick is write-once.
     setInterval(() => {
       document.querySelectorAll(".pk-count[data-fp]").forEach((el: any) => {
         const fp = Number(el.dataset.fp);
         if (!fp) return;
-        const w = wallFromFp(fp, el.dataset.noun || "game time");
+        const noun = el.dataset.noun || "game time";
+        const w = wallFromFp(fp, noun);
         if (!w) { el.remove(); return; }
         const has = el.dataset.has === "1";
-        el.textContent = `⏱ ${!has ? "first look" : "pick locked in"} · ${w.inTxt}`;
+        el.textContent = `⏱ ${countChipTxt(fp, has, { inTxt: w.inTxt, noun })}`;
       });
     }, 60000);
 
@@ -8643,18 +8710,23 @@ export default function Home() {
          with the reason MLB gave, and the pulsing live dot goes with it: nothing is
          happening, and the dot's whole job is to say something is. The inning is not lost —
          it is on the game page one tap away, over the line score, where it belongs. */
+      /* THE DOUBLEHEADER LABEL RIDES THE CHIP (UX M8, 2026-08-17). `__dh` is stamped in
+         renderSlate whenever two same-day cards share both clubs; the chip is the one
+         element every card state renders, so "Game 1 / Game 2" survives pre → live →
+         final without a second element to keep aligned. */
+      const dh = g && g.__dh ? ` · ${g.__dh}` : "";
       if (gs.delayed || gs.kind === "delayed") {
-        return `<span class="statechip delayed">${esc(gs.delayReason ? `Delayed · ${gs.delayReason}` : "Delayed")}</span>`;
+        return `<span class="statechip delayed">${esc(gs.delayReason ? `Delayed · ${gs.delayReason}` : "Delayed")}${esc(dh)}</span>`;
       }
       if (gs.kind === "live") {
         const lab = gs.label && gs.label !== "Live" ? gs.label : "LIVE";
-        return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}${tileSituation(g)}</span>`;
+        return `<span class="statechip live"><span class="livedot"></span>${esc(lab)}${esc(dh)}${tileSituation(g)}</span>`;
       }
-      if (gs.kind === "final") return `<span class="statechip final">Final</span>`;
+      if (gs.kind === "final") return `<span class="statechip final">Final${esc(dh)}</span>`;
       // pre: prefer the time; when browsing another day, show that day tag too
       const t = gs.si.hasTime && gs.si.time ? gs.si.time.replace(TZ_ABBR ? " " + TZ_ABBR : " ", "") : (gs.si.date || "TBD");
       const dayTag = gameLocalDay(g) && gameLocalDay(g) !== curDate && gs.si.date ? `${esc(gs.si.date)} · ` : "";
-      return `<span class="statechip pre">${dayTag}${esc(t)}</span>`;
+      return `<span class="statechip pre">${dayTag}${esc(t)}${esc(dh)}</span>`;
     }
     function tilePitcherMeta(g: any, which: "away" | "home") {
       if (!g || String(g.sport || "").toLowerCase() !== "mlb") return "";
@@ -9359,13 +9431,18 @@ export default function Home() {
          say it is a different object. */
       const mark = noPick ? ""
         : `<span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i><i class="de-mini-arrow"></i></span>`;
-      // the market total — ALWAYS rendered, always meaning the market
-      const ouCell = `<span class="de-mini-ou"><i>O/U</i>${line ? `<b>${esc(line)}</b>` : `<b>—</b>`}</span>`;
       /* our call — the tag. A game we PASSED on leaves the slot empty (the emptiness is the
          signal); a game whose picks have not been made yet is a different state entirely and
          gets the INCOMING tag, because "we are not on this" and "we have not looked yet" must
          never read the same. */
       const upcoming = noPick && picksPending(g);
+      /* the market total — ALWAYS rendered on a read game, always meaning the market.
+         ONE EXCEPTION (UX M7, 2026-08-17): a still-pending game with NO posted total drew
+         "O/U —" beside the incoming tag — a dash standing for a number nobody has, which is
+         exactly the empty row the future-board cut removed. The tag alone says everything
+         the card knows; the total joins it the moment the market posts one. */
+      const ouCell = upcoming && !line ? ""
+        : `<span class="de-mini-ou"><i>O/U</i>${line ? `<b>${esc(line)}</b>` : `<b>—</b>`}</span>`;
       const callCell = upcoming
         ? `<span class="de-mini-call incoming"><span class="de-mini-mark" aria-hidden="true"><i class="de-mini-logo">◆</i><i class="de-mini-de">DE</i></span><b class="de-mini-word">${esc(picksEtaShort(g))}</b></span>`
         : noPick ? ""
@@ -9604,10 +9681,20 @@ export default function Home() {
         return `${cap.replace(/\.+$/, "")} — the pick posts the moment it lands, no later than ${t}.`;
       }
       const d = gameDateISO(g);
-      if (!d) return `Our picks for this game post by ${t}.`;
+      /* WHY THE TIME VARIES, said once, in the sentence that states the time (UX H3,
+         2026-08-17). "Posts by 7:40 AM" on one game and "by 1:10 PM" on the next read as
+         four different answers to one question until the rule is named: each game is
+         priced its own fixed stretch before its own start. The stretch comes off the
+         SERVED contract (contractWallHours) — when no contract has landed the sentence
+         says less, never a guessed number. */
+      const _wh = contractWallHours(d || undefined, g && g.sport);
+      const _whW: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
+      const _noun = WALL_NOUN[String((g && g.sport) || "").toLowerCase()] || "start";
+      const vary = _wh != null ? ` Times vary because each game's pick posts about ${_whW[_wh] || `${_wh} hours`} before that game's own ${_noun}.` : "";
+      if (!d) return `Our picks for this game post by ${t}.${vary}`;
       const when = d === todayISO() ? "today" : d === shiftDate(todayISO(), 1) ? "tomorrow"
         : new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
-      return `Our picks for ${when} post by ${t}.`;
+      return `Our picks for ${when} post by ${t}.${vary}`;
     }
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
        Leon: "for RIGHT / WRONG use another treatment." So the outcome does not borrow ONE
@@ -10019,8 +10106,14 @@ export default function Home() {
          one-line rule); this chip said "Sign in to unlock". Two labels on one board
          let a signed-out reader tell a pass from a withheld pick by chip width alone —
          the exact distinction the uniform slate exists to hide. One chip, one word. */
+      /* THE CHIP CARRIES ITS REASON (UX M7, 2026-08-17). "No bet" alone made a pass and a
+         glitch look alike; the game page has always had the honest reason, so the chip's
+         hover says it too — the same PASS_KINDS words the pass board uses, never invented
+         here. Absent reason ⇒ the plain sentence, exactly as before. */
+      const passWhy0 = vd && vd.kind === "pass" ? passWhyOf(g) : null;
+      const passKind0 = passWhy0 && PASS_KINDS[passWhy0] ? PASS_KINDS[passWhy0] : null;
       const passMark = vd && vd.kind === "pass" && !picksPending(g)
-        ? `<span class="tv-nobet" title="The desk read this game and did not bet it">No bet</span>`
+        ? `<span class="tv-nobet" title="${esc(passKind0 ? `${passKind0.lab} — the desk read this game and did not bet it` : "The desk read this game and did not bet it")}">No bet</span>`
         : "";
       const verdictBlk = vd
         ? `<div class="tl-verdict ${vd.cls}">
@@ -10028,15 +10121,29 @@ export default function Home() {
              ${liveCash}
            </div>`
         : incoming
-          ? ""/* A FUTURE CARD CARRIES NO VERDICT ROW (Leon, 2026-08-10: tomorrow's board
-                "doesn't feel right — too long / too many rows").
-                It used to render "O/U —" beside "Pick posts tomorrow" on EVERY card. Both
-                are empty: the dash is a total we do not have yet, and the chip repeats what
-                the header above already said, ten times down the page. Two rows of nothing
-                per card is what made the board feel long.
-                The header states when picks post; the card states the game. When a total
-                does exist for a future game it still shows through the ordinary path — this
-                only removes the row that had nothing in it. */
+          /* A FUTURE CARD CARRIES NO VERDICT ROW (Leon, 2026-08-10: tomorrow's board
+             "doesn't feel right — too long / too many rows").
+             It used to render "O/U —" beside "Pick posts tomorrow" on EVERY card. Both
+             are empty: the dash is a total we do not have yet, and the chip repeats what
+             the header above already said, ten times down the page. Two rows of nothing
+             per card is what made the board feel long.
+             The header states when picks post; the card states the game. When a total
+             does exist for a future game it still shows through the ordinary path — this
+             only removes the row that had nothing in it.
+
+             …BUT A TODAY CARD MUST SAY ITS STATE (UX M7, 2026-08-17). On today's mixed
+             board an empty slot MEANS "we passed" — that is the board's own language — so
+             a today game whose pick simply hasn't posted yet (measured live on the Aug 17
+             STL @ CIN doubleheader: no verdict object at all, so even the PICKS SOON tag
+             was skipped) read as a pass nobody made. Today's pending cards get the same
+             incoming tag their read siblings already wear; future dates keep the quiet
+             card, because there the header carries the whole answer. The "O/U —" dash
+             this row once shipped is gone at the source (see compactDePickHtml). */
+          ? (!isFutureGame(g)
+              ? `<div class="tl-verdict v-pass">
+                   <div class="tv-callrow">${compactDePickHtml(g, null, "tile", true)}</div>
+                 </div>`
+              : "")
           : "";
       // the number rides inside the call now; the chip is the fallback for a tile whose
       // verdict carries no figure of its own (a bare "Pass", or no verdict at all)
@@ -10050,7 +10157,7 @@ export default function Home() {
               era's signature. */,
       ].filter(Boolean).join("");
       return `<article class="tile ${gs.kind}${gs.delayed && gs.kind !== "delayed" ? " delayed" : ""}${q ? ` q-${q}` : ""}${resCls0}${vd ? " " + vd.cls : ""}" data-gid="${esc(g.game_id || idx)}" style="--i:${Math.min(idx, 14)}" role="button" tabindex="0"
-        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${vd ? (vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
+        aria-label="${esc(g.away_abbr)} at ${esc(g.home_abbr)}${g.__dh ? esc(` — ${g.__dh} of a doubleheader`) : ""}${vd ? (vd.kind === "pass" ? ` — market total ${passLine || ""}` : ` — ${vd.word}: ${esc(vd.side || "")}`) : ""} — open the game">
         <div class="tl-top">${leagueTag(g)}${stateChip(g, gs)}</div>
         <div class="tl-teams">${tileRow(g, "away", gs)}${tileRow(g, "home", gs)}</div>
         ${verdictBlk}
@@ -11537,6 +11644,25 @@ export default function Home() {
             ? `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">${esc(SPORT_LABEL[league])} isn't updating</div><div class="sm">Our ${esc(SPORT_LABEL[league])} feed has gone quiet — the last fixture we hold is from ${esc(stale.lastLabel)}, so there is no ${esc(SPORT_LABEL[league])} board today. MLB is running as normal, and every past DiamondEdge Pick stays graded on the Desk.</div></div>`
             : `<div class="state"><div class="st-ico">${league === "all" ? "◆" : SPORT_LABEL[league]}</div><div class="big">No ${esc(noun)}</div><div class="sm">Nothing scheduled for ${esc(dispDate)}. Try another league or date — and every past DiamondEdge Pick stays graded on the Desk.</div></div>`;
         } else {
+          /* ═══ A DOUBLEHEADER IS TWO GAMES, AND THE BOARD MUST SAY WHICH IS WHICH (UX M8,
+             2026-08-17). An STL @ CIN twin bill rendered as two cards identical but for the
+             start time — same crests, same records, same pick slot — and a reader tapping
+             one had no way to know it was Game 2. The label is derived, not served: any two
+             cards on one date with the same clubs are a doubleheader, ordered by first
+             pitch. Stamped on the game object here (the one place the day's slate is whole)
+             and worn by the tile's state chip in every state — pre, live, final. */
+          {
+            const _dhKey = (g: any) => `${gameDateISO(g)}|${String(g.away_abbr || g.away || "")}|${String(g.home_abbr || g.home || "")}`;
+            const _dhMap: any = {};
+            games.forEach((g: any) => { const k = _dhKey(g); (_dhMap[k] = _dhMap[k] || []).push(g); });
+            Object.keys(_dhMap).forEach((k) => {
+              const twins = _dhMap[k];
+              if (twins.length < 2) { twins.forEach((g: any) => { if (g.__dh) delete g.__dh; }); return; }
+              twins.slice()
+                .sort((a: any, b: any) => String(a.start_ts || a.first_pitch_utc || "").localeCompare(String(b.start_ts || b.first_pitch_utc || "")))
+                .forEach((g: any, i: number) => { g.__dh = `Game ${i + 1}`; });
+            });
+          }
           const anyPick = games.some((g: any) => { const p = displayPick(g); return p && p.action === "TAKE"; });
           const allPending = games.length > 0 && games.every((g: any) => picksPending(g));
           const rail = anyPick ? "" : (isFuture || allPending ? "" : passBoardPanel(games));
@@ -11587,6 +11713,21 @@ export default function Home() {
           // disguised) — the last-known slate renders whole beneath it, as itself.
           body.innerHTML = `${staleBar}${futureBanner}${rail}${grouped}
             <div class="refnote">${nAll}${esc(lgSuffix)} game${nAll > 1 ? "s" : ""} · ${esc(dispDate)}${ppdGames.length ? ` · ${ppdGames.length} postponed` : ""}</div>`;
+          /* ═══ ONE SENTENCE UNDER THE STARS' FIRST BOARD (UX M5, 2026-08-17). The old
+             five-step tier legend was rightly cut as a lecture nobody asked for; what
+             replaced it was nothing, and the stars' only explanation became a desktop
+             hover on a mostly-phone audience. This is the between: one line, in words,
+             at the reference position the old legend held — and only on a board that is
+             actually showing stars, which is why it tests the RENDERED slate rather than
+             the data (a fully locked board draws no stars and gets no legend). The words
+             stay generic on purpose: the rating's basis varies by pick and each pick's
+             own hover/game page states its served definition — this line may not claim
+             more than every basis shares. */
+          if (body.querySelector(".de-stars")) {
+            const rn0 = body.querySelector(".refnote");
+            if (rn0) rn0.insertAdjacentHTML("beforebegin",
+              `<div class="refnote starnote">★ ratings are the desk&rsquo;s own read on the strength of each pick — more stars, a stronger case behind the call. One star is still a real pick, and every pick is graded on the record either way.</div>`);
+          }
         }
       }
       // League counts — from the loaded snapshot, or the live board when browsing a future
@@ -11868,8 +12009,16 @@ export default function Home() {
           : (pk.our_proj != null ? Number(pk.our_proj)
           : (ps.home != null && ps.away != null ? Number(ps.home) + Number(ps.away) : null));
         const over = /over/i.test(String(pl.side || ""));
-        if (proj != null && line != null)
-          s.push(`Our model expects about ${num(proj, 1)} ${unit} in this game — ${over ? "more" : "fewer"} than the ${num(line, 1)} the books are offering.`);
+        /* THE SENTENCE MUST NOT ARGUE WITH THE PICK IT EXPLAINS (UX H4, 2026-08-17).
+           "more/fewer" was printed off the PICK's side while the number came from a
+           projection that — on the legacy fallback path — can sit on the other side of
+           the line. That produced "expects about 7.9 — more than the 8.5": a false
+           sentence under a posted pick. The relation is now computed from the numbers
+           themselves, and when the projection genuinely contradicts the pick's side,
+           the sentence is omitted — a projection arguing against the posted pick may
+           not render without a true reconciliation, and we have none to offer here. */
+        if (proj != null && line != null && (proj > line) === over && Math.abs(proj - line) > 1e-9)
+          s.push(`Our model expects about ${num(proj, 1)} ${unit} in this game — ${proj > line ? "more" : "fewer"} than the ${num(line, 1)} the books are offering.`);
       } else if (pl.market === "spread") {
         const _v3s = v3Score(g);
         const aw = _v3s ? _v3s.away : (ps.away != null ? Number(ps.away) : null);
@@ -12012,7 +12161,11 @@ export default function Home() {
     let toastT: any = null;
     function toast(msg: string) {
       let el = $("de-toast");
-      if (!el) { el = document.createElement("div"); el.id = "de-toast"; el.className = "de-toast"; document.body.appendChild(el); }
+      /* role="status" (implicit aria-live polite) — the page's ONE live region. Without it
+         every toast ("Copied — paste it anywhere") is invisible to a screen reader: the
+         element appears, the text changes, and assistive tech is never told. Set at
+         creation, before any text lands, so the first announcement is not swallowed. */
+      if (!el) { el = document.createElement("div"); el.id = "de-toast"; el.className = "de-toast"; el.setAttribute("role", "status"); el.setAttribute("aria-live", "polite"); document.body.appendChild(el); }
       el.textContent = msg;
       el.classList.add("show");
       if (toastT) clearTimeout(toastT);
@@ -13285,6 +13438,14 @@ export default function Home() {
         const line = lead.line != null ? Number(lead.line) : (g.total_pick && g.total_pick.line != null ? Number(g.total_pick.line) : null);
         if (our == null || line == null) return "";
         const diff = our - line, over = diff > 0;
+        /* THE GAP PANEL MAY NOT POINT AWAY FROM THE PICK (UX H4, 2026-08-17). `over` here
+           is derived from the projection, and on the legacy path that projection can sit
+           on the opposite side of the line from the posted side — the panel then declared
+           "that gap is the OVER" beside an UNDER ticket. When the two disagree there is
+           no gap-story to tell honestly, so nothing renders. */
+        const _ledOver = /(^|\s)over/i.test(String(lead.side || ""));
+        const _ledUnder = /(^|\s)under/i.test(String(lead.side || ""));
+        if (diff === 0 || (_ledOver && !over) || (_ledUnder && over)) return "";
         return `<div class="de-diverge ${over ? "over" : "under"}">
           <div class="dd-pair"><div class="dd-cell ours"><span class="dd-k">Our projection</span><b>${num(our, 1)}</b></div><div class="dd-vs">vs</div><div class="dd-cell"><span class="dd-k">Vegas total</span><b>${num(line, 1)}</b></div></div>
           <div class="dd-gap">We see <b>${num(Math.abs(diff), 1)}</b> ${over ? "more" : "fewer"} runs than the market — that gap is the <b>${over ? "OVER" : "UNDER"}</b>.</div>
@@ -13698,14 +13859,39 @@ export default function Home() {
          is. Every other board is unaffected: `_ms` is only set by the tracker branch
          of pregameLineRaw(), and a frozen tracker card reads exactly as before. */
       const msLive = !!(raw && (raw as any)._ms === true && (raw as any).frozen_at_wall !== true);
-      return tot == null ? "" : `<div class="oline">
-        <div class="oline-k">${msLive ? "The market's number right now" : "The line we're graded at"}</div>
-        <div class="oline-main">
-          <span class="oline-tot"><b>${esc(lineStr(tot))}</b><i>total</i></span>
-          ${over != null || under != null ? `<span class="oline-px">
+      /* ═══ "THE LINE WE'RE GRADED AT" MUST BE THE TICKET'S LINE (UX H2, 2026-08-17) ═══
+         `pregameLine()` prefers the served pregame_line block — which on a graded game is
+         the LAST MARKET CHECK (T-1h), not the frozen pick. A pick made UNDER 8.5 whose
+         market drifted to 9 by the final check rendered "The line we're graded at — 9":
+         on the one tab a skeptic opens to audit the grade, the site appeared to restate
+         its own ticket. Pick records are write-once; this card now enforces that visually.
+         When a TAKE exists, the headline number comes from the SAME source as the pick
+         pill (`displayPick` — pl.line, the number the pick is actually graded at), and
+         where the last market check read differently, that check is printed UNDER it,
+         labelled as what it is, instead of being passed off as the graded line. The
+         stored data is untouched; a game with no pick renders exactly as before. */
+      const _pl = displayPick(g);
+      const pkLine = _pl && isPick(_pl)
+        ? _fin(_pl.line != null ? _pl.line : (_pl as any).vegas_line) : null;
+      const drift = pkLine != null && tot != null && Math.abs(pkLine - tot) > 0.001;
+      const shown = pkLine != null ? pkLine : tot;
+      const pkOver = _pl ? /(^|\s)over/i.test(String(_pl.side || "")) : false;
+      const pkUnder = _pl ? /(^|\s)under/i.test(String(_pl.side || "")) : false;
+      // the check's over/under prices belong to the CHECK's total — they may not sit
+      // beside a different (the pick's) number. On a drifted card the price shown is
+      // the pick's own, or none.
+      const pxPair = !drift && (over != null || under != null) ? `<span class="oline-px">
             <span><em>over</em>${over != null ? esc(fmtOdds(over)) : "—"}</span>
             <span><em>under</em>${under != null ? esc(fmtOdds(under)) : "—"}</span>
-          </span>` : ""}
+          </span>`
+        : drift && _pl && _pl.price != null && (pkOver || pkUnder) ? `<span class="oline-px">
+            <span><em>${pkOver ? "over" : "under"}</em>${esc(fmtOdds(_pl.price))}</span>
+          </span>` : "";
+      return shown == null ? "" : `<div class="oline">
+        <div class="oline-k">${msLive && pkLine == null ? "The market's number right now" : "The line we're graded at"}</div>
+        <div class="oline-main">
+          <span class="oline-tot"><b>${esc(lineStr(shown))}</b><i>total</i></span>
+          ${pxPair}
         </div>
         <div class="oline-foot">${[
           // THE OPEN HAS ONE HOME. It was printed here AND again ~120px below as
@@ -13714,19 +13900,21 @@ export default function Home() {
           // only when there is no chart to own it (a past game, or a board with no wall
           // grid), and the "never moved" note stays either way because the chart states
           // that case differently.
-          hasWalls ? "" :
+          hasWalls || tot == null ? "" :
             open != null && Math.abs(open - tot) > 0.001 ? `opened ${lineStr(open)}` : open != null ? "never moved off the open" : "",
+          // the drifted check, named as what it is — never as the graded line
+          drift ? `our last market check before the game read ${lineStr(tot!)}` : "",
           nBooks != null ? `${Math.round(nBooks)} books read` : "",
           // Say WHY it can still move, once, under the number it qualifies —
           // the same fact the heading carries, stated as the reason rather
           // than repeated as a label.
-          msLive ? `not locked yet — this game prices at its own wall` : "",
+          msLive && pkLine == null ? `not locked yet — this game prices at its own wall` : "",
           // "best price at X" sat above a table whose every row named a
           // different book; naming what this one is about tells them apart.
           // The CHECK goes with it, because the chart's caption prints a
           // different price for the same bet and the two are told apart by
           // which book and which moment each was quoted at.
-          book ? `prices from ${book}${raw && raw.wall ? ` at the ${String(raw.wall)} check` : ""}` : "",
+          book && !drift ? `prices from ${book}${raw && raw.wall ? ` at the ${String(raw.wall)} check` : ""}` : "",
         ].filter(Boolean).map((s) => esc(s)).join(" · ")}</div>
       </div>`;
     }
@@ -14138,7 +14326,7 @@ export default function Home() {
       // FUSED HERO HEADER — the matchup (crests + records) and the live trend woven into
       // ONE header over a subtle team-tinted wash. Sits above the tabs.
       const heroScore = (gs.score && gs.score.split && gs.score.home != null)
-        ? heroScoreHtml(gs)
+        ? heroScoreHtml(gs, finalSealFor(g, gs, lead))
         /* A CALLED-OFF GAME'S HERO SAID "11:00 PM PDT". The scheduled time is
            the least true thing on the page once the game is off; the state is
            the headline, and the date it was scheduled for follows it. */
@@ -18181,8 +18369,17 @@ export default function Home() {
        "Atlanta United FC" is not "FC" — which is exactly what the composed MLS headline
        shipped ("York and FC square up"). Every club name that last-words badly gets the
        name a soccer reader actually uses; anything not in the map falls through to the
-       last-word rule, which stays right for MLB/WNBA/NBA/NHL/NFL nicknames. */
-    const CLUB_SHORT: any = { "Atlanta United FC": "Atlanta United", "Austin FC": "Austin", "Chicago Fire FC": "Chicago Fire", "FC Cincinnati": "Cincinnati", "Columbus Crew": "Columbus", "Charlotte FC": "Charlotte", "FC Dallas": "Dallas", "D.C. United": "D.C. United", "Houston Dynamo FC": "Houston", "LA Galaxy": "LA Galaxy", "Inter Miami CF": "Inter Miami", "Minnesota United FC": "Minnesota United", "CF Montréal": "Montréal", "CF Montreal": "Montreal", "Nashville SC": "Nashville", "New York City FC": "NYCFC", "Orlando City SC": "Orlando City", "Red Bull New York": "Red Bulls", "New York Red Bulls": "Red Bulls", "Real Salt Lake": "RSL", "San Diego FC": "San Diego", "Seattle Sounders FC": "Seattle Sounders", "Sporting Kansas City": "Sporting KC", "St. Louis CITY SC": "St. Louis City", "Toronto FC": "Toronto", "Vancouver Whitecaps": "Vancouver" };
+       last-word rule, which stays right for MLB/WNBA/NBA/NHL/NFL nicknames.
+
+       …EXCEPT THE TWO SOX (UX M8, 2026-08-17). The last-word rule turns Boston Red Sox
+       AND Chicago White Sox into "Sox", so a desk row read "Sox @ Pirates" and the reader
+       had to guess which club we meant. Same class of failure as "York": the last word is
+       not the name. The two-word nicknames are listed here — full names and the bare
+       nicknames both, because the feeds ship both shapes. */
+    const CLUB_SHORT: any = {
+      "Boston Red Sox": "Red Sox", "Red Sox": "Red Sox",
+      "Chicago White Sox": "White Sox", "White Sox": "White Sox",
+      "Toronto Blue Jays": "Blue Jays", "Blue Jays": "Blue Jays", "Atlanta United FC": "Atlanta United", "Austin FC": "Austin", "Chicago Fire FC": "Chicago Fire", "FC Cincinnati": "Cincinnati", "Columbus Crew": "Columbus", "Charlotte FC": "Charlotte", "FC Dallas": "Dallas", "D.C. United": "D.C. United", "Houston Dynamo FC": "Houston", "LA Galaxy": "LA Galaxy", "Inter Miami CF": "Inter Miami", "Minnesota United FC": "Minnesota United", "CF Montréal": "Montréal", "CF Montreal": "Montreal", "Nashville SC": "Nashville", "New York City FC": "NYCFC", "Orlando City SC": "Orlando City", "Red Bull New York": "Red Bulls", "New York Red Bulls": "Red Bulls", "Real Salt Lake": "RSL", "San Diego FC": "San Diego", "Seattle Sounders FC": "Seattle Sounders", "Sporting Kansas City": "Sporting KC", "St. Louis CITY SC": "St. Louis City", "Toronto FC": "Toronto", "Vancouver Whitecaps": "Vancouver" };
     const teamShort = (name: any) => { const s = String(name || "").trim(); if (CLUB_SHORT[s]) return CLUB_SHORT[s]; const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       return "";

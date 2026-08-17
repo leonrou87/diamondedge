@@ -1,4 +1,5 @@
 import React from "react";
+import { dataLayerFault } from "../../api/_lib/de";
 
 /* ════════════════════════════════════════════════════════════════════════════
    /admin/kp-desk — shared shell for the owner's console.
@@ -87,6 +88,13 @@ export function Shell(props: {
     ["email", "Email", "/admin/kp-desk/email"],
     ["revenue", "Revenue", "/admin/kp-desk/revenue"],
   ];
+  /* THE OUTAGE BANNER (2026-08-17). Every console page's queries run in this
+     same invocation before Shell renders, so a data-layer failure — a 402
+     from the egress cap, a 5xx, a network fault — is already recorded by the
+     time this reads it (see dataLayerFault in _lib/de.ts). Without it, a
+     Supabase outage renders as "Users: 0" and empty tables: confident wrong
+     numbers in the one UI whose job is truth. Plain text, no retry loop. */
+  const fault = dataLayerFault();
   return (
     <div className="kpdesk">
       <style dangerouslySetInnerHTML={{ __html: CSS }} />
@@ -106,6 +114,12 @@ export function Shell(props: {
             <button type="submit">sign out</button>
           </form>
         </div>
+        {fault ? (
+          <div className="note err" role="alert">
+            The data layer did not answer{fault.status ? ` (HTTP ${fault.status}${fault.status === 402 ? " — Supabase egress cap; the project is refusing requests until upgraded or reset" : ""})` : " (network error)"}.
+            Counts and tables below show only what could be read — treat zeros and gaps as unknown, not as fact.
+          </div>
+        ) : null}
         {props.children}
       </div>
     </div>

@@ -304,8 +304,8 @@ export default async function RecordPage() {
         <h1 className="rec-h1">Every pick, graded in public.</h1>
         <p className="rec-lede">
           This is the whole ledger: <b>every pick DiamondEdge has served since {longDate(h.start)}</b>,
-          graded at the price and the line it was served at. Nothing re-graded and nothing
-          restated. The losing nights are on this page at the same size as the winning ones,
+          graded at the price and the line it was served at. Nothing here is ever edited or
+          deleted, and nothing is restated — losses stay up. The losing nights are on this page at the same size as the winning ones,
           because a record you can only read the good half of is an advertisement
           {showProvenance ? (
             <> — and so is a record that does not tell you which of its nights were called
@@ -477,7 +477,12 @@ export default async function RecordPage() {
             a night can reach into its own selection.
           </p>
           <p className="rec-p">
-            What it cannot show is that the desk would have <i>run</i> that rule live. The
+            {/* THE SPACE IS AN EXPRESSION, NOT WHITESPACE (2026-08-17). This JSX transform
+                drops the leading space of a multi-line text node that follows an inline
+                element — measured on production, this sentence rendered "runthat rule live"
+                (and the disputed-nights note below rendered "area closer call"). A space the
+                compiler cannot see is a space it cannot lose. */}
+            What it cannot show is that the desk would have <i>run</i>{" "}that rule live. The
             selector doing the re-running was built later, with those nights&rsquo; results already
             in the world. That gap is the entire difference between the two rows, it is not
             something a fence can close, and it is why they are printed apart instead of averaged
@@ -497,7 +502,8 @@ export default async function RecordPage() {
                 .map((d) => shortDate(d.date))
                 .reduce((s, x, i, a) =>
                   i === 0 ? x : i === a.length - 1 ? `${s} and ${x}` : `${s}, ${x}`, "")}{" "}
-              {disputed.length === 1 ? "is" : "are"} a closer call: the selector&rsquo;s own store
+              {/* the space rides inside the string — see the transform note above */}
+              {disputed.length === 1 ? "is " : "are "}a closer call: the selector&rsquo;s own store
               says their rule was chosen hours before first pitch, but the as-served ledger
               carries no stamp for them. They are
               counted as re-run above, because the as-served ledger is the evidence that survives
@@ -679,9 +685,13 @@ export default async function RecordPage() {
       {/* ── CTA ── */}
       <section className="rec-cta">
         <div className="rec-cta-h">This is the record. The board is live.</div>
+        {/* NOT "the paid part" (fixed 2026-08-17). That sentence was paid-era copy that
+            outlived the paywall: every other surface on the site says every pick is free,
+            and this page — the one a skeptic reads last — said the opposite. There is no
+            paid part. Say the true thing. */}
         <p className="rec-cta-p">
-          Scores, news and the full slate are free. The picks behind the ledger above are the paid
-          part — one honest call per game, frozen before first pitch, graded here win or lose.
+          Every pick, every write-up and the full record are free, to every reader — one honest
+          call per game, frozen before first pitch, graded here win or lose.
         </p>
         <Link href="/" className="rec-cta-b">See today&rsquo;s board</Link>
       </section>

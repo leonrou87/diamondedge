@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-17T09:39:57Z",
+  "generated_utc": "2026-08-17T10:19:03Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -3502,18 +3502,18 @@
         "units": 0.0,
         "roi": null,
         "strategy": {
-          "rule_key": "nightly_engine_v3:committee_top31",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "plain_english_rule": "the 31 strategies that held up best over the last 17 nights each vote on every game; the side with the majority becomes the pick, and a tie passes",
+          "rule_key": "forge:w17:4fdde70156",
+          "label": "The rule that won the search",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "confidence_tier": null,
           "window_days": 17,
           "status": "ACTIVE",
-          "selector": "nightly_engine",
-          "summary_line": "Chosen overnight from 4,024 candidate strategies; 319 cleared the evidence floors on the holdout slice, and the best 31 were seated to vote on today's games.",
+          "selector": "strategy_forge",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
           "full_block_at": "adaptive_strategy_by_date.2026-08-17"
         },
-        "selector_version": "nightly_engine_v3",
-        "engine": "nightly_engine",
+        "selector_version": "forge_selector_v1",
+        "engine": "adaptive_desk",
         "is_engine_changeover": false,
         "basis": "process_replay",
         "no_action_reason": "strategy_passed",
@@ -8833,7 +8833,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-17T09:40:24Z",
+      "updated": "2026-08-17T10:19:29Z",
       "order": [
         "vega",
         "atlas",
@@ -12413,119 +12413,126 @@
         "full_block_at": "adaptive_strategy_by_date.2026-08-15"
       },
       "2026-08-17": {
+        "source": "strategy_forge",
+        "version": "forge_selector_v1",
+        "selector": "strategy_forge",
         "date": "2026-08-17",
-        "version": "nightly_engine_v3",
-        "selector": "nightly_engine",
-        "engine": "nightly_engine",
+        "channel": "forge_selector_board",
         "status": "ACTIVE",
-        "lock_status": "LOCKED_STRATEGY",
-        "rule_key": "nightly_engine_v3:committee_top31",
-        "label": "The Full Committee \u2014 31 strategies vote",
-        "mode": "vote",
-        "plain_english_rule": "the 31 strategies that held up best over the last 17 nights each vote on every game; the side with the majority becomes the pick, and a tie passes",
-        "rule_family": "engine_committee",
-        "window_days": 17,
-        "top_k": 31,
-        "n_strategies_voting": 31,
-        "n_candidates_eligible": 319,
-        "committee_family_mix": {
-          "abstention": 5,
-          "blend": 3,
-          "combo": 4,
-          "conditional": 9,
-          "rule_stack": 1,
-          "threshold": 5,
-          "vote": 4
-        },
-        "ensemble_rule": "the top 31 strategies VOTE per game; majority side plays; a tie abstains",
-        "criterion": "mean profit per decided pick at flat -110 \u2014 WIN/LOSS ONLY, no baseline-relative term anywhere in selection; recency-weighted over the holdout when a half-life is in force; eligibility floors on RAW counts",
-        "recency": {
-          "enabled": true,
-          "half_life_nights": 14.0,
-          "note": "\u00a72(c): holdout nights weigh 0.5**(age/half_life) in the SCORE; the decided-picks floor and the both-halves stability check stay on RAW counts so a short hot streak cannot win"
-        },
-        "holdout": {
-          "window_start": "2026-07-31",
-          "n_window_nights": 17,
-          "fit_nights": 12,
-          "holdout_start": "2026-08-12",
-          "holdout_nights": 5,
-          "min_decided_holdout": 8
-        },
-        "advanced_only": true,
-        "excluded_families": [
-          "room_plain"
-        ],
+        "mode": "rule",
+        "rule_key": "forge:w17:4fdde70156",
+        "rule_id": "forge:w17:4fdde70156",
+        "rule_family": "strategy_forge",
+        "label": "The rule that won the search",
+        "provenance": "SHORTLISTED",
+        "objective": "W - L (wins minus losses over the window)",
+        "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
+        "is_day_strategy": true,
+        "day_selector": "strategy_forge",
+        "is_owner_directed": false,
+        "authorized_by": null,
         "locked": true,
-        "locked_at_utc": "2026-08-17T09:00:14Z",
-        "selected_at_utc": "2026-08-17T09:00:03Z",
-        "read_basis": {
-          "seam_start": "2026-07-01",
-          "fingerprint": "0b326374d110",
-          "n_nights_available": 43,
-          "n_nights_used": 43,
-          "note": "window restarts at any trained_through fingerprint change \u2014 one read basis, never averaged across a model swap"
+        "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+        "window_days": 17,
+        "window": [
+          "2026-07-31",
+          "2026-08-16"
+        ],
+        "window_games": 230,
+        "window_gap_days": 1,
+        "record": "126-46-8",
+        "record_label": "lookback evidence",
+        "record_over_window": {
+          "wins": 126,
+          "losses": 46,
+          "pushes": 8,
+          "decided": 172,
+          "n_selected": 180,
+          "wl": 80,
+          "n_conditions": 6
         },
-        "summary_line": "Chosen overnight from 4,024 candidate strategies; 319 cleared the evidence floors on the holdout slice, and the best 31 were seated to vote on today's games.",
-        "selected_reason": "Before the slate, DiamondEdge scores thousands of ways of using the four analysts \u2014 following them, fading them, reading the exact room shape against the ballpark and the number, weighting each analyst by recent form, and stacking several of those angles together \u2014 on games that were already final. The candidates are fitted on the older part of the window and scored only on a held-back recent slice, so a rule cannot win by explaining the games it was built on. The best few then vote as a committee instead of one rule carrying the day.",
-        "grading_policy": "A game becomes an official DiamondEdge Pick only when the committee's vote clears the price gate; leans and passes stay out of the record.",
-        "not_claimed": "a process positive across the tournament replay, NOT a demonstrated edge (meta-record 90% CI contains zero); the live shadow ledger is the evidence that matters. SELECTOR_OPTIMIZATION.md knob 2 measured that WIDENING the pool with these fancy families HURT a nightly picker's walk-forward ROI (+12.9% -> +1.2%); the fancy_winner flag is how that is watched here",
-        "why_this_selector": "the signed mode file makes the engine's locked strategy the day's strategy from 2026-08-09",
-        "selector_evidence": {
+        "evidence_label": "lookback evidence",
+        "strictly_prior": {
           "date": "2026-08-17",
-          "engine_selects": true,
-          "why": "the signed mode file makes the engine's locked strategy the day's strategy from 2026-08-09",
-          "mode": "live",
-          "mode_live_from": "2026-08-09"
+          "window_first": "2026-07-31",
+          "window_last": "2026-08-16",
+          "n_nights": 17,
+          "strictly_prior": true,
+          "window_gap_days": 1,
+          "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+          "train_rows": 230,
+          "train_rows_max_date": "2026-08-16",
+          "window_last_night_games": 15
         },
-        "committee": {
-          "n_seats": 31,
-          "family_mix": {
-            "abstention": 5,
-            "blend": 3,
-            "combo": 4,
-            "conditional": 9,
-            "rule_stack": 1,
-            "threshold": 5,
-            "vote": 4
-          },
-          "seat_ids": [
-            "S4_ALLT3_own_0.01",
-            "S2_prism_mkt_0.03|MIRROR",
-            "S4_T24_mkt_0.03|MIRROR",
-            "S3_T1_mkt_unanimous",
-            "S3_T1_mkt_k_of_n4",
-            "S3_DESK4_mkt_unanimous",
-            "S3_DESK4_mkt_k_of_n4",
-            "S2_prism_mkt_0.02|MIRROR",
-            "S6_deskmaj_highline",
-            "X5_stack3_F1+M1+R3_a2",
-            "S2_atlas-at-T-3h_mkt_0.05|MIRROR",
-            "S4_T24_mkt_0.02|MIRROR",
-            "M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-            "M3_cond_M2_and_S6_deskblend_agree__S4_T1_own_0.0_midline|MIRROR",
-            "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_midline|MIRROR",
-            "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_deep|MIRROR",
-            "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_agree|MIRROR",
-            "M3_topk_M2_and_S6_deskblend_agree__S6_deskblend_midline_4|MIRROR",
-            "M3_topk_M2_and_S6_deskblend_agree__S6_deskblend_midline_6|MIRROR",
-            "M3_cond_M2_and_S6_deskblend_midline__S4_T1_own_0.0_agree|MIRROR",
-            "M3_and_M2_cond_S4_T1_own_0.0_agree__M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-            "M3_and_M2_and_S6_deskblend_agree__S4_T1_own_0.0__M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-            "S2_nova-at-T-3h_own_0.03",
-            "S2d_nova-at-T-3h_0.35",
-            "M3_topk_M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_2|MIRROR",
-            "M3_cond_M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_moved|MIRROR",
-            "M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0|MIRROR",
-            "M4_cond_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_deep|MIRROR",
-            "M4_cond_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_moved|MIRROR",
-            "M4_topk_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_4|MIRROR",
-            "M4_topk_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_6|MIRROR"
+        "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+        "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+        "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+        "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
+        "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
+        "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+        "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+        "voice": {
+          "status": "ACTIVE",
+          "generator": "rule_voice_v2",
+          "name": "The Ballpark and the Carrying Air",
+          "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+          "paragraphs": [
+            "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+            "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+            "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
           ],
-          "top_seat": "S4_ALLT3_own_0.01",
-          "fancy_winner": false,
-          "n_fancy_in_committee": 5
+          "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+          "themes": [
+            "park",
+            "weather",
+            "market",
+            "room"
+          ],
+          "sources": [
+            {
+              "feature": "rule.n_conditions",
+              "raw": "6",
+              "rendered": "6"
+            },
+            {
+              "feature": "rule.n_selected",
+              "raw": "180",
+              "rendered": "180"
+            },
+            {
+              "feature": "rule.window_games",
+              "raw": "230",
+              "rendered": "230"
+            },
+            {
+              "feature": "rule.record",
+              "raw": "126-46-8",
+              "rendered": "126-46-8"
+            },
+            {
+              "feature": "rule.window_start",
+              "raw": "Jul 31",
+              "rendered": "Jul 31"
+            },
+            {
+              "feature": "rule.window_end",
+              "raw": "Aug 16",
+              "rendered": "Aug 16"
+            },
+            {
+              "feature": "rule.window_nights",
+              "raw": "17",
+              "rendered": "17"
+            }
+          ]
         },
+        "rule_name": "The Ballpark and the Carrying Air",
+        "lock_status": "LOCKED_STRATEGY",
+        "selector_channel": "strategy_forge:nightly",
+        "engine": "strategy_forge",
+        "selected_at_utc": "2026-08-17T10:10:07Z",
+        "why_this_selector": "this date's rule was frozen by the nightly search before the day started, and every pick on this board was decided against it",
+        "board_is_mixed_note": "This rule chose every game on this board whose inputs had landed. A game still waiting on its inputs gets no call from this rule yet, and is checked again on every build. Each pick carries the source that chose it.",
         "full_block_at": "adaptive_strategy_by_date.2026-08-17"
       }
     },
@@ -14159,119 +14166,126 @@
       "full_block_at": "adaptive_strategy_by_date.2026-08-15"
     },
     "2026-08-17": {
+      "source": "strategy_forge",
+      "version": "forge_selector_v1",
+      "selector": "strategy_forge",
       "date": "2026-08-17",
-      "version": "nightly_engine_v3",
-      "selector": "nightly_engine",
-      "engine": "nightly_engine",
+      "channel": "forge_selector_board",
       "status": "ACTIVE",
-      "lock_status": "LOCKED_STRATEGY",
-      "rule_key": "nightly_engine_v3:committee_top31",
-      "label": "The Full Committee \u2014 31 strategies vote",
-      "mode": "vote",
-      "plain_english_rule": "the 31 strategies that held up best over the last 17 nights each vote on every game; the side with the majority becomes the pick, and a tie passes",
-      "rule_family": "engine_committee",
-      "window_days": 17,
-      "top_k": 31,
-      "n_strategies_voting": 31,
-      "n_candidates_eligible": 319,
-      "committee_family_mix": {
-        "abstention": 5,
-        "blend": 3,
-        "combo": 4,
-        "conditional": 9,
-        "rule_stack": 1,
-        "threshold": 5,
-        "vote": 4
-      },
-      "ensemble_rule": "the top 31 strategies VOTE per game; majority side plays; a tie abstains",
-      "criterion": "mean profit per decided pick at flat -110 \u2014 WIN/LOSS ONLY, no baseline-relative term anywhere in selection; recency-weighted over the holdout when a half-life is in force; eligibility floors on RAW counts",
-      "recency": {
-        "enabled": true,
-        "half_life_nights": 14.0,
-        "note": "\u00a72(c): holdout nights weigh 0.5**(age/half_life) in the SCORE; the decided-picks floor and the both-halves stability check stay on RAW counts so a short hot streak cannot win"
-      },
-      "holdout": {
-        "window_start": "2026-07-31",
-        "n_window_nights": 17,
-        "fit_nights": 12,
-        "holdout_start": "2026-08-12",
-        "holdout_nights": 5,
-        "min_decided_holdout": 8
-      },
-      "advanced_only": true,
-      "excluded_families": [
-        "room_plain"
-      ],
+      "mode": "rule",
+      "rule_key": "forge:w17:4fdde70156",
+      "rule_id": "forge:w17:4fdde70156",
+      "rule_family": "strategy_forge",
+      "label": "The rule that won the search",
+      "provenance": "SHORTLISTED",
+      "objective": "W - L (wins minus losses over the window)",
+      "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
+      "is_day_strategy": true,
+      "day_selector": "strategy_forge",
+      "is_owner_directed": false,
+      "authorized_by": null,
       "locked": true,
-      "locked_at_utc": "2026-08-17T09:00:14Z",
-      "selected_at_utc": "2026-08-17T09:00:03Z",
-      "read_basis": {
-        "seam_start": "2026-07-01",
-        "fingerprint": "0b326374d110",
-        "n_nights_available": 43,
-        "n_nights_used": 43,
-        "note": "window restarts at any trained_through fingerprint change \u2014 one read basis, never averaged across a model swap"
+      "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+      "window_days": 17,
+      "window": [
+        "2026-07-31",
+        "2026-08-16"
+      ],
+      "window_games": 230,
+      "window_gap_days": 1,
+      "record": "126-46-8",
+      "record_label": "lookback evidence",
+      "record_over_window": {
+        "wins": 126,
+        "losses": 46,
+        "pushes": 8,
+        "decided": 172,
+        "n_selected": 180,
+        "wl": 80,
+        "n_conditions": 6
       },
-      "summary_line": "Chosen overnight from 4,024 candidate strategies; 319 cleared the evidence floors on the holdout slice, and the best 31 were seated to vote on today's games.",
-      "selected_reason": "Before the slate, DiamondEdge scores thousands of ways of using the four analysts \u2014 following them, fading them, reading the exact room shape against the ballpark and the number, weighting each analyst by recent form, and stacking several of those angles together \u2014 on games that were already final. The candidates are fitted on the older part of the window and scored only on a held-back recent slice, so a rule cannot win by explaining the games it was built on. The best few then vote as a committee instead of one rule carrying the day.",
-      "grading_policy": "A game becomes an official DiamondEdge Pick only when the committee's vote clears the price gate; leans and passes stay out of the record.",
-      "not_claimed": "a process positive across the tournament replay, NOT a demonstrated edge (meta-record 90% CI contains zero); the live shadow ledger is the evidence that matters. SELECTOR_OPTIMIZATION.md knob 2 measured that WIDENING the pool with these fancy families HURT a nightly picker's walk-forward ROI (+12.9% -> +1.2%); the fancy_winner flag is how that is watched here",
-      "why_this_selector": "the signed mode file makes the engine's locked strategy the day's strategy from 2026-08-09",
-      "selector_evidence": {
+      "evidence_label": "lookback evidence",
+      "strictly_prior": {
         "date": "2026-08-17",
-        "engine_selects": true,
-        "why": "the signed mode file makes the engine's locked strategy the day's strategy from 2026-08-09",
-        "mode": "live",
-        "mode_live_from": "2026-08-09"
+        "window_first": "2026-07-31",
+        "window_last": "2026-08-16",
+        "n_nights": 17,
+        "strictly_prior": true,
+        "window_gap_days": 1,
+        "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+        "train_rows": 230,
+        "train_rows_max_date": "2026-08-16",
+        "window_last_night_games": 15
       },
-      "committee": {
-        "n_seats": 31,
-        "family_mix": {
-          "abstention": 5,
-          "blend": 3,
-          "combo": 4,
-          "conditional": 9,
-          "rule_stack": 1,
-          "threshold": 5,
-          "vote": 4
-        },
-        "seat_ids": [
-          "S4_ALLT3_own_0.01",
-          "S2_prism_mkt_0.03|MIRROR",
-          "S4_T24_mkt_0.03|MIRROR",
-          "S3_T1_mkt_unanimous",
-          "S3_T1_mkt_k_of_n4",
-          "S3_DESK4_mkt_unanimous",
-          "S3_DESK4_mkt_k_of_n4",
-          "S2_prism_mkt_0.02|MIRROR",
-          "S6_deskmaj_highline",
-          "X5_stack3_F1+M1+R3_a2",
-          "S2_atlas-at-T-3h_mkt_0.05|MIRROR",
-          "S4_T24_mkt_0.02|MIRROR",
-          "M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-          "M3_cond_M2_and_S6_deskblend_agree__S4_T1_own_0.0_midline|MIRROR",
-          "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_midline|MIRROR",
-          "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_deep|MIRROR",
-          "M3_cond_M2_and_S6_deskblend_agree__S6_deskblend_midline_agree|MIRROR",
-          "M3_topk_M2_and_S6_deskblend_agree__S6_deskblend_midline_4|MIRROR",
-          "M3_topk_M2_and_S6_deskblend_agree__S6_deskblend_midline_6|MIRROR",
-          "M3_cond_M2_and_S6_deskblend_midline__S4_T1_own_0.0_agree|MIRROR",
-          "M3_and_M2_cond_S4_T1_own_0.0_agree__M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-          "M3_and_M2_and_S6_deskblend_agree__S4_T1_own_0.0__M2_and_S6_deskblend_agree__S6_deskblend_midline|MIRROR",
-          "S2_nova-at-T-3h_own_0.03",
-          "S2d_nova-at-T-3h_0.35",
-          "M3_topk_M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_2|MIRROR",
-          "M3_cond_M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_moved|MIRROR",
-          "M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0|MIRROR",
-          "M4_cond_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_deep|MIRROR",
-          "M4_cond_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_moved|MIRROR",
-          "M4_topk_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_4|MIRROR",
-          "M4_topk_M3_and_M2_cond_S3_PRICE_own_minority_moved__M2_and_S3_PRICE_own_minority__S4_T1_own_0.0_6|MIRROR"
+      "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+      "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+      "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
+      "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
+      "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
+      "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+      "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+      "voice": {
+        "status": "ACTIVE",
+        "generator": "rule_voice_v2",
+        "name": "The Ballpark and the Carrying Air",
+        "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+        "paragraphs": [
+          "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+          "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+          "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
         ],
-        "top_seat": "S4_ALLT3_own_0.01",
-        "fancy_winner": false,
-        "n_fancy_in_committee": 5
+        "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+        "themes": [
+          "park",
+          "weather",
+          "market",
+          "room"
+        ],
+        "sources": [
+          {
+            "feature": "rule.n_conditions",
+            "raw": "6",
+            "rendered": "6"
+          },
+          {
+            "feature": "rule.n_selected",
+            "raw": "180",
+            "rendered": "180"
+          },
+          {
+            "feature": "rule.window_games",
+            "raw": "230",
+            "rendered": "230"
+          },
+          {
+            "feature": "rule.record",
+            "raw": "126-46-8",
+            "rendered": "126-46-8"
+          },
+          {
+            "feature": "rule.window_start",
+            "raw": "Jul 31",
+            "rendered": "Jul 31"
+          },
+          {
+            "feature": "rule.window_end",
+            "raw": "Aug 16",
+            "rendered": "Aug 16"
+          },
+          {
+            "feature": "rule.window_nights",
+            "raw": "17",
+            "rendered": "17"
+          }
+        ]
       },
+      "rule_name": "The Ballpark and the Carrying Air",
+      "lock_status": "LOCKED_STRATEGY",
+      "selector_channel": "strategy_forge:nightly",
+      "engine": "strategy_forge",
+      "selected_at_utc": "2026-08-17T10:10:07Z",
+      "why_this_selector": "this date's rule was frozen by the nightly search before the day started, and every pick on this board was decided against it",
+      "board_is_mixed_note": "This rule chose every game on this board whose inputs had landed. A game still waiting on its inputs gets no call from this rule yet, and is checked again on every build. Each pick carries the source that chose it.",
       "full_block_at": "adaptive_strategy_by_date.2026-08-17"
     }
   },
@@ -14495,18 +14509,19 @@
   },
   "featured": {
     "2026-08-17": {
-      "featured_game_id": "2026-08-17-Detroit Tigers-Pittsburgh Pirates-823343",
-      "game_pk": 823343,
-      "matchup": "Detroit Tigers @ Pittsburgh Pirates",
-      "source": "nightly_engine",
-      "stars": 2,
-      "score": 2.25,
-      "side": "over",
+      "featured_game_id": "2026-08-17-Baltimore Orioles-Tampa Bay Rays-822939",
+      "game_pk": 822939,
+      "matchup": "Baltimore Orioles @ Tampa Bay Rays",
+      "source": "strategy_forge",
+      "stars": 1,
+      "score": 1.0,
+      "side": null,
       "line": 8.0,
-      "all_pass": false
+      "all_pass": true,
+      "note": "nothing playable today \u2014 featured is the highest-score PASS lean, shown for interest; it is NOT a bet"
     }
   },
-  "featured_game_id": "2026-08-17-Detroit Tigers-Pittsburgh Pirates-823343",
+  "featured_game_id": "2026-08-17-Baltimore Orioles-Tampa Bay Rays-822939",
   "games": [
     {
       "game_id": "824514",
@@ -14519,7 +14534,7 @@
       "status": "upcoming",
       "is_upcoming": true,
       "picks_eta": {
-        "line": "Pick posts ~3:10 AM PT",
+        "line": "Picks are being priced now",
         "expected_utc": "2026-08-17T10:10:00Z",
         "expected_local_pt": "2026-08-17T03:10:00-0700",
         "is_per_game": true,
@@ -14530,7 +14545,7 @@
         "is_upcoming": true,
         "premium": false,
         "picks_eta": {
-          "line": "Pick posts ~3:10 AM PT",
+          "line": "Picks are being priced now",
           "expected_utc": "2026-08-17T10:10:00Z",
           "expected_local_pt": "2026-08-17T03:10:00-0700",
           "is_per_game": true,
@@ -14559,51 +14574,145 @@
       "first_pitch_utc": "2026-08-17T22:05:00+00:00",
       "pick": {
         "status": "PASS",
-        "side": "over",
+        "side": null,
         "line": 8.0,
         "vegas_line": 8.0,
         "stars": 1,
         "score": 1.0,
-        "star_tier": "Committee pass",
+        "star_tier": "Rule pass",
         "price": null,
         "suggested_units": null,
         "result": null,
         "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
-        "our_prob": 0.4947,
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
+        "our_prob": 0.4957,
         "our_prob_basis": "reference_side",
-        "p_over": 0.4947,
+        "p_over": 0.4957,
         "ev": null,
         "expanded_band": false,
         "certified": false,
         "premium": false,
-        "pass_reason": "The committee did not put a bet on this game.",
-        "pass_why": "engine_no_bet",
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "pass_why": "engine_no_bet"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
+              }
+            ]
+          },
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
         "is_bet": false,
         "game_case": {
@@ -14617,8 +14726,8 @@
           "text": "The Orioles have won 3 in a row and meet the Rays at Tropicana Field on Monday, with a sweep on the line for the visitors.\n\nThe Rays are 74-49 and have lost 3 in a row; the Orioles are 61-63 and have won 3 in a row. The Orioles have won 6 of the 9 meetings between them this season.",
           "blurb": {
             "text": "The Orioles have won 3 in a row and meet the Rays at Tropicana Field on Monday, with a sweep on the line for the visitors. The Orioles have won 6 of the 9 meetings between them this season.",
-            "record_line": null,
-            "record_stated": false,
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
             "n_words": 39
           },
           "side": null,
@@ -14630,21 +14739,21 @@
       },
       "spread": {
         "status": "LEAN",
-        "side": "away",
-        "side_team": "Baltimore Orioles",
-        "line": 1.5,
+        "side": "home",
+        "side_team": "Tampa Bay Rays",
+        "line": -1.5,
         "home_line": -1.5,
         "vegas_line": -1.5,
-        "price": -150,
+        "price": 146,
         "best_book": null,
         "stars": 1,
-        "score": 1.08,
-        "our_prob": 0.4003,
-        "ev": -0.0005,
+        "score": 0.79,
+        "our_prob": 0.4086,
+        "ev": 0.0052,
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -14660,22 +14769,22 @@
         "side": "over",
         "line": 8.0,
         "vegas_line": 8.0,
-        "p_over": 0.5198,
-        "p_over_market": 0.4866,
-        "sim_edge": 0.0332,
+        "p_over": 0.5215,
+        "p_over_market": 0.4881,
+        "sim_edge": 0.0334,
         "price": 103.0,
         "best_book": "lowvig",
         "stars": 1,
         "score": null,
-        "sim_mu": 8.744,
+        "sim_mu": 8.761,
         "sim_median": 8,
-        "sim_sd": 4.343,
+        "sim_sd": 4.325,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
         "locked": false,
         "locked_at_utc": null,
-        "lead_time": "T-24h",
+        "lead_time": "T-12h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -14686,7 +14795,8 @@
         "date": "2026-08-17",
         "game_id": "2026-08-17-Baltimore Orioles-Tampa Bay Rays-822939",
         "walls_priced": [
-          "T-24h"
+          "T-24h",
+          "T-12h"
         ]
       },
       "strategies": [
@@ -14696,18 +14806,18 @@
           "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "over",
+          "side": null,
           "line": 8.0,
           "vegas_line": 8.0,
           "price": null,
           "stars": 1,
           "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
+          "lead_time": "readiness",
           "locked": false,
           "expanded_band": false,
-          "pass_why": "engine_no_bet",
-          "reason": "The committee did not put a bet on this game."
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -14772,20 +14882,20 @@
           "status": "PASS",
           "is_headline": false,
           "is_served_source": false,
-          "side": "away",
-          "line": 1.5,
+          "side": "home",
+          "line": -1.5,
           "vegas_line": -1.5,
-          "price": -150,
+          "price": 146,
           "stars": 1,
-          "score": 1.08,
+          "score": 0.79,
           "result": null,
-          "lead_time": "T-24h",
+          "lead_time": "T-12h",
           "locked": false,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Lean \u2014 the new run-line stream, graded in public from day one. A lean, never a bet.",
           "market": "spread",
-          "side_team": "Baltimore Orioles"
+          "side_team": "Tampa Bay Rays"
         },
         {
           "key": "simulator",
@@ -14800,15 +14910,15 @@
           "stars": 1,
           "score": null,
           "result": null,
-          "lead_time": "T-24h",
+          "lead_time": "T-12h",
           "locked": false,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 an independent 20,000-run read that prices games within a whisker of the market. A lean, never a bet.",
           "market": "total",
-          "sim_p_over": 0.5198,
-          "sim_p_over_market": 0.4866,
-          "sim_mu": 8.744,
+          "sim_p_over": 0.5215,
+          "sim_p_over_market": 0.4881,
+          "sim_mu": 8.761,
           "sim_median": 8,
           "sim_n_sims": 20000
         }
@@ -14816,13 +14926,13 @@
       "pregame_line": {
         "total": 8.0,
         "total_price_over": 103.0,
-        "total_price_under": -116.0,
+        "total_price_under": -114.0,
         "run_line": -1.5,
-        "run_line_price_home": 140.0,
-        "run_line_price_away": -150.0,
+        "run_line_price_home": 146.0,
+        "run_line_price_away": -149.0,
         "book": "lowvig",
-        "captured_at": "2026-08-17T09:35:07Z",
-        "wall": "T-24h",
+        "captured_at": "2026-08-17T10:13:58Z",
+        "wall": "T-12h",
         "locked_at": null,
         "game_pk": 822939,
         "date": "2026-08-17",
@@ -14831,8 +14941,8 @@
         "is_locked": false,
         "total_open": 8.0,
         "total_move": 0.0,
-        "p_over_devig": 0.4865505619187434,
-        "n_books": 12.0,
+        "p_over_devig": 0.4881323748813237,
+        "n_books": 23.0,
         "first_captured_at": "2026-08-17T09:08:44Z",
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: The market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'the conditions analyst: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
@@ -14854,7 +14964,7 @@
           "total_price_under": -118.0
         },
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -14872,10 +14982,10 @@
           "channel": "market structure",
           "source": "analyst_v2_stream",
           "side": "over",
-          "p_over": 0.5477,
-          "conviction": 0.5477,
+          "p_over": 0.5536,
+          "conviction": 0.5536,
           "locked": true,
-          "wall": "T-24h",
+          "wall": "T-12h",
           "vs_line": 8.0,
           "vs_line_is_pregame_line": true,
           "has_row": true,
@@ -14884,10 +14994,10 @@
           "coverage_activation": null,
           "low_conviction": false,
           "conviction_calibrated": false,
-          "read_wall": "T-24h",
+          "read_wall": "T-12h",
           "is_final_wall": false,
           "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 1,
+          "n_walls_read": 2,
           "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
@@ -14898,12 +15008,12 @@
           "information_missing": [],
           "information_completeness": 1.0,
           "completeness_tier": "full",
-          "completeness_note": "The price analyst read its whole slice on this game at T-24h: 8 of 8 levers populated, 100% of its model's weight.",
+          "completeness_note": "The price analyst read its whole slice on this game at T-12h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "no_read_reason": null,
           "no_read_reason_code": null,
-          "wall_note": "Read at T-24h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-24h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
-          "take": "My number sits 6.1% off the market's on 8. That gap is the whole position \u2014 over.",
+          "wall_note": "Read at T-12h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-12h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
+          "take": "My number sits 6.6% off the market's on 8. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
         {
@@ -14914,10 +15024,10 @@
           "channel": "environment",
           "source": "analyst_v2_stream",
           "side": "under",
-          "p_over": 0.4433,
-          "conviction": 0.5567,
+          "p_over": 0.4453,
+          "conviction": 0.5547,
           "locked": true,
-          "wall": "T-24h",
+          "wall": "T-12h",
           "vs_line": 8.0,
           "vs_line_is_pregame_line": true,
           "has_row": true,
@@ -14926,10 +15036,10 @@
           "coverage_activation": null,
           "low_conviction": false,
           "conviction_calibrated": false,
-          "read_wall": "T-24h",
+          "read_wall": "T-12h",
           "is_final_wall": false,
           "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 1,
+          "n_walls_read": 2,
           "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
@@ -14940,9 +15050,9 @@
           "information_missing": [
             "umpire"
           ],
-          "information_completeness": 0.7526,
+          "information_completeness": 0.8258,
           "completeness_tier": "partial",
-          "completeness_note": "The conditions analyst filed this read at T-24h without the plate umpire \u2014 those levers took their neutral value and contributed nothing to the call. 4 of 7 levers populated, carrying 75% of the model's weight, so the read stands on what it genuinely knows and its conviction is reduced to match.",
+          "completeness_note": "The conditions analyst filed this read at T-12h without the plate umpire \u2014 those levers took their neutral value and contributed nothing to the call. 4 of 7 levers populated, carrying 83% of the model's weight, so the read stands on what it genuinely knows and its conviction is reduced to match.",
           "levers_neutral_filled": [
             "ump_runs",
             "ump_strikeouts",
@@ -14950,8 +15060,8 @@
           ],
           "no_read_reason": null,
           "no_read_reason_code": null,
-          "wall_note": "Read at T-24h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-24h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
-          "take": "The ballpark is doing the work in this one: 0.75 runs below a neutral night, 7.2 against 8.",
+          "wall_note": "Read at T-12h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-12h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
+          "take": "The ballpark is doing the work in this one: 0.69 runs below a neutral night, 7.3 against 8.",
           "take_kind": "standard"
         },
         {
@@ -14962,10 +15072,10 @@
           "channel": "run production",
           "source": "analyst_v2_stream",
           "side": "under",
-          "p_over": 0.4799,
-          "conviction": 0.5201,
+          "p_over": 0.4811,
+          "conviction": 0.5189,
           "locked": true,
-          "wall": "T-24h",
+          "wall": "T-12h",
           "vs_line": 8.0,
           "vs_line_is_pregame_line": true,
           "has_row": true,
@@ -14974,10 +15084,10 @@
           "coverage_activation": null,
           "low_conviction": false,
           "conviction_calibrated": false,
-          "read_wall": "T-24h",
+          "read_wall": "T-12h",
           "is_final_wall": false,
           "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 1,
+          "n_walls_read": 2,
           "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
@@ -14989,11 +15099,11 @@
           "information_missing": [],
           "information_completeness": 1.0,
           "completeness_tier": "full",
-          "completeness_note": "The hitting analyst read its whole slice on this game at T-24h: 6 of 6 levers populated, 100% of its model's weight.",
+          "completeness_note": "The hitting analyst read its whole slice on this game at T-12h: 6 of 6 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "no_read_reason": null,
           "no_read_reason_code": null,
-          "wall_note": "Read at T-24h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-24h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
+          "wall_note": "Read at T-12h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-12h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
           "take": "This is the offences themselves and nothing more. On what these bats have been doing: under 8 at 52%.",
           "take_kind": "standard"
         },
@@ -15005,10 +15115,10 @@
           "channel": "run prevention",
           "source": "analyst_v2_stream",
           "side": "over",
-          "p_over": 0.5077,
-          "conviction": 0.5077,
+          "p_over": 0.5026,
+          "conviction": 0.5026,
           "locked": true,
-          "wall": "T-24h",
+          "wall": "T-12h",
           "vs_line": 8.0,
           "vs_line_is_pregame_line": true,
           "has_row": true,
@@ -15017,10 +15127,10 @@
           "coverage_activation": null,
           "low_conviction": false,
           "conviction_calibrated": false,
-          "read_wall": "T-24h",
+          "read_wall": "T-12h",
           "is_final_wall": false,
           "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 1,
+          "n_walls_read": 2,
           "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
@@ -15032,12 +15142,12 @@
           "information_missing": [],
           "information_completeness": 1.0,
           "completeness_tier": "full",
-          "completeness_note": "The pitching analyst read its whole slice on this game at T-24h: 14 of 14 levers populated, 100% of its model's weight.",
+          "completeness_note": "The pitching analyst read its whole slice on this game at T-12h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
           "no_read_reason": null,
           "no_read_reason_code": null,
-          "wall_note": "Read at T-24h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-24h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
-          "take": "Two starters and the two bullpens behind them, and nothing else: 0.09 runs above an average staff \u2014 8.1 against 8.",
+          "wall_note": "Read at T-12h. This is a genuinely LESS INFORMED call than the one this analyst will make closer to first pitch \u2014 it was priced by a model fitted at T-12h on the information that exists there, and it is stamped rather than dressed up as a final read. It will be superseded, not corrected, when the next wall lands.",
+          "take": "Two starters and the two bullpens behind them, and nothing else: 0.03 runs above an average staff \u2014 8.0 against 8.",
           "take_kind": "standard"
         }
       ],
@@ -15064,14 +15174,14 @@
         },
         "source": "analyst_v2_stream",
         "walls": {
-          "vega": "T-24h",
-          "atlas": "T-24h",
-          "nova": "T-24h",
-          "scout": "T-24h"
+          "vega": "T-12h",
+          "atlas": "T-12h",
+          "nova": "T-12h",
+          "scout": "T-12h"
         },
         "all_at_final_wall": false,
         "n_at_final_wall": 0,
-        "earliest_wall_in_use": "T-24h",
+        "earliest_wall_in_use": "T-12h",
         "provisional": true,
         "wall_note": "PROVISIONAL \u2014 at least one voice is still at an earlier wall and will be superseded (not corrected) when its next wall lands. The desk fills in through the day; a seat that is empty or early is a statement about the feed, never about the game."
       },
@@ -15100,20 +15210,20 @@
             "desk_majority_side": null,
             "desk_agreement": "NO_BET",
             "engine_pick_status": "PASS",
-            "engine_pick_side": "over",
+            "engine_pick_side": null,
             "stars": 1,
             "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
           },
           "spread_call": {
-            "side": "away",
-            "side_team": "Baltimore Orioles",
-            "line": 1.5,
+            "side": null,
+            "side_team": null,
+            "line": null,
             "home_line": -1.5,
-            "rationale_line": "Both margin producers like the away side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
+            "rationale_line": "The margin producers disagree \u2014 the run-line stream and the simulated margin land on opposite sides of the run line. No call.",
             "voices": {
               "run_line_stream": {
-                "side": "away",
+                "side": "home",
                 "basis": "run-line lean stream (residual engine direction)"
               },
               "margin_simulator": {
@@ -15297,10 +15407,10 @@
             "presentation_only": true
           },
           "desk_combined": {
-            "p_over": 0.4946,
+            "p_over": 0.4956,
             "side": "over",
-            "p_market": 0.4866,
-            "divergence_logodds": 0.0323,
+            "p_market": 0.4881,
+            "divergence_logodds": 0.03006,
             "weights_basis": "equal_weight",
             "weights": {
               "vega": 1.0,
@@ -15311,22 +15421,22 @@
             "voices_used": [
               {
                 "key": "vega",
-                "divergence_logodds": 0.24519,
+                "divergence_logodds": 0.26271,
                 "weight": 1.0
               },
               {
                 "key": "atlas",
-                "divergence_logodds": -0.17397,
+                "divergence_logodds": -0.1722,
                 "weight": 1.0
               },
               {
                 "key": "nova",
-                "divergence_logodds": -0.02663,
+                "divergence_logodds": -0.02816,
                 "weight": 1.0
               },
               {
                 "key": "scout",
-                "divergence_logodds": 0.08461,
+                "divergence_logodds": 0.05788,
                 "weight": 1.0
               }
             ],
@@ -15348,7 +15458,7 @@
               },
               "desk_combined": {
                 "side": "over",
-                "p_over": 0.4946,
+                "p_over": 0.4956,
                 "vs_bet": null
               },
               "atlas_predicted_score": {
@@ -15388,20 +15498,20 @@
       "first_pitch_utc": "2026-08-17T22:40:00+00:00",
       "pick": {
         "status": "PASS",
-        "side": "over",
+        "side": null,
         "line": 8.0,
         "vegas_line": 8.0,
         "stars": 1,
         "score": 1.0,
-        "star_tier": "Committee pass",
+        "star_tier": "Rule pass",
         "price": null,
         "suggested_units": null,
         "result": null,
         "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.5178,
         "our_prob_basis": "reference_side",
         "p_over": 0.5178,
@@ -15409,30 +15519,124 @@
         "expanded_band": false,
         "certified": false,
         "premium": false,
-        "pass_reason": "The committee did not put a bet on this game.",
-        "pass_why": "engine_no_bet",
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "pass_why": "engine_no_bet"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
+              }
+            ]
+          },
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
         "is_bet": false,
         "game_case": {
@@ -15446,8 +15650,8 @@
           "text": "The Marlins and the Phillies meet at Citizens Bank Park on Monday.\n\nThe Phillies are 67-58 and have won 3 in a row; the Marlins are 64-61 and have won 2 in a row. Each of them has taken 5 of the 10 they have played this season.",
           "blurb": {
             "text": "The Marlins and the Phillies meet at Citizens Bank Park on Monday. Each of them has taken 5 of the 10 they have played this season.",
-            "record_line": null,
-            "record_stated": false,
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
             "n_words": 26
           },
           "side": null,
@@ -15525,18 +15729,18 @@
           "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "over",
+          "side": null,
           "line": 8.0,
           "vegas_line": 8.0,
           "price": null,
           "stars": 1,
           "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
+          "lead_time": "readiness",
           "locked": false,
           "expanded_band": false,
-          "pass_why": "engine_no_bet",
-          "reason": "The committee did not put a bet on this game."
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -15650,7 +15854,7 @@
         "run_line_price_home": 115.0,
         "run_line_price_away": -110.0,
         "book": "coolbet",
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823427,
@@ -15669,21 +15873,21 @@
       "line_now": {
         "total": 8.0,
         "pregame_total_compared": 8.0,
-        "total_price_over": -104.0,
-        "total_price_under": -118.0,
+        "total_price_over": -115.0,
+        "total_price_under": -105.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
         "same_book_check": {
           "book": "coolbet",
           "pregame_total": 8.0,
-          "total": 8.5,
-          "move": 0.5,
-          "total_price_over": -104.0,
-          "total_price_under": -118.0
+          "total": 8.0,
+          "move": 0.0,
+          "total_price_over": -115.0,
+          "total_price_under": -105.0
         },
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -15929,7 +16133,7 @@
             "desk_majority_side": "over",
             "desk_agreement": "NO_BET",
             "engine_pick_status": "PASS",
-            "engine_pick_side": "over",
+            "engine_pick_side": null,
             "stars": 1,
             "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
@@ -16218,7 +16422,7 @@
       "status": "upcoming",
       "is_upcoming": true,
       "picks_eta": {
-        "line": "Pick posts ~3:10 AM PT",
+        "line": "Picks are being priced now",
         "expected_utc": "2026-08-17T10:10:00Z",
         "expected_local_pt": "2026-08-17T03:10:00-0700",
         "is_per_game": true,
@@ -16229,7 +16433,7 @@
         "is_upcoming": true,
         "premium": false,
         "picks_eta": {
-          "line": "Pick posts ~3:10 AM PT",
+          "line": "Picks are being priced now",
           "expected_utc": "2026-08-17T10:10:00Z",
           "expected_local_pt": "2026-08-17T03:10:00-0700",
           "is_per_game": true,
@@ -16257,205 +16461,169 @@
       "matchup": "Detroit Tigers @ Pittsburgh Pirates",
       "first_pitch_utc": "2026-08-17T23:05:00+00:00",
       "pick": {
-        "status": "PICK",
-        "side": "over",
+        "status": "PASS",
+        "side": null,
         "line": 8.0,
         "vegas_line": 8.0,
-        "stars": 2,
-        "score": 2.25,
-        "star_tier": "Committee pick \u2014 the side won a mostly-quiet room",
-        "price": -105.0,
-        "suggested_units": 0.5,
+        "stars": 1,
+        "score": 1.0,
+        "star_tier": "Rule pass",
+        "price": null,
+        "suggested_units": null,
         "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-17T09:03:48Z",
-        "timestamp": "2026-08-17T09:03:48Z",
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked": false,
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.5299,
         "our_prob_basis": "reference_side",
         "p_over": 0.5299,
         "ev": null,
         "expanded_band": false,
         "certified": false,
-        "premium": true,
-        "confidence": {
-          "score": 50,
-          "of": 100,
-          "basis": "committee_vote",
-          "basis_label": "Committee vote",
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "measure": "smoothed_backing_margin",
-          "version": "pick_confidence_v1",
-          "backing_for": 5,
-          "backing_against": 1,
-          "high_band": false,
-          "high_band_min": 90,
-          "is_a_probability": false,
-          "comparable_across_bases": false,
-          "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-          "definition": {
-            "measure": "smoothed_backing_margin",
-            "version": "pick_confidence_v1",
-            "scale": [
-              0,
-              100
-            ],
-            "max_score": 99,
-            "max_score_why": "the measure is strictly below 1 at any finite amount of evidence, so no pick is ever shown as 100",
-            "formula": "p = (for + 1) / (for + against + 2); confidence = min(99, round(100 * max(0, 2p - 1)))",
-            "prior": "uniform (Beta(1,1)) \u2014 the standard uninformative choice, pre-specified, not fitted to any board",
-            "abstentions_in_denominator": false,
-            "why_not": "pick_strength divides by every seated strategy, abstentions included. On a 31-seat committee where the top pick draws about 4 seats that puts every pick under the 0.25 cut, so every pick reads 'lean' and the measure separates nothing. This measure divides by the seats that actually voted and uses the +1/+2 smoothing to keep a thin unanimous room below a deep one \u2014 which is the objection pick_strength raises against dividing by votes cast.",
-            "high_band_min": 90,
-            "is_a_probability": false,
-            "comparable_across_bases": false,
-            "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-            "pre_specified_on": "2026-08-08"
-          },
-          "is_per_game": true,
-          "same_for_every_pick_on_this_board": false,
-          "votes_for": 5,
-          "votes_against": 1,
-          "votes_abstain": 25,
-          "votes_cast": 6,
-          "seats_total": 31,
-          "participation": 0.1935,
-          "participation_note": "the share of the seated committee that voted on this game at all. It is NOT in the score \u2014 it is published so a thin room is visible as a thin room."
-        },
-        "confidence_score": 50,
-        "confidence_basis": "committee_vote",
-        "pick_rating": {
-          "stars": 2,
-          "of": 3,
-          "basis": "committee_vote",
-          "basis_label": "How one-sided the committee's vote on this game was",
-          "score": 50,
-          "score_of": 100,
-          "measure": null,
-          "policy_version": "pick_stars_v2",
-          "cuts": [
-            33.333333333333336,
-            66.66666666666667
-          ],
-          "cuts_basis": "the same three bands, over the committee's own vote score. These cuts REPLACE the one-star-per-20 map served on committee picks before 2026-08-09: the ladder moved for every basis at once, so those picks restate their pip count. No number underneath moved.",
-          "is_per_game": true,
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "summary": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "comparable_across_bases": false,
-          "detail": {
-            "votes_for": 5,
-            "votes_against": 1,
-            "votes_cast": 6,
-            "measure_version": "pick_confidence_v1"
-          }
-        },
-        "pick_rating_stars": 2,
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "premium": false,
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "committee": {
-            "engine": "nightly_engine",
-            "version": "nightly_engine_v3",
-            "mode": "live",
-            "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-            "n_strategies_voting": 31,
-            "side": "over",
-            "line": 8.0,
-            "shadow_line": 8.0,
-            "votes_over": 5,
-            "votes_under": 1,
-            "votes_abstain": 25,
-            "read_walls": {
-              "vega": "T-24h",
-              "atlas": "T-24h",
-              "nova": "T-24h",
-              "scout": "T-24h"
-            },
-            "market_wall": "T-24h",
-            "market_wall_policy": "per_game_latest_priceable",
-            "board_written_at_utc": "2026-08-17T09:03:48Z",
-            "applied_by": "nightly_engine_pick_v1",
-            "seats_total": 31,
-            "vote_share": 0.1613,
-            "strength_tier": "lean",
-            "strength": {
-              "tier": "lean",
-              "label": "Lean",
-              "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
-              "rank": 1,
-              "of": 3,
-              "votes_for": 5,
-              "votes_against": 1,
-              "votes_abstain": 25,
-              "seats_total": 31,
-              "share": 0.1613,
-              "policy_version": "pick_strength_v1",
-              "thresholds": {
-                "policy_version": "pick_strength_v1",
-                "measure": "votes_for / seats_total",
-                "seats_total_includes_abstentions": true,
-                "strong_share_min": 0.5,
-                "standard_share_min": 0.25,
-                "pre_specified_on": "2026-08-07",
-                "why": "round fractions of the seated committee (a half, a quarter), chosen before any board was looked at so the cuts cannot have been moved to flatter a night",
-                "counts_all_picks": "every tier counts in the headline record; the tier is a CUT of the served population, never a filter"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
               }
-            }
+            ]
           },
-          "rationale_line": "The committee's majority side, taken at the locked pregame line."
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
-        "is_bet": true,
-        "price_source": "locked_pregame_line",
+        "is_bet": false,
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
             "The Tigers and the Pirates meet at PNC Park on Monday.",
-            "The lean here is the over.",
             "The Pirates are 61-65 and are 4-6 over their last ten; the Tigers are 60-64 and have lost 3 in a row."
           ],
-          "text": "The Tigers and the Pirates meet at PNC Park on Monday.\n\nThe lean here is the over.\n\nThe Pirates are 61-65 and are 4-6 over their last ten; the Tigers are 60-64 and have lost 3 in a row.",
+          "text": "The Tigers and the Pirates meet at PNC Park on Monday.\n\nThe Pirates are 61-65 and are 4-6 over their last ten; the Tigers are 60-64 and have lost 3 in a row.",
           "blurb": {
-            "text": "The Tigers and the Pirates meet at PNC Park on Monday. The lean here is the over.",
-            "record_line": null,
-            "record_stated": false,
-            "n_words": 17
+            "text": "The Tigers and the Pirates meet at PNC Park on Monday.",
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
+            "n_words": 11
           },
-          "side": "over",
-          "has_pick": true,
-          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "side": null,
+          "has_pick": false,
+          "derivation": "no side was handed to this generator, so nothing here argues one",
           "n_support_facts": 0
         },
-        "signals": [
-          {
-            "text": "Both bullpens heavily worked last 3 days",
-            "dir": "over"
-          },
-          {
-            "text": "Both starters hit hard lately (.356/.342 xwOBA)",
-            "dir": "over"
-          }
-        ]
+        "signals": []
       },
       "spread": {
         "status": "LEAN",
@@ -16522,21 +16690,21 @@
         {
           "key": "unified",
           "label": "The DiamondEdge Pick",
-          "status": "PICK",
+          "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "over",
+          "side": null,
           "line": 8.0,
           "vegas_line": 8.0,
-          "price": -105.0,
-          "stars": 2,
-          "score": 2.25,
+          "price": null,
+          "stars": 1,
+          "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": true,
+          "lead_time": "readiness",
+          "locked": false,
           "expanded_band": false,
-          "pass_why": null,
-          "reason": "Committee pick \u2014 the side won a mostly-quiet room"
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -16650,7 +16818,7 @@
         "run_line_price_home": -156.0,
         "run_line_price_away": 145.0,
         "book": "draftkings",
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823343,
@@ -16683,7 +16851,7 @@
           "total_price_under": -105.0
         },
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -16905,33 +17073,33 @@
         "wall_note": "PROVISIONAL \u2014 at least one voice is still at an earlier wall and will be superseded (not corrected) when its next wall lands. The desk fills in through the day; a seat that is empty or early is a statement about the feed, never about the game."
       },
       "diamondedge": {
-        "action": "LEAN",
-        "desk_agreement": "ALIGNED",
-        "is_bet": true,
-        "rationale_line": "We're taking the over 8.0 at -105 (2\u2605) and the desk is with it \u2014 all four analysts like the over.",
+        "action": "AVOID",
+        "desk_agreement": "NO_BET",
+        "is_bet": false,
+        "rationale_line": "No bet \u2014 all four analysts lean over, but a lean is not a bet and nothing here cleared the price gate.",
         "adaptive_strategy": null,
         "chief": {
           "scope": "pregame",
           "ou_call": {
             "side": "over",
-            "side_basis": "served_bet",
+            "side_basis": "desk_majority",
             "line": 8.0,
-            "line_basis": "served_bet_line",
+            "line_basis": "locked_pregame_total",
             "pregame_total": 8.0,
             "line_matches_pregame_total": true,
             "line_is_locked_pregame": false,
-            "price": -105.0,
+            "price": null,
             "desk_votes": {
               "over": 4,
               "under": 0,
               "no_read": 0
             },
             "desk_majority_side": "over",
-            "desk_agreement": "ALIGNED",
-            "engine_pick_status": "PICK",
-            "engine_pick_side": "over",
-            "stars": 2,
-            "is_bet": true,
+            "desk_agreement": "NO_BET",
+            "engine_pick_status": "PASS",
+            "engine_pick_side": null,
+            "stars": 1,
+            "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
           },
           "spread_call": {
@@ -17167,13 +17335,8 @@
             "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere and it never changes the action. Read it as 'where the desk collectively sits versus the number'."
           },
           "coherence": {
-            "the_bet": {
-              "side": "over",
-              "line": 8.0,
-              "price": -105.0,
-              "stars": 2
-            },
-            "is_bet": true,
+            "the_bet": null,
+            "is_bet": false,
             "reference_side": "over",
             "voices": {
               "desk_majority": {
@@ -17192,20 +17355,20 @@
                 "vs_bet": "same"
               }
             },
-            "all_voices_agree_with_bet": true,
+            "all_voices_agree_with_bet": null,
             "run_line_is_a_separate_market": true,
             "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and the conditions analyst's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
           },
           "consensus_state": "UNANIMOUS",
-          "desk_agreement": "ALIGNED",
-          "action": "LEAN",
+          "desk_agreement": "NO_BET",
+          "action": "AVOID",
           "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-          "is_bet": true,
-          "confidence_rank": 2,
+          "is_bet": false,
+          "confidence_rank": 1,
           "pattern": null,
           "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "We're taking the over 8.0 at -105 (2\u2605) and the desk is with it \u2014 all four analysts like the over.",
+          "rationale_line": "No bet \u2014 all four analysts lean over, but a lean is not a bet and nothing here cleared the price gate.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": null
@@ -17227,15 +17390,15 @@
         "vegas_line": 8.5,
         "stars": 1,
         "score": 1.0,
-        "star_tier": "Committee pass \u2014 no price",
+        "star_tier": "Rule pass",
         "price": null,
         "suggested_units": null,
         "result": null,
         "locked": false,
-        "locked_at_utc": null,
-        "timestamp": null,
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.5011,
         "our_prob_basis": "reference_side",
         "p_over": 0.5011,
@@ -17243,30 +17406,124 @@
         "expanded_band": false,
         "certified": false,
         "premium": false,
-        "pass_reason": "The committee had a call here, but there was no real line and price to take it at, so DiamondEdge will not grade it.",
-        "pass_why": "engine_unpriceable",
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "pass_why": "engine_unpriceable"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
+              }
+            ]
+          },
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
         "is_bet": false,
         "game_case": {
@@ -17280,8 +17537,8 @@
           "text": "The Padres and the Mets meet at Citi Field on Monday.\n\nThe Mets are 56-69 and have won 3 in a row; the Padres are 67-58 and are 8-2 over their last ten. The Mets have won 2 of the 3 meetings between them this season.",
           "blurb": {
             "text": "The Padres and the Mets meet at Citi Field on Monday. The Mets have won 2 of the 3 meetings between them this season.",
-            "record_line": null,
-            "record_stated": false,
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
             "n_words": 24
           },
           "side": null,
@@ -17366,11 +17623,11 @@
           "stars": 1,
           "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
+          "lead_time": "readiness",
           "locked": false,
           "expanded_band": false,
-          "pass_why": "engine_unpriceable",
-          "reason": "The committee had a call here, but there was no real line and price to take it at, so DiamondEdge will not grade it."
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -17484,7 +17741,7 @@
         "run_line_price_home": 165.0,
         "run_line_price_away": -181.0,
         "book": null,
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823589,
@@ -17510,7 +17767,7 @@
         "same_basis": true,
         "same_book_check": null,
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": true,
@@ -18005,7 +18262,7 @@
       "status": "upcoming",
       "is_upcoming": true,
       "picks_eta": {
-        "line": "Pick posts ~3:10 AM PT",
+        "line": "Picks are being priced now",
         "expected_utc": "2026-08-17T10:10:00Z",
         "expected_local_pt": "2026-08-17T03:10:00-0700",
         "is_per_game": true,
@@ -18016,7 +18273,7 @@
         "is_upcoming": true,
         "premium": false,
         "picks_eta": {
-          "line": "Pick posts ~3:10 AM PT",
+          "line": "Picks are being priced now",
           "expected_utc": "2026-08-17T10:10:00Z",
           "expected_local_pt": "2026-08-17T03:10:00-0700",
           "is_per_game": true,
@@ -18044,193 +18301,166 @@
       "matchup": "Atlanta Braves @ Minnesota Twins",
       "first_pitch_utc": "2026-08-17T23:40:00+00:00",
       "pick": {
-        "status": "PICK",
-        "side": "under",
+        "status": "PASS",
+        "side": null,
         "line": 8.5,
         "vegas_line": 8.5,
-        "stars": 2,
-        "score": 2.25,
-        "star_tier": "Committee pick \u2014 the side won a mostly-quiet room",
-        "price": 108.0,
-        "suggested_units": 0.5,
+        "stars": 1,
+        "score": 1.0,
+        "star_tier": "Rule pass",
+        "price": null,
+        "suggested_units": null,
         "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-17T09:03:48Z",
-        "timestamp": "2026-08-17T09:03:48Z",
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked": false,
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.5383,
         "our_prob_basis": "reference_side",
         "p_over": 0.5383,
         "ev": null,
         "expanded_band": false,
         "certified": false,
-        "premium": true,
-        "confidence": {
-          "score": 33,
-          "of": 100,
-          "basis": "committee_vote",
-          "basis_label": "Committee vote",
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "measure": "smoothed_backing_margin",
-          "version": "pick_confidence_v1",
-          "backing_for": 1,
-          "backing_against": 0,
-          "high_band": false,
-          "high_band_min": 90,
-          "is_a_probability": false,
-          "comparable_across_bases": false,
-          "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-          "definition": {
-            "measure": "smoothed_backing_margin",
-            "version": "pick_confidence_v1",
-            "scale": [
-              0,
-              100
-            ],
-            "max_score": 99,
-            "max_score_why": "the measure is strictly below 1 at any finite amount of evidence, so no pick is ever shown as 100",
-            "formula": "p = (for + 1) / (for + against + 2); confidence = min(99, round(100 * max(0, 2p - 1)))",
-            "prior": "uniform (Beta(1,1)) \u2014 the standard uninformative choice, pre-specified, not fitted to any board",
-            "abstentions_in_denominator": false,
-            "why_not": "pick_strength divides by every seated strategy, abstentions included. On a 31-seat committee where the top pick draws about 4 seats that puts every pick under the 0.25 cut, so every pick reads 'lean' and the measure separates nothing. This measure divides by the seats that actually voted and uses the +1/+2 smoothing to keep a thin unanimous room below a deep one \u2014 which is the objection pick_strength raises against dividing by votes cast.",
-            "high_band_min": 90,
-            "is_a_probability": false,
-            "comparable_across_bases": false,
-            "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-            "pre_specified_on": "2026-08-08"
-          },
-          "is_per_game": true,
-          "same_for_every_pick_on_this_board": false,
-          "votes_for": 1,
-          "votes_against": 0,
-          "votes_abstain": 30,
-          "votes_cast": 1,
-          "seats_total": 31,
-          "participation": 0.0323,
-          "participation_note": "the share of the seated committee that voted on this game at all. It is NOT in the score \u2014 it is published so a thin room is visible as a thin room."
-        },
-        "confidence_score": 33,
-        "confidence_basis": "committee_vote",
-        "pick_rating": {
-          "stars": 1,
-          "of": 3,
-          "basis": "committee_vote",
-          "basis_label": "How one-sided the committee's vote on this game was",
-          "score": 33,
-          "score_of": 100,
-          "measure": null,
-          "policy_version": "pick_stars_v2",
-          "cuts": [
-            33.333333333333336,
-            66.66666666666667
-          ],
-          "cuts_basis": "the same three bands, over the committee's own vote score. These cuts REPLACE the one-star-per-20 map served on committee picks before 2026-08-09: the ladder moved for every basis at once, so those picks restate their pip count. No number underneath moved.",
-          "is_per_game": true,
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "summary": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "comparable_across_bases": false,
-          "detail": {
-            "votes_for": 1,
-            "votes_against": 0,
-            "votes_cast": 1,
-            "measure_version": "pick_confidence_v1"
-          }
-        },
-        "pick_rating_stars": 1,
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "premium": false,
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "committee": {
-            "engine": "nightly_engine",
-            "version": "nightly_engine_v3",
-            "mode": "live",
-            "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-            "n_strategies_voting": 31,
-            "side": "under",
-            "line": 8.5,
-            "shadow_line": 8.5,
-            "votes_over": 0,
-            "votes_under": 1,
-            "votes_abstain": 30,
-            "read_walls": {
-              "vega": "T-24h",
-              "atlas": "T-24h",
-              "nova": "T-24h",
-              "scout": "T-24h"
-            },
-            "market_wall": "T-24h",
-            "market_wall_policy": "per_game_latest_priceable",
-            "board_written_at_utc": "2026-08-17T09:03:48Z",
-            "applied_by": "nightly_engine_pick_v1",
-            "seats_total": 31,
-            "vote_share": 0.0323,
-            "strength_tier": "lean",
-            "strength": {
-              "tier": "lean",
-              "label": "Lean",
-              "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
-              "rank": 1,
-              "of": 3,
-              "votes_for": 1,
-              "votes_against": 0,
-              "votes_abstain": 30,
-              "seats_total": 31,
-              "share": 0.0323,
-              "policy_version": "pick_strength_v1",
-              "thresholds": {
-                "policy_version": "pick_strength_v1",
-                "measure": "votes_for / seats_total",
-                "seats_total_includes_abstentions": true,
-                "strong_share_min": 0.5,
-                "standard_share_min": 0.25,
-                "pre_specified_on": "2026-08-07",
-                "why": "round fractions of the seated committee (a half, a quarter), chosen before any board was looked at so the cuts cannot have been moved to flatter a night",
-                "counts_all_picks": "every tier counts in the headline record; the tier is a CUT of the served population, never a filter"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
               }
-            }
+            ]
           },
-          "rationale_line": "The committee's majority side, taken at the locked pregame line."
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
-        "is_bet": true,
-        "price_source": "locked_pregame_line",
+        "is_bet": false,
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
             "The Twins are looking for a way out of a 3-game slide against the Braves at Target Field on Monday.",
-            "This one we are playing to the under.",
             "The Twins are 60-65 and have lost 3 in a row; the Braves are 74-50 and are 5-5 over their last ten."
           ],
-          "text": "The Twins are looking for a way out of a 3-game slide against the Braves at Target Field on Monday.\n\nThis one we are playing to the under.\n\nThe Twins are 60-65 and have lost 3 in a row; the Braves are 74-50 and are 5-5 over their last ten.",
+          "text": "The Twins are looking for a way out of a 3-game slide against the Braves at Target Field on Monday.\n\nThe Twins are 60-65 and have lost 3 in a row; the Braves are 74-50 and are 5-5 over their last ten.",
           "blurb": {
-            "text": "The Twins are looking for a way out of a 3-game slide against the Braves at Target Field on Monday. This one we are playing to the under.",
-            "record_line": null,
-            "record_stated": false,
-            "n_words": 28
+            "text": "The Twins are looking for a way out of a 3-game slide against the Braves at Target Field on Monday.",
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
+            "n_words": 20
           },
-          "side": "under",
-          "has_pick": true,
-          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "side": null,
+          "has_pick": false,
+          "derivation": "no side was handed to this generator, so nothing here argues one",
           "n_support_facts": 0
         },
         "signals": []
@@ -18300,21 +18530,21 @@
         {
           "key": "unified",
           "label": "The DiamondEdge Pick",
-          "status": "PICK",
+          "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "under",
+          "side": null,
           "line": 8.5,
           "vegas_line": 8.5,
-          "price": 108.0,
-          "stars": 2,
-          "score": 2.25,
+          "price": null,
+          "stars": 1,
+          "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": true,
+          "lead_time": "readiness",
+          "locked": false,
           "expanded_band": false,
-          "pass_why": null,
-          "reason": "Committee pick \u2014 the side won a mostly-quiet room"
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -18428,7 +18658,7 @@
         "run_line_price_home": -157.0,
         "run_line_price_away": 144.0,
         "book": "lowvig",
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 823668,
@@ -18461,7 +18691,7 @@
           "total_price_under": -103.0
         },
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": true,
@@ -18683,33 +18913,33 @@
         "wall_note": "PROVISIONAL \u2014 at least one voice is still at an earlier wall and will be superseded (not corrected) when its next wall lands. The desk fills in through the day; a seat that is empty or early is a statement about the feed, never about the game."
       },
       "diamondedge": {
-        "action": "LEAN",
-        "desk_agreement": "AGAINST",
-        "is_bet": true,
-        "rationale_line": "We're taking the under 8.5 at +108 (2\u2605) \u2014 that is where the price edge is. The desk disagrees: three of the four analysts with a read lean over. That disagreement is context, not a veto \u2014 no consensus configuration has separated from chance, so it does not move the bet.",
+        "action": "AVOID",
+        "desk_agreement": "NO_BET",
+        "is_bet": false,
+        "rationale_line": "No bet \u2014 most of the desk leans over, but a lean is not a bet and nothing here cleared the price gate.",
         "adaptive_strategy": null,
         "chief": {
           "scope": "pregame",
           "ou_call": {
-            "side": "under",
-            "side_basis": "served_bet",
+            "side": "over",
+            "side_basis": "desk_majority",
             "line": 8.5,
-            "line_basis": "served_bet_line",
+            "line_basis": "locked_pregame_total",
             "pregame_total": 8.5,
             "line_matches_pregame_total": true,
             "line_is_locked_pregame": false,
-            "price": 108.0,
+            "price": null,
             "desk_votes": {
               "over": 3,
               "under": 1,
               "no_read": 0
             },
             "desk_majority_side": "over",
-            "desk_agreement": "AGAINST",
-            "engine_pick_status": "PICK",
-            "engine_pick_side": "under",
-            "stars": 2,
-            "is_bet": true,
+            "desk_agreement": "NO_BET",
+            "engine_pick_status": "PASS",
+            "engine_pick_side": null,
+            "stars": 1,
+            "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
           },
           "spread_call": {
@@ -18945,45 +19175,40 @@
             "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere and it never changes the action. Read it as 'where the desk collectively sits versus the number'."
           },
           "coherence": {
-            "the_bet": {
-              "side": "under",
-              "line": 8.5,
-              "price": 108.0,
-              "stars": 2
-            },
-            "is_bet": true,
-            "reference_side": "under",
+            "the_bet": null,
+            "is_bet": false,
+            "reference_side": "over",
             "voices": {
               "desk_majority": {
                 "side": "over",
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               },
               "desk_combined": {
                 "side": "over",
                 "p_over": 0.5387,
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               },
               "atlas_predicted_score": {
                 "side": "over",
                 "predicted_total": 9.0,
                 "vs_line": 8.5,
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               }
             },
-            "all_voices_agree_with_bet": false,
+            "all_voices_agree_with_bet": null,
             "run_line_is_a_separate_market": true,
             "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and the conditions analyst's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
           },
           "consensus_state": "MAJORITY",
-          "desk_agreement": "AGAINST",
-          "action": "LEAN",
+          "desk_agreement": "NO_BET",
+          "action": "AVOID",
           "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-          "is_bet": true,
-          "confidence_rank": 2,
+          "is_bet": false,
+          "confidence_rank": 1,
           "pattern": null,
           "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "We're taking the under 8.5 at +108 (2\u2605) \u2014 that is where the price edge is. The desk disagrees: three of the four analysts with a read lean over. That disagreement is context, not a veto \u2014 no consensus configuration has separated from chance, so it does not move the bet.",
+          "rationale_line": "No bet \u2014 most of the desk leans over, but a lean is not a bet and nothing here cleared the price gate.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": null
@@ -19001,7 +19226,7 @@
       "status": "upcoming",
       "is_upcoming": true,
       "picks_eta": {
-        "line": "Pick posts ~3:10 AM PT",
+        "line": "Picks are being priced now",
         "expected_utc": "2026-08-17T10:10:00Z",
         "expected_local_pt": "2026-08-17T03:10:00-0700",
         "is_per_game": true,
@@ -19012,7 +19237,7 @@
         "is_upcoming": true,
         "premium": false,
         "picks_eta": {
-          "line": "Pick posts ~3:10 AM PT",
+          "line": "Picks are being priced now",
           "expected_utc": "2026-08-17T10:10:00Z",
           "expected_local_pt": "2026-08-17T03:10:00-0700",
           "is_per_game": true,
@@ -19040,193 +19265,166 @@
       "matchup": "Chicago White Sox @ Chicago Cubs",
       "first_pitch_utc": "2026-08-18T00:05:00+00:00",
       "pick": {
-        "status": "PICK",
-        "side": "under",
+        "status": "PASS",
+        "side": null,
         "line": 8.5,
         "vegas_line": 8.5,
-        "stars": 2,
-        "score": 2.25,
-        "star_tier": "Committee pick \u2014 the side won a mostly-quiet room",
-        "price": -109.0,
-        "suggested_units": 0.5,
+        "stars": 1,
+        "score": 1.0,
+        "star_tier": "Rule pass",
+        "price": null,
+        "suggested_units": null,
         "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-17T09:03:48Z",
-        "timestamp": "2026-08-17T09:03:48Z",
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked": false,
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.5124,
         "our_prob_basis": "reference_side",
         "p_over": 0.5124,
         "ev": null,
         "expanded_band": false,
         "certified": false,
-        "premium": true,
-        "confidence": {
-          "score": 45,
-          "of": 100,
-          "basis": "committee_vote",
-          "basis_label": "Committee vote",
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "measure": "smoothed_backing_margin",
-          "version": "pick_confidence_v1",
-          "backing_for": 7,
-          "backing_against": 2,
-          "high_band": false,
-          "high_band_min": 90,
-          "is_a_probability": false,
-          "comparable_across_bases": false,
-          "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-          "definition": {
-            "measure": "smoothed_backing_margin",
-            "version": "pick_confidence_v1",
-            "scale": [
-              0,
-              100
-            ],
-            "max_score": 99,
-            "max_score_why": "the measure is strictly below 1 at any finite amount of evidence, so no pick is ever shown as 100",
-            "formula": "p = (for + 1) / (for + against + 2); confidence = min(99, round(100 * max(0, 2p - 1)))",
-            "prior": "uniform (Beta(1,1)) \u2014 the standard uninformative choice, pre-specified, not fitted to any board",
-            "abstentions_in_denominator": false,
-            "why_not": "pick_strength divides by every seated strategy, abstentions included. On a 31-seat committee where the top pick draws about 4 seats that puts every pick under the 0.25 cut, so every pick reads 'lean' and the measure separates nothing. This measure divides by the seats that actually voted and uses the +1/+2 smoothing to keep a thin unanimous room below a deep one \u2014 which is the objection pick_strength raises against dividing by votes cast.",
-            "high_band_min": 90,
-            "is_a_probability": false,
-            "comparable_across_bases": false,
-            "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-            "pre_specified_on": "2026-08-08"
-          },
-          "is_per_game": true,
-          "same_for_every_pick_on_this_board": false,
-          "votes_for": 7,
-          "votes_against": 2,
-          "votes_abstain": 22,
-          "votes_cast": 9,
-          "seats_total": 31,
-          "participation": 0.2903,
-          "participation_note": "the share of the seated committee that voted on this game at all. It is NOT in the score \u2014 it is published so a thin room is visible as a thin room."
-        },
-        "confidence_score": 45,
-        "confidence_basis": "committee_vote",
-        "pick_rating": {
-          "stars": 2,
-          "of": 3,
-          "basis": "committee_vote",
-          "basis_label": "How one-sided the committee's vote on this game was",
-          "score": 45,
-          "score_of": 100,
-          "measure": null,
-          "policy_version": "pick_stars_v2",
-          "cuts": [
-            33.333333333333336,
-            66.66666666666667
-          ],
-          "cuts_basis": "the same three bands, over the committee's own vote score. These cuts REPLACE the one-star-per-20 map served on committee picks before 2026-08-09: the ladder moved for every basis at once, so those picks restate their pip count. No number underneath moved.",
-          "is_per_game": true,
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "summary": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "comparable_across_bases": false,
-          "detail": {
-            "votes_for": 7,
-            "votes_against": 2,
-            "votes_cast": 9,
-            "measure_version": "pick_confidence_v1"
-          }
-        },
-        "pick_rating_stars": 2,
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "premium": false,
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "committee": {
-            "engine": "nightly_engine",
-            "version": "nightly_engine_v3",
-            "mode": "live",
-            "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-            "n_strategies_voting": 31,
-            "side": "under",
-            "line": 8.5,
-            "shadow_line": 8.5,
-            "votes_over": 2,
-            "votes_under": 7,
-            "votes_abstain": 22,
-            "read_walls": {
-              "vega": "T-24h",
-              "atlas": "T-24h",
-              "nova": "T-24h",
-              "scout": "T-24h"
-            },
-            "market_wall": "T-24h",
-            "market_wall_policy": "per_game_latest_priceable",
-            "board_written_at_utc": "2026-08-17T09:03:48Z",
-            "applied_by": "nightly_engine_pick_v1",
-            "seats_total": 31,
-            "vote_share": 0.2258,
-            "strength_tier": "lean",
-            "strength": {
-              "tier": "lean",
-              "label": "Lean",
-              "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
-              "rank": 1,
-              "of": 3,
-              "votes_for": 7,
-              "votes_against": 2,
-              "votes_abstain": 22,
-              "seats_total": 31,
-              "share": 0.2258,
-              "policy_version": "pick_strength_v1",
-              "thresholds": {
-                "policy_version": "pick_strength_v1",
-                "measure": "votes_for / seats_total",
-                "seats_total_includes_abstentions": true,
-                "strong_share_min": 0.5,
-                "standard_share_min": 0.25,
-                "pre_specified_on": "2026-08-07",
-                "why": "round fractions of the seated committee (a half, a quarter), chosen before any board was looked at so the cuts cannot have been moved to flatter a night",
-                "counts_all_picks": "every tier counts in the headline record; the tier is a CUT of the served population, never a filter"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
               }
-            }
+            ]
           },
-          "rationale_line": "The committee's majority side, taken at the locked pregame line."
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
-        "is_bet": true,
-        "price_source": "locked_pregame_line",
+        "is_bet": false,
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
             "The White Sox and the Cubs meet at Wrigley Field on Monday.",
-            "Our call on this game is the under.",
             "The Cubs are 72-53 and have lost 2 in a row; the White Sox are 65-58 and have won 3 in a row. The season series is 2-1 to the White Sox."
           ],
-          "text": "The White Sox and the Cubs meet at Wrigley Field on Monday.\n\nOur call on this game is the under.\n\nThe Cubs are 72-53 and have lost 2 in a row; the White Sox are 65-58 and have won 3 in a row. The season series is 2-1 to the White Sox.",
+          "text": "The White Sox and the Cubs meet at Wrigley Field on Monday.\n\nThe Cubs are 72-53 and have lost 2 in a row; the White Sox are 65-58 and have won 3 in a row. The season series is 2-1 to the White Sox.",
           "blurb": {
-            "text": "The White Sox and the Cubs meet at Wrigley Field on Monday. The season series is 2-1 to the White Sox. Our call on this game is the under.",
-            "record_line": null,
-            "record_stated": false,
-            "n_words": 29
+            "text": "The White Sox and the Cubs meet at Wrigley Field on Monday. The season series is 2-1 to the White Sox.",
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
+            "n_words": 21
           },
-          "side": "under",
-          "has_pick": true,
-          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "side": null,
+          "has_pick": false,
+          "derivation": "no side was handed to this generator, so nothing here argues one",
           "n_support_facts": 0
         },
         "signals": []
@@ -19296,21 +19494,21 @@
         {
           "key": "unified",
           "label": "The DiamondEdge Pick",
-          "status": "PICK",
+          "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "under",
+          "side": null,
           "line": 8.5,
           "vegas_line": 8.5,
-          "price": -109.0,
-          "stars": 2,
-          "score": 2.25,
+          "price": null,
+          "stars": 1,
+          "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": true,
+          "lead_time": "readiness",
+          "locked": false,
           "expanded_band": false,
-          "pass_why": null,
-          "reason": "Committee pick \u2014 the side won a mostly-quiet room"
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -19424,7 +19622,7 @@
         "run_line_price_home": 137.0,
         "run_line_price_away": -140.0,
         "book": "onexbet",
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824641,
@@ -19457,7 +19655,7 @@
           "total_price_under": -120.0
         },
         "n_books": 21,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": true,
@@ -19679,33 +19877,33 @@
         "wall_note": "PROVISIONAL \u2014 at least one voice is still at an earlier wall and will be superseded (not corrected) when its next wall lands. The desk fills in through the day; a seat that is empty or early is a statement about the feed, never about the game."
       },
       "diamondedge": {
-        "action": "LEAN",
-        "desk_agreement": "AGAINST",
-        "is_bet": true,
-        "rationale_line": "We're taking the under 8.5 at -109 (2\u2605) \u2014 that is where the price edge is. The desk disagrees: three of the four analysts with a read lean over. That disagreement is context, not a veto \u2014 no consensus configuration has separated from chance, so it does not move the bet.",
+        "action": "AVOID",
+        "desk_agreement": "NO_BET",
+        "is_bet": false,
+        "rationale_line": "No bet \u2014 most of the desk leans over, but a lean is not a bet and nothing here cleared the price gate.",
         "adaptive_strategy": null,
         "chief": {
           "scope": "pregame",
           "ou_call": {
-            "side": "under",
-            "side_basis": "served_bet",
+            "side": "over",
+            "side_basis": "desk_majority",
             "line": 8.5,
-            "line_basis": "served_bet_line",
+            "line_basis": "locked_pregame_total",
             "pregame_total": 8.5,
             "line_matches_pregame_total": true,
             "line_is_locked_pregame": false,
-            "price": -109.0,
+            "price": null,
             "desk_votes": {
               "over": 3,
               "under": 1,
               "no_read": 0
             },
             "desk_majority_side": "over",
-            "desk_agreement": "AGAINST",
-            "engine_pick_status": "PICK",
-            "engine_pick_side": "under",
-            "stars": 2,
-            "is_bet": true,
+            "desk_agreement": "NO_BET",
+            "engine_pick_status": "PASS",
+            "engine_pick_side": null,
+            "stars": 1,
+            "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
           },
           "spread_call": {
@@ -19941,45 +20139,40 @@
             "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere and it never changes the action. Read it as 'where the desk collectively sits versus the number'."
           },
           "coherence": {
-            "the_bet": {
-              "side": "under",
-              "line": 8.5,
-              "price": -109.0,
-              "stars": 2
-            },
-            "is_bet": true,
-            "reference_side": "under",
+            "the_bet": null,
+            "is_bet": false,
+            "reference_side": "over",
             "voices": {
               "desk_majority": {
                 "side": "over",
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               },
               "desk_combined": {
                 "side": "over",
                 "p_over": 0.5124,
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               },
               "atlas_predicted_score": {
                 "side": "over",
                 "predicted_total": 9.0,
                 "vs_line": 8.5,
-                "vs_bet": "opposite"
+                "vs_bet": "same"
               }
             },
-            "all_voices_agree_with_bet": false,
+            "all_voices_agree_with_bet": null,
             "run_line_is_a_separate_market": true,
             "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and the conditions analyst's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
           },
           "consensus_state": "MAJORITY",
-          "desk_agreement": "AGAINST",
-          "action": "LEAN",
+          "desk_agreement": "NO_BET",
+          "action": "AVOID",
           "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-          "is_bet": true,
-          "confidence_rank": 2,
+          "is_bet": false,
+          "confidence_rank": 1,
           "pattern": null,
           "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "We're taking the under 8.5 at -109 (2\u2605) \u2014 that is where the price edge is. The desk disagrees: three of the four analysts with a read lean over. That disagreement is context, not a veto \u2014 no consensus configuration has separated from chance, so it does not move the bet.",
+          "rationale_line": "No bet \u2014 most of the desk leans over, but a lean is not a bet and nothing here cleared the price gate.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": null
@@ -19995,201 +20188,169 @@
       "matchup": "Los Angeles Dodgers @ Colorado Rockies",
       "first_pitch_utc": "2026-08-18T00:40:00+00:00",
       "pick": {
-        "status": "PICK",
-        "side": "over",
+        "status": "PASS",
+        "side": null,
         "line": 11.0,
         "vegas_line": 11.0,
-        "stars": 2,
-        "score": 2.25,
-        "star_tier": "Committee pick \u2014 the side won a mostly-quiet room",
-        "price": -107.0,
-        "suggested_units": 0.5,
+        "stars": 1,
+        "score": 1.0,
+        "star_tier": "Rule pass",
+        "price": null,
+        "suggested_units": null,
         "result": null,
-        "locked": true,
-        "locked_at_utc": "2026-08-17T09:03:48Z",
-        "timestamp": "2026-08-17T09:03:48Z",
-        "lead_time": "T-3h",
-        "source": "nightly_engine",
+        "locked": false,
+        "locked_at_utc": "2026-08-17T10:10:07Z",
+        "timestamp": "2026-08-17T10:10:07Z",
+        "lead_time": "readiness",
+        "source": "strategy_forge",
         "our_prob": 0.6038,
         "our_prob_basis": "reference_side",
         "p_over": 0.6038,
         "ev": null,
         "expanded_band": false,
         "certified": false,
-        "premium": true,
-        "confidence": {
-          "score": 20,
-          "of": 100,
-          "basis": "committee_vote",
-          "basis_label": "Committee vote",
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "measure": "smoothed_backing_margin",
-          "version": "pick_confidence_v1",
-          "backing_for": 5,
-          "backing_against": 3,
-          "high_band": false,
-          "high_band_min": 90,
-          "is_a_probability": false,
-          "comparable_across_bases": false,
-          "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-          "definition": {
-            "measure": "smoothed_backing_margin",
-            "version": "pick_confidence_v1",
-            "scale": [
-              0,
-              100
-            ],
-            "max_score": 99,
-            "max_score_why": "the measure is strictly below 1 at any finite amount of evidence, so no pick is ever shown as 100",
-            "formula": "p = (for + 1) / (for + against + 2); confidence = min(99, round(100 * max(0, 2p - 1)))",
-            "prior": "uniform (Beta(1,1)) \u2014 the standard uninformative choice, pre-specified, not fitted to any board",
-            "abstentions_in_denominator": false,
-            "why_not": "pick_strength divides by every seated strategy, abstentions included. On a 31-seat committee where the top pick draws about 4 seats that puts every pick under the 0.25 cut, so every pick reads 'lean' and the measure separates nothing. This measure divides by the seats that actually voted and uses the +1/+2 smoothing to keep a thin unanimous room below a deep one \u2014 which is the objection pick_strength raises against dividing by votes cast.",
-            "high_band_min": 90,
-            "is_a_probability": false,
-            "comparable_across_bases": false,
-            "counts_all_picks": "Every pick counts in the record at every confidence score. This is a CUT of the served population, never a filter on it.",
-            "pre_specified_on": "2026-08-08"
-          },
-          "is_per_game": true,
-          "same_for_every_pick_on_this_board": false,
-          "votes_for": 5,
-          "votes_against": 3,
-          "votes_abstain": 23,
-          "votes_cast": 8,
-          "seats_total": 31,
-          "participation": 0.2581,
-          "participation_note": "the share of the seated committee that voted on this game at all. It is NOT in the score \u2014 it is published so a thin room is visible as a thin room."
-        },
-        "confidence_score": 20,
-        "confidence_basis": "committee_vote",
-        "pick_rating": {
-          "stars": 1,
-          "of": 3,
-          "basis": "committee_vote",
-          "basis_label": "How one-sided the committee's vote on this game was",
-          "score": 20,
-          "score_of": 100,
-          "measure": null,
-          "policy_version": "pick_stars_v2",
-          "cuts": [
-            33.333333333333336,
-            66.66666666666667
-          ],
-          "cuts_basis": "the same three bands, over the committee's own vote score. These cuts REPLACE the one-star-per-20 map served on committee picks before 2026-08-09: the ladder moved for every basis at once, so those picks restate their pip count. No number underneath moved.",
-          "is_per_game": true,
-          "what_it_is": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "summary": "How one-sided the part of the committee that actually voted on this game was. Seats that abstained are not counted for it or against it; how many spoke is reported separately.",
-          "comparable_across_bases": false,
-          "detail": {
-            "votes_for": 5,
-            "votes_against": 3,
-            "votes_cast": 8,
-            "measure_version": "pick_confidence_v1"
-          }
-        },
-        "pick_rating_stars": 1,
-        "engine_strategy": {
-          "source": "nightly_engine",
-          "version": "nightly_engine_pick_v1",
-          "engine": "nightly_engine",
-          "engine_version": "nightly_engine_v3",
+        "premium": false,
+        "pass_reason": "The day's rule read this game and did not call a side.",
+        "pass_why": "forge_no_bet",
+        "forge_strategy": {
+          "source": "strategy_forge",
+          "version": "forge_selector_v1",
+          "selector": "strategy_forge:nightly",
           "date": "2026-08-17",
-          "rule_key": "nightly_engine_v3:committee",
-          "label": "The Full Committee \u2014 31 strategies vote",
-          "selector": "nightly_engine",
-          "channel": "nightly_engine_board",
+          "channel": "forge_selector_board",
           "status": "ACTIVE",
-          "mode": "vote",
+          "mode": "rule",
+          "rule_key": "forge:w17:4fdde70156",
+          "rule_id": "forge:w17:4fdde70156",
+          "rule_family": "strategy_forge",
+          "label": "The rule that won the search",
+          "provenance": "SHORTLISTED",
+          "objective": "W - L (wins minus losses over the window)",
+          "plain_english_rule": "Bet OVER when the desk's edge over the market price is at least 0 and how far the total moved from open to the wall is at least -0.5 and the game is in the open air and we held a weather forecast for it three hours before first pitch and how far the ball carries in this air (index, 1.00 is neutral) is at least 1.05. Otherwise bet UNDER when the conditions analyst's P(over) is at least 0.44 and the desk's average P(over) drift since T-6h is at least 0 and the conditions analyst's read was driven by the park. Otherwise pass.",
           "is_day_strategy": true,
-          "day_selector": "nightly_engine",
+          "day_selector": "strategy_forge",
           "is_owner_directed": false,
-          "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-          "n_strategies_voting": 31,
-          "plain_english_rule": "The strategies that held up best over the recent nights each vote on every game. The side with the majority becomes the pick, and a tie passes.",
-          "summary_line": "Chosen by the full committee, locked before the first pitch and never re-decided after.",
+          "authorized_by": null,
+          "locked": true,
+          "rule_frozen_at_utc": "2026-08-17T10:10:07Z",
+          "window_days": 17,
+          "window": [
+            "2026-07-31",
+            "2026-08-16"
+          ],
+          "window_games": 230,
+          "window_gap_days": 1,
+          "record": "126-46-8",
+          "record_label": "lookback evidence",
+          "record_over_window": {
+            "wins": 126,
+            "losses": 46,
+            "pushes": 8,
+            "decided": 172,
+            "n_selected": 180,
+            "wl": 80,
+            "n_conditions": 6
+          },
+          "evidence_label": "lookback evidence",
+          "strictly_prior": {
+            "date": "2026-08-17",
+            "window_first": "2026-07-31",
+            "window_last": "2026-08-16",
+            "n_nights": 17,
+            "strictly_prior": true,
+            "window_gap_days": 1,
+            "checked_by": "forge_selector_v1._assert_strictly_prior (raises)",
+            "train_rows": 230,
+            "train_rows_max_date": "2026-08-16",
+            "window_last_night_games": 15
+          },
+          "search_scope": "Every rule the search can write was applied, unchanged, to every game on every night of the window, and scored on one thing: how many more times it won than it lost. Nothing else was ranked on.",
+          "summary_line": "Today's board is one rule. It came out of last night's search with the best win-minus-loss record over the window, and it was frozen before the first game. Over the 17 nights it was chosen on (2026-07-31 to 2026-08-16), this rule went 126-46-8.",
+          "selected_reason": "Every rule the search can write was applied, unchanged, to every game on every night of the lookback window. The rule that finished with the best record of wins minus losses was frozen and applied to today's slate. The window ends before today, so no game on this board was part of choosing the rule.",
           "line_basis": "The pick is served at the locked pregame line and its real price. A game with no line, or no price at that line, is not served at all.",
           "grading_policy": "graded exactly like every other served pick, behind the outcome-verification gate; never re-graded, never restated",
-          "committee": {
-            "engine": "nightly_engine",
-            "version": "nightly_engine_v3",
-            "mode": "live",
-            "strategy_locked_at_utc": "2026-08-17T09:00:14Z",
-            "n_strategies_voting": 31,
-            "side": "over",
-            "line": 11.0,
-            "shadow_line": 11.0,
-            "votes_over": 5,
-            "votes_under": 3,
-            "votes_abstain": 23,
-            "read_walls": {
-              "vega": "T-24h",
-              "atlas": "T-24h",
-              "nova": "T-24h",
-              "scout": "T-24h"
-            },
-            "market_wall": "T-24h",
-            "market_wall_policy": "per_game_latest_priceable",
-            "board_written_at_utc": "2026-08-17T09:03:48Z",
-            "applied_by": "nightly_engine_pick_v1",
-            "seats_total": 31,
-            "vote_share": 0.1613,
-            "strength_tier": "lean",
-            "strength": {
-              "tier": "lean",
-              "label": "Lean",
-              "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
-              "rank": 1,
-              "of": 3,
-              "votes_for": 5,
-              "votes_against": 3,
-              "votes_abstain": 23,
-              "seats_total": 31,
-              "share": 0.1613,
-              "policy_version": "pick_strength_v1",
-              "thresholds": {
-                "policy_version": "pick_strength_v1",
-                "measure": "votes_for / seats_total",
-                "seats_total_includes_abstentions": true,
-                "strong_share_min": 0.5,
-                "standard_share_min": 0.25,
-                "pre_specified_on": "2026-08-07",
-                "why": "round fractions of the seated committee (a half, a quarter), chosen before any board was looked at so the cuts cannot have been moved to flatter a night",
-                "counts_all_picks": "every tier counts in the headline record; the tier is a CUT of the served population, never a filter"
+          "tier_basis": "One rule chose every pick on this board and it makes no distinction between them, so every forge pick carries the same display tier. There is no per-pick conviction to report.",
+          "progressive_note": "The rule is frozen before the day starts. Each game gets its call the moment its inputs land, against that same frozen rule \u2014 never a re-search, and never a different rule later in the day.",
+          "voice": {
+            "status": "ACTIVE",
+            "generator": "rule_voice_v2",
+            "name": "The Ballpark and the Carrying Air",
+            "name_basis": "generated from the rule's own conditions \u2014 a different rule wins the search every night, so the name is derived, never written by hand",
+            "paragraphs": [
+              "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.",
+              "It takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.",
+              "Anything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8."
+            ],
+            "text": "This one lives on the ballpark, the conditions, and the market. It is a 6-condition read, and it wants every one of them before it says anything at all.\n\nIt takes the OVER when it finds a desk above the market price, nothing that amounts to a total the money has pushed down since it opened, and air the ball carries in. That is the ordinary case for the over \u2014 stated exactly, and then applied without exception. When the picture turns over, so does it \u2014 the UNDER when it finds the conditions analyst is not strongly on the under, a desk that moved to the over late, and the ballpark is the biggest thing setting this game's run environment. Again the natural reading of those conditions is the over, and again it goes the other way.\n\nAnything that does not fit one of those shapes it leaves alone. A pass is the rule working, not the rule missing. Over the 17 nights that chose it (Jul 31 to Aug 16) it played 180 of the 230 games it saw, and it went 126-46-8.",
+            "themes": [
+              "park",
+              "weather",
+              "market",
+              "room"
+            ],
+            "sources": [
+              {
+                "feature": "rule.n_conditions",
+                "raw": "6",
+                "rendered": "6"
+              },
+              {
+                "feature": "rule.n_selected",
+                "raw": "180",
+                "rendered": "180"
+              },
+              {
+                "feature": "rule.window_games",
+                "raw": "230",
+                "rendered": "230"
+              },
+              {
+                "feature": "rule.record",
+                "raw": "126-46-8",
+                "rendered": "126-46-8"
+              },
+              {
+                "feature": "rule.window_start",
+                "raw": "Jul 31",
+                "rendered": "Jul 31"
+              },
+              {
+                "feature": "rule.window_end",
+                "raw": "Aug 16",
+                "rendered": "Aug 16"
+              },
+              {
+                "feature": "rule.window_nights",
+                "raw": "17",
+                "rendered": "17"
               }
-            }
+            ]
           },
-          "rationale_line": "The committee's majority side, taken at the locked pregame line."
+          "rule_name": "The Ballpark and the Carrying Air",
+          "pass_why": "forge_no_bet"
         },
-        "is_bet": true,
-        "price_source": "locked_pregame_line",
+        "is_bet": false,
         "game_case": {
           "status": "ACTIVE",
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
             "The Dodgers and the Rockies meet at Coors Field on Monday.",
-            "DiamondEdge sides with the over on this one.",
             "The Rockies are 50-74 and are 5-5 over their last ten; the Dodgers are 74-51 and have lost 2 in a row. The Dodgers are 7-3 against the Rockies this season."
           ],
-          "text": "The Dodgers and the Rockies meet at Coors Field on Monday.\n\nDiamondEdge sides with the over on this one.\n\nThe Rockies are 50-74 and are 5-5 over their last ten; the Dodgers are 74-51 and have lost 2 in a row. The Dodgers are 7-3 against the Rockies this season.",
+          "text": "The Dodgers and the Rockies meet at Coors Field on Monday.\n\nThe Rockies are 50-74 and are 5-5 over their last ten; the Dodgers are 74-51 and have lost 2 in a row. The Dodgers are 7-3 against the Rockies this season.",
           "blurb": {
-            "text": "The Dodgers and the Rockies meet at Coors Field on Monday. The Dodgers are 7-3 against the Rockies this season. DiamondEdge sides with the over on this one.",
-            "record_line": null,
-            "record_stated": false,
-            "n_words": 28
+            "text": "The Dodgers and the Rockies meet at Coors Field on Monday. The Dodgers are 7-3 against the Rockies this season.",
+            "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
+            "record_stated": true,
+            "n_words": 20
           },
-          "side": "over",
-          "has_pick": true,
-          "derivation": "none \u2014 the side is an input to this generator, and the facts are selected for agreeing with it",
+          "side": null,
+          "has_pick": false,
+          "derivation": "no side was handed to this generator, so nothing here argues one",
           "n_support_facts": 0
         },
-        "signals": [
-          {
-            "text": "High-altitude park at night (1.29x runs)",
-            "dir": "over"
-          }
-        ]
+        "signals": []
       },
       "spread": {
         "status": "LEAN",
@@ -20256,21 +20417,21 @@
         {
           "key": "unified",
           "label": "The DiamondEdge Pick",
-          "status": "PICK",
+          "status": "PASS",
           "is_headline": true,
           "is_served_source": false,
-          "side": "over",
+          "side": null,
           "line": 11.0,
           "vegas_line": 11.0,
-          "price": -107.0,
-          "stars": 2,
-          "score": 2.25,
+          "price": null,
+          "stars": 1,
+          "score": 1.0,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": true,
+          "lead_time": "readiness",
+          "locked": false,
           "expanded_band": false,
-          "pass_why": null,
-          "reason": "Committee pick \u2014 the side won a mostly-quiet room"
+          "pass_why": "forge_no_bet",
+          "reason": "The day's rule read this game and did not call a side."
         },
         {
           "key": "champion",
@@ -20384,7 +20545,7 @@
         "run_line_price_home": 136.0,
         "run_line_price_away": -154.0,
         "book": "lowvig",
-        "captured_at": "2026-08-17T09:35:07Z",
+        "captured_at": "2026-08-17T10:13:58Z",
         "wall": "T-24h",
         "locked_at": null,
         "game_pk": 824320,
@@ -20403,8 +20564,8 @@
       "line_now": {
         "total": 11.0,
         "pregame_total_compared": 11.0,
-        "total_price_over": 103.0,
-        "total_price_under": -118.0,
+        "total_price_over": 100.0,
+        "total_price_under": -115.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
@@ -20413,11 +20574,11 @@
           "pregame_total": 11.0,
           "total": 11.0,
           "move": 0.0,
-          "total_price_over": 103.0,
-          "total_price_under": -118.0
+          "total_price_over": 100.0,
+          "total_price_under": -115.0
         },
         "n_books": 22,
-        "as_of": "2026-08-17T09:34:31Z",
+        "as_of": "2026-08-17T10:11:58Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
@@ -20639,33 +20800,33 @@
         "wall_note": "PROVISIONAL \u2014 at least one voice is still at an earlier wall and will be superseded (not corrected) when its next wall lands. The desk fills in through the day; a seat that is empty or early is a statement about the feed, never about the game."
       },
       "diamondedge": {
-        "action": "LEAN",
-        "desk_agreement": "ALIGNED",
-        "is_bet": true,
-        "rationale_line": "We're taking the over 11.0 at -107 (2\u2605) and the desk is with it \u2014 all four analysts like the over.",
+        "action": "AVOID",
+        "desk_agreement": "NO_BET",
+        "is_bet": false,
+        "rationale_line": "No bet \u2014 all four analysts lean over, but a lean is not a bet and nothing here cleared the price gate.",
         "adaptive_strategy": null,
         "chief": {
           "scope": "pregame",
           "ou_call": {
             "side": "over",
-            "side_basis": "served_bet",
+            "side_basis": "desk_majority",
             "line": 11.0,
-            "line_basis": "served_bet_line",
+            "line_basis": "locked_pregame_total",
             "pregame_total": 11.0,
             "line_matches_pregame_total": true,
             "line_is_locked_pregame": false,
-            "price": -107.0,
+            "price": null,
             "desk_votes": {
               "over": 4,
               "under": 0,
               "no_read": 0
             },
             "desk_majority_side": "over",
-            "desk_agreement": "ALIGNED",
-            "engine_pick_status": "PICK",
-            "engine_pick_side": "over",
-            "stars": 2,
-            "is_bet": true,
+            "desk_agreement": "NO_BET",
+            "engine_pick_status": "PASS",
+            "engine_pick_side": null,
+            "stars": 1,
+            "is_bet": false,
             "note": "side IS the served bet whenever one was served (side_basis=served_bet); it falls back to the desk's own majority lean only when nothing was served, and a lean is never a bet."
           },
           "spread_call": {
@@ -20901,13 +21062,8 @@
             "note": "the desk's weighted combination of the four analysts' disagreement with the price. DISPLAY ONLY \u2014 it is graded nowhere and it never changes the action. Read it as 'where the desk collectively sits versus the number'."
           },
           "coherence": {
-            "the_bet": {
-              "side": "over",
-              "line": 11.0,
-              "price": -107.0,
-              "stars": 2
-            },
-            "is_bet": true,
+            "the_bet": null,
+            "is_bet": false,
             "reference_side": "over",
             "voices": {
               "desk_majority": {
@@ -20926,20 +21082,20 @@
                 "vs_bet": null
               }
             },
-            "all_voices_agree_with_bet": true,
+            "all_voices_agree_with_bet": null,
             "run_line_is_a_separate_market": true,
             "note": "THE BET IS `the_bet` and nothing else on this card is a bet. The desk's majority lean, the desk's weighted combination and the conditions analyst's predicted final score are three DISPLAY readings of the same game; each is reported here with whether it points the same way as the ticket. A voice pointing the other way is information, not a contradiction \u2014 none of them clears a price gate, and none of them is graded. The run line is a separate market and is never expected to agree with a total."
           },
           "consensus_state": "UNANIMOUS",
-          "desk_agreement": "ALIGNED",
-          "action": "LEAN",
+          "desk_agreement": "NO_BET",
+          "action": "AVOID",
           "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
-          "is_bet": true,
-          "confidence_rank": 2,
+          "is_bet": false,
+          "confidence_rank": 1,
           "pattern": null,
           "pattern_line": null,
           "pattern_downgraded": false,
-          "rationale_line": "We're taking the over 11.0 at -107 (2\u2605) and the desk is with it \u2014 all four analysts like the over.",
+          "rationale_line": "No bet \u2014 all four analysts lean over, but a lean is not a bet and nothing here cleared the price gate.",
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": null
