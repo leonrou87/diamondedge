@@ -14449,6 +14449,28 @@ export default function Home() {
         }
         return out + mdBold(txt.slice(at));
       };
+      /* ═══ THE WRITE-UP IS DATED, BECAUSE IT IS A SNAPSHOT AND IT READS LIKE NOW ═══
+         (round 2, 2026-08-17.) On ARI@ATL the Preview says "Nobody has moved this total
+         off the 8.5 it opened at" and the Odds tab, one tab across, says the market's last
+         check read 9. Both are true: the piece was written at the wall the pick was made
+         at, and the market moved after it. Nothing in the pane said so — the prose is in
+         the present perfect on a game two days finished, so a reader auditing the page met
+         a flat contradiction and no way to resolve it. A1 did not create this, but it did
+         put the drift on the screen a tab away, which is where it belongs.
+
+         Not one served word is edited: the piece is stamped with WHEN it was written, from
+         the pick's own `lead_time` and `fp_utc` — the same two fields and the same
+         vocabulary the pick strip uses — and the reader is pointed at the tab that carries
+         what happened after. A wall we cannot put in words gets the shorter sentence
+         rather than an invented hour, and a composed (client-side) preview gets no stamp
+         at all, because it was not written at any wall. */
+      const narrativeDateline = (() => {
+        if (!narrativeParas.length) return "";
+        const pk0: any = (v4GameFor(g) || g || {}).pick;
+        if (!pk0 || typeof pk0 !== "object") return "";
+        const words = LEAD_WORDS[String(pk0.lead_time || "")];
+        return `<p class="pv-dateline">Written when the pick was made${words ? `, about ${words} before first pitch` : ""}. What the market did after that is on the Odds tab.</p>`;
+      })();
       const facts = factRows(g, art);
       const stks = gameStreaks(g).slice(0, 4).map((s: any) =>
         `<span class="stk">${icon(s.icon && IC[s.icon] ? s.icon : iconForText(s.text), "sm")}${esc(cleanBlurb(s.text))}</span>`).join("");
@@ -14531,6 +14553,7 @@ export default function Home() {
                    fragment rather than a piece. */ ""}
               ${narrativeParas.length ? "" : `<div class="wc-k">The setup</div>`}
               ${bodyParas.map((w: string, i: number) => `<p>${paraHtml(w, i)}</p>`).join("")}
+              ${narrativeDateline}
               ${stks ? `<div class="pv-stks">${stks}</div>` : ""}
               ${facts.length ? `<div class="ls-facts">${facts.join("")}</div>` : ""}
             </div>`

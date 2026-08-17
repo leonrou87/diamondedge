@@ -1566,6 +1566,10 @@ details.more[open]>summary::after{transform:rotate(180deg)}
    the type scale lives on `.whycard.preview` and the old selector is gone with the card. */
 .whycard.preview p{font-size:15px;line-height:1.62}
 .whycard.preview p + p{margin-top:11px}
+/* THE DATELINE UNDER THE PIECE. Deliberately quieter and smaller than the prose it
+   dates — it is provenance, not another paragraph — and separated by a rule so it
+   cannot be read as the write-up's own last sentence. */
+.whycard.preview p.pv-dateline{margin-top:14px;padding-top:10px;border-top:1px solid var(--line);font-family:var(--sans);font-size:11.5px;line-height:1.5;color:var(--ink4)}
 @media(max-width:640px){
   .hbar{padding:8px max(14px,var(--sal));gap:8px}
   .brand h1{font-size:18px}
