@@ -14469,7 +14469,13 @@ export default function Home() {
         const pk0: any = (v4GameFor(g) || g || {}).pick;
         if (!pk0 || typeof pk0 !== "object") return "";
         const words = LEAD_WORDS[String(pk0.lead_time || "")];
-        return `<p class="pv-dateline">Written when the pick was made${words ? `, about ${words} before first pitch` : ""}. What the market did after that is on the Odds tab.</p>`;
+        /* …AND IT DOES NOT DATE A PICK THAT WAS NEVER MADE. Caught on production the hour
+           this shipped: the backend writes the case for PASSED games too, so today's board
+           — 10 passes of 11 — stamped "Written when the pick was made" on ten games where
+           the whole point is that no pick was made. A pass was still read at a wall, and
+           that is what the stamp says on one. */
+        const took = !!(lead && isPick(lead));
+        return `<p class="pv-dateline">Written when ${took ? "the pick was made" : "this game was read"}${words ? `, about ${words} before first pitch` : ""}. What the market did after that is on the Odds tab.</p>`;
       })();
       const facts = factRows(g, art);
       const stks = gameStreaks(g).slice(0, 4).map((s: any) =>
