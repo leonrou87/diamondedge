@@ -9607,6 +9607,25 @@ export default function Home() {
        the tile skipped the whole verdict block on a game with no pick (fixed alongside this).
        Read the human line out of the object; accept a bare string too, because the contract
        has shipped both. */
+    /* THE PER-GAME WAIT LIVES ON THE TRACKER COPY, NOT THE BOARD'S (adaptive-era audit,
+       2026-08-17, measured live). The same WNBA game rides two feeds: the pregame board
+       feed (`pregame_picks` — the copy the tile actually renders) ships `picks_eta: null`
+       and a generic wall note, while the tracker board (`msData`, the copy loadMsSport
+       fetches) carries the served per-game stamp `{line: "No posted total yet", why,
+       is_per_game: true, basis: "ms_wall"}` (desk_policy.redact_tracker_card). Reading
+       only the object in hand missed the stamp on every board tile. This helper answers
+       from whichever copy carries it — own card first, tracker copy by sport+id second
+       (msCardFor, the same lookup the adaptive stamp already trusts) — and returns the
+       CARD alongside the stamp so its sibling `premium_note` is read off the same copy,
+       never mixed across feeds. Null unless the server actually stamped a per-game wait. */
+    function perGameWaitOf(g: any) {
+      const own = (g && ((g.pick && g.pick.picks_eta) || g.picks_eta)) || null;
+      if (own && typeof own === "object" && own.is_per_game === true) return { pe: own, card: g };
+      const t = msCardFor(g);
+      const pe2 = t && t.picks_eta;
+      if (pe2 && typeof pe2 === "object" && pe2.is_per_game === true) return { pe: pe2, card: t };
+      return null;
+    }
     function picksEtaRaw(g: any) {
       const src = livePayload || payload || {};
       const line = (c: any) => {
@@ -9634,6 +9653,9 @@ export default function Home() {
       };
       const cand = [
         g && g.picks_eta, g && g.pick && g.pick.picks_eta,
+        // the tracker copy of a multisport game — the one feed that carries the
+        // per-game "No posted total yet" stamp (see perGameWaitOf above)
+        (() => { const w = perGameWaitOf(g); return w && w.pe; })(),
         byId(livePayload), byId(payload), byId(betaLiveData), byId(betaData),
         sameDay(livePayload), sameDay(payload), sameDay(betaLiveData), sameDay(betaData),
         (src as any).picks_eta,
@@ -9829,10 +9851,11 @@ export default function Home() {
          game the book had not priced. The served note leads verbatim (it carries no
          relative day word); the day/time half stays composed below, same as ever. */
       const msLead = (() => {
-        if (!pe || pe.is_per_game !== true) return "";
-        const note = g && typeof g.premium_note === "string" ? g.premium_note.trim() : "";
+        const wt = perGameWaitOf(g);
+        if (!wt) return "";
+        const note = wt.card && typeof wt.card.premium_note === "string" ? wt.card.premium_note.trim() : "";
         if (note) return `${note.replace(/\.+$/, "")}. `;
-        const w2 = typeof pe.why === "string" ? pe.why.trim() : "";
+        const w2 = typeof wt.pe.why === "string" ? wt.pe.why.trim() : "";
         return w2 ? `${(w2.charAt(0).toUpperCase() + w2.slice(1)).replace(/\.+$/, "")}. ` : "";
       })();
       const d = gameDateISO(g);
@@ -10309,8 +10332,10 @@ export default function Home() {
              on DATA, which the date header's when-picks-post sentence does not cover.
              Measured live on the Aug 19 WNBA board: both no-number cards rendered the
              quiet card and the served tag never showed. A future card whose wait is
-             per-game wears the tag; every other future card stays quiet as designed. */
-          ? (!(isFutureGame(g) && !(g && g.picks_eta && typeof g.picks_eta === "object" && g.picks_eta.is_per_game === true))
+             per-game wears the tag; every other future card stays quiet as designed.
+             The stamp rides the TRACKER copy of the game, not the board feed's copy —
+             perGameWaitOf answers from either (see its note). */
+          ? (!(isFutureGame(g) && !perGameWaitOf(g))
               ? `<div class="tl-verdict v-pass">
                    <div class="tv-callrow">${compactDePickHtml(g, null, "tile", true)}</div>
                  </div>`
