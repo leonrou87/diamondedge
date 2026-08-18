@@ -12,9 +12,11 @@ import { topLevelStamp } from "./stamp";
 
    WHY THIS ROUTE EXISTS (2026-08-08).
    The KytePush Supabase project ran to 208% of the FREE plan's 5 GB egress
-   allowance on NINE monthly active users. Grace ends 2026-09-04, after which
-   every app on the project (this one, CLOUT, Nanny, THE DOCKET) starts
-   returning HTTP 402. Upgrading does not fix it: the access pattern was the bug.
+   allowance on NINE monthly active users. Grace was to end 2026-09-04; the
+   vendor's 2026-08-14 notice cut it to 2026-08-17, past which an over-quota
+   org that has not upgraded answers HTTP 402 on every app on the project
+   (this one, CLOUT, Nanny, THE DOCKET). Upgrading alone does not fix it: the
+   access pattern was the bug.
    Every browser tab fetched `slate_snapshots?key=eq.<k>&select=payload` DIRECTLY
    from Supabase, so N readers cost N full payloads and the free 5 GB of CACHED
    egress sat at exactly 0 used. This route is the cache that was missing.

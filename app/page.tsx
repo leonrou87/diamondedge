@@ -796,8 +796,10 @@ export default function Home() {
     /* ═══════════ EVERY SNAPSHOT READ GOES THROUGH THE EDGE, NOT THE DATABASE ═══════════
        2026-08-08. The KytePush Supabase project hit 208% of the free plan's 5 GB egress
        allowance — 10.398 GB — on NINE monthly active users. ~1.15 GB per user per month.
-       Grace ends 2026-09-04, after which every app on that project (this one, CLOUT,
-       Nanny, THE DOCKET) returns HTTP 402. Upgrading does not fix it: the same pattern at
+       Grace was to end 2026-09-04; the vendor's 2026-08-14 notice (usage still climbing,
+       13.77 GB of 5.5 GB) cut it to 2026-08-17, past which an over-quota org that has not
+       upgraded answers HTTP 402 on every app on the project (this one, CLOUT, Nanny,
+       THE DOCKET). Upgrading alone does not fix it: the same pattern at
        1,000 users is ~1.15 TB/month and Pro ships 250 GB. The access pattern was the bug.
 
        The pattern: this function fetched slate_snapshots DIRECTLY from every browser tab.
@@ -932,9 +934,11 @@ export default function Home() {
          healthy and blamed the DATE. A total database outage was presented to the reader as a
          confident fact about the world.
 
-         This is not hypothetical and it is dated: Supabase egress is projected at ~7x the free
-         allowance and the grace period ends 2026-09-04, at which point the project answers 402
-         and every reader sees an empty board with no indication anything is wrong.
+         This is not hypothetical and it is dated: Supabase egress ran past the free
+         allowance (13.77 GB of 5.5 GB in the vendor's 2026-08-14 notice, which also cut the
+         grace deadline from 2026-09-04 to 2026-08-17). Past that deadline an over-quota org
+         that has not upgraded answers 402 and every reader sees an empty board with no
+         indication anything is wrong.
 
          Throwing is what makes the honest state reachable — `renderLoadError()` ("Couldn't
          reach the board / Retry") already exists and callers already catch. Note the `lite`
@@ -2007,7 +2011,8 @@ export default function Home() {
        true}, and that cookie pulled /api/premium/picks_unified_live 200 with the
        night's three live picks in the clear, where anonymous gets 402.
        The client no longer has a path to it and the route no longer honours it.
-       The owner's supported way in is unchanged and stronger: DE_PREMIUM_CODES. */
+       There is no "way in" to restore: the paywall itself was deleted on 2026-08-16,
+       and DE_PREMIUM_CODES is read by nothing in this repo (see app/api/session/route.ts). */
     /* THE BOARD IS THE SAME BYTES FOR EVERY READER NOW (2026-08-16), so there
        is no "entitlement changed, re-pull everything" event any more. This
        remains as the SIGN-IN refresh: signing in or out changes the account
@@ -6530,7 +6535,7 @@ export default function Home() {
        here. When the payload does carry a venue id, this map should give way to it. */
     /* PARK MASTHEADS REMOVED ENTIRELY (Leon, 2026-08-10: "really didn't work at all,
        remove all of it"). PARK_BY_HOME + parkWashUrl deleted with the hero park element;
-       public/parks/*.webp remain on disk, unreferenced. */
+       public/parks/*.webp deleted 2026-08-17 (32 files, zero references). */
     const HERO_TINT: any = {
       fire:   ["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
       weather:["rgba(255,138,76,.30)", "rgba(217,44,71,.16)"],
@@ -7074,6 +7079,12 @@ export default function Home() {
 
     // (e) Pitcher line chips (MLB): starter + ERA as compact chips — tap for the game log.
     function vizPitchers(g: any) {
+      /* A CHIP IS A PREVIEW SURFACE (UX iter 2). Once the game has started, the Stats
+         pane's "On the mound" cards carry the same two men with their season line AND
+         the day's line — the chips were the identical names and ERAs a second time on
+         one open page (measured on prod: one starter's name printed 5x). Before first
+         pitch the chips ARE the mound surface, so pregame they stay. */
+      if (startedKind(gameState(g).kind)) return "";
       const pit = (g.pregame_intel && g.pregame_intel.pitchers) || {};
       // Source each side from the served intel OR the pitchers_v4 feed — either alone is enough.
       const chip = (ab: any, side: "away" | "home") => {
@@ -7081,9 +7092,13 @@ export default function Home() {
         const fd = pitcherFeedFor(g, side);
         const name = p.name || (fd && fd.name);
         if (!name) return "";
+        // the same 120px midfield.mlbstatic spot the player card loads — silhouette-safe,
+        // lazy, initials layered underneath (see playerAvatar's note on why onerror can't be
+        // the fallback). A chip with no id simply carries no face, never a broken image.
+        const pid = p.id != null ? p.id : (fd && fd.id != null ? fd.id : null);
         const era = p.era != null ? p.era : (fd && fd.era != null ? fd.era : null);
         const line = fd && (fd.wl || fd.whip != null) ? `${fd.wl ? esc(fd.wl) : ""}${fd.whip != null ? ` · ${num(fd.whip, 2)} WHIP` : ""}` : "";
-        return `<div class="pit-chip tap" data-pitcher="${esc(String(g.game_id))}|${side}" role="button" tabindex="0"><span class="pit-ab">${esc(ab)}</span><span class="pit-nm">${esc(name)}</span>${era != null ? `<span class="pit-era">${num(era, 2)} ERA</span>` : ""}${line ? `<span class="pit-sub">${line}</span>` : ""}<span class="pit-more">›</span></div>`;
+        return `<div class="pit-chip tap${pid != null ? " has-face" : ""}" data-pitcher="${esc(String(g.game_id))}|${side}" role="button" tabindex="0"><span class="pit-ab">${esc(ab)}</span>${pid != null ? playerAvatar(pid, name, "xs") : ""}<span class="pit-nm">${esc(name)}</span>${era != null ? `<span class="pit-era">${num(era, 2)} ERA</span>` : ""}${line ? `<span class="pit-sub">${line}</span>` : ""}<span class="pit-more">›</span></div>`;
       };
       const a = chip(g.away_abbr, "away"), h = chip(g.home_abbr, "home");
       if (!a && !h) return "";
@@ -7225,12 +7240,13 @@ export default function Home() {
       }
       const pi = g.pregame_intel;
       if (!pi) return rows;
-      const pit = pi.pitchers || {};
-      if ((pit.away && pit.away.name) || (pit.home && pit.home.name)) {
-        const pp = (ab: any, p: any) => p && p.name ? `${ab} ${esc(p.name)}${p.era != null ? ` (${num(p.era, 2)} ERA)` : ""}` : null;
-        const t = [pp(g.away_abbr, pit.away), pp(g.home_abbr, pit.home)].filter(Boolean).join(" vs ");
-        if (t) rows.push(fr("pitcher", "Mound", t));
-      }
+      /* NO "MOUND" ROW ANY MORE (UX iter 2). Every pane that renders these rows renders
+         the mound beside them already — pregame the "Starting pitchers" chips (same names,
+         same ERAs, built from the same intel plus the pitchers_v4 feed, which reaches MORE
+         games than this row could), and once the game starts the Stats pane's "On the
+         mound" cards. Measured on prod: one starter's name printed 5x on a single open
+         game page, and this row was one of them. Served article facts above are untouched
+         — those are the desk's own words. */
       if (pi.venue) rows.push(fr("venue", "Venue", `${esc(pi.venue)}${pi.park_factor != null ? ` · park ${num(pi.park_factor, 2)}` : ""}`));
       const f = pi.form || {};
       if (f.away && f.away.last10_record && f.home && f.home.last10_record) {
@@ -7243,7 +7259,11 @@ export default function Home() {
         rows.push(fr("rest", "Rest", [rr(g.away_abbr, r.away), rr(g.home_abbr, r.home)].filter(Boolean).join(" · ")));
       }
       const h = pi.h2h;
-      if (h && h.record && h.games) rows.push(fr("h2h", "Season series", `${esc(String(h.record))} across ${h.games} meetings`));
+      /* The "Season series" row only renders when the Head-to-head card (vizH2H) cannot —
+         both read pi.h2h, and a page was printing "SEASON SERIES" twice: once as the split
+         bar under its own heading, once as this row in Game notes. The row survives only
+         for the payload shape the bar can't draw (a record string with no win split). */
+      if (h && h.record && h.games && !vizH2H(g)) rows.push(fr("h2h", "Season series", `${esc(String(h.record))} across ${h.games} meetings`));
       return rows.slice(0, 4);
     }
 
@@ -10265,8 +10285,17 @@ export default function Home() {
              was skipped) read as a pass nobody made. Today's pending cards get the same
              incoming tag their read siblings already wear; future dates keep the quiet
              card, because there the header carries the whole answer. The "O/U —" dash
-             this row once shipped is gone at the source (see compactDePickHtml). */
-          ? (!isFutureGame(g)
+             this row once shipped is gone at the source (see compactDePickHtml).
+
+             …UNLESS THE SERVER NAMED A PER-GAME WAIT (adaptive-era audit, 2026-08-17).
+             The tracker gate stamps `picks_eta` with `is_per_game: true` onto a pending
+             card that has NO posted number (desk_policy.redact_tracker_card, basis
+             "ms_wall") precisely so the tile tag can say "No posted total yet" — waiting
+             on DATA, which the date header's when-picks-post sentence does not cover.
+             Measured live on the Aug 19 WNBA board: both no-number cards rendered the
+             quiet card and the served tag never showed. A future card whose wait is
+             per-game wears the tag; every other future card stays quiet as designed. */
+          ? (!(isFutureGame(g) && !(g && g.picks_eta && typeof g.picks_eta === "object" && g.picks_eta.is_per_game === true))
               ? `<div class="tl-verdict v-pass">
                    <div class="tv-callrow">${compactDePickHtml(g, null, "tile", true)}</div>
                  </div>`
@@ -11298,8 +11327,9 @@ export default function Home() {
            the cumulative line beside it. Rides inside `record`, which the public gate
            passes whole, so this arrives the moment the engine publishes it.
          · payload.adaptive — the selector's own status (today's frozen rule per regime).
-           NOT on the public tracker allowlist yet (v4/serve/desk_policy.py
-           _TRACKER_PUBLIC_TOP) — entitled sessions may carry it; read tolerantly.
+           Owner-allowlisted on the public tracker gate since platform commit 2ff407e
+           (v4/serve/desk_policy.py _TRACKER_PUBLIC_TOP) — served publicly, and still
+           read tolerantly because cached pre-era payloads outlive the deploy.
          · games[].adaptive — the stamp on a frozen pick's card. Settled cards ship whole,
            so it arrives publicly once a game grades; upcoming public cards drop it
            (not on _TRACKER_CARD_PUBLIC) and render exactly as before. */
@@ -11392,15 +11422,19 @@ export default function Home() {
           ? new Date(fromISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
           : "";
         // today's frozen rule, straight off the selector's own served status — the one
-        // sentence here that names a strategy, and only when the payload names it first
+        // sentence here that names a strategy, and only when the payload names it first.
+        /* THE FLOOR IS GONE, AND SO IS ITS SENTENCE (owner order, D_MIN=0 — platform
+           commit 2ff407e; audited live 2026-08-17). With the divergence floor removed,
+           `below_floor` only ever records a tie resolved to the default, so the old
+           "doesn't have enough graded nights yet" copy stated a reason that is no longer
+           true of any stamp. One sentence for every frozen rule — including the night the
+           standard approach keeps on its own merit. */
         let todayTx = "";
         if (ast && ast.today && typeof ast.today === "object") {
           const t = (Object.values(ast.today) as any[]).find((x: any) => x && x.candidate);
           if (t) {
             const w = Number(t.window_nights);
-            todayTx = t.below_floor
-              ? " Tonight the standard approach held — this league doesn't have enough graded nights yet to hand the night to anything else."
-              : ` Tonight's rule: ${esc(msCandidateWords(t.candidate))} — the best graded record here${isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} night${Math.round(w) === 1 ? "" : "s"}` : ""}.`;
+            todayTx = ` Tonight's rule: ${esc(msCandidateWords(t.candidate))} — the rule with the best graded record here${isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} night${Math.round(w) === 1 ? "" : "s"}` : ""}.`;
           }
         } else if (ast && ast.status === "armed_no_history") {
           todayTx = " Nothing has been chosen yet — this league has no graded history for the nightly check to read.";
@@ -14686,17 +14720,20 @@ export default function Home() {
          card carries none and this renders nothing — the page is byte-identical to before.
          No MLB surface can reach here: only the tracker boards' cards carry `adaptive`,
          and msCardFor never matches an MLB game. Nothing below is composed without its
-         served field — the below-floor sentence states the mechanism, never the numbers
-         inside the served reason string (those are the engine's own diagnostics). */
+         served field, and the served diagnostics (`below_floor`, `null_p`) never reach
+         reader prose — they are the engine's own bookkeeping.
+         THE BELOW-FLOOR SENTENCE IS RETIRED (owner order, D_MIN=0 — platform commit
+         2ff407e; caught live on the 2026-08-17 GS/DAL card). With the floor removed,
+         `below_floor` only ever records a tie resolved to the default, and this note was
+         still telling readers the league "didn't have enough nights yet" over a stamp
+         whose window had six graded nights and every candidate scored. One sentence for
+         every frozen rule — the standard approach keeping the night on merit included. */
       const adaptNote = safeHtml("adaptive pick note", () => {
         const a = msAdaptiveStampOf(g) || msAdaptiveStampOf(msCardFor(g));
         if (!a) return "";
         const w = Number(a.selection_window);
         const windowTx = isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} graded night${Math.round(w) === 1 ? "" : "s"}` : "";
-        const ruleTx = a.below_floor
-          ? `<b>${esc(msCandidateWords(a.candidate_id))}</b> — held by default: the nightly re-check of this league's graded results didn't have enough nights yet to promote anything else`
-          : `<b>${esc(msCandidateWords(a.candidate_id))}</b> — the rule with the best graded record in this league${windowTx}`;
-        return `<div class="gp-adaptnote">The rule frozen for this night: ${ruleTx}.</div>`;
+        return `<div class="gp-adaptnote">The rule frozen for this night: <b>${esc(msCandidateWords(a.candidate_id))}</b> — the rule with the best graded record in this league${windowTx}.</div>`;
       }, "");
       const showLive = startedKind(gs.kind);
       const isFinal = gs.kind === "final";

@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-17T23:24:53Z",
+  "generated_utc": "2026-08-18T05:25:44Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -3516,7 +3516,7 @@
         "engine": "adaptive_desk",
         "is_engine_changeover": false,
         "basis": "process_replay",
-        "no_action_reason": "strategy_passed",
+        "no_action_reason": null,
         "walk_forward": true,
         "counts_in_record": false,
         "model_generation": "v2",
@@ -3700,13 +3700,13 @@
             "rank": 2
           },
           "lean": {
-            "win": 43,
-            "loss": 64,
+            "win": 51,
+            "loss": 66,
             "push": 6,
-            "n": 113,
-            "record": "43-64-6",
-            "units_flat_-110": -24.909,
-            "hit_rate": 0.4019,
+            "n": 123,
+            "record": "51-66-6",
+            "units_flat_-110": -19.636,
+            "hit_rate": 0.4359,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3723,8 +3723,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 144,
-        "n_tiered": 144,
+        "n_graded_total": 154,
+        "n_tiered": 154,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4269,19 +4269,19 @@
             ],
             "label": "10-19",
             "is_high_band": false,
-            "n": 1,
-            "win": 0,
+            "n": 2,
+            "win": 1,
             "loss": 1,
             "push": 0,
-            "record": "0-1-0",
-            "decided": 1,
-            "hit_rate": 0.0,
+            "record": "1-1-0",
+            "decided": 2,
+            "hit_rate": 0.5,
             "hit_rate_ci": [
-              0.0,
-              0.7935
+              0.0945,
+              0.9055
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -1.0
+            "units_flat_-110": -0.091
           },
           {
             "band": [
@@ -4290,19 +4290,19 @@
             ],
             "label": "20-29",
             "is_high_band": false,
-            "n": 4,
-            "win": 2,
+            "n": 5,
+            "win": 3,
             "loss": 1,
             "push": 1,
-            "record": "2-1-1",
-            "decided": 3,
-            "hit_rate": 0.6667,
+            "record": "3-1-1",
+            "decided": 4,
+            "hit_rate": 0.75,
             "hit_rate_ci": [
-              0.2077,
-              0.9385
+              0.3006,
+              0.9544
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": 0.818
+            "units_flat_-110": 1.727
           },
           {
             "band": [
@@ -4311,19 +4311,19 @@
             ],
             "label": "30-39",
             "is_high_band": false,
-            "n": 33,
-            "win": 14,
-            "loss": 17,
+            "n": 37,
+            "win": 17,
+            "loss": 18,
             "push": 2,
-            "record": "14-17-2",
-            "decided": 31,
-            "hit_rate": 0.4516,
+            "record": "17-18-2",
+            "decided": 35,
+            "hit_rate": 0.4857,
             "hit_rate_ci": [
-              0.2916,
-              0.6223
+              0.3299,
+              0.6443
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -4.273
+            "units_flat_-110": -2.545
           },
           {
             "band": [
@@ -4332,19 +4332,19 @@
             ],
             "label": "40-49",
             "is_high_band": false,
-            "n": 1,
+            "n": 2,
             "win": 0,
-            "loss": 1,
+            "loss": 2,
             "push": 0,
-            "record": "0-1-0",
-            "decided": 1,
+            "record": "0-2-0",
+            "decided": 2,
             "hit_rate": 0.0,
             "hit_rate_ci": [
               0.0,
-              0.7935
+              0.6576
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -1.0
+            "units_flat_-110": -2.0
           },
           {
             "band": [
@@ -4353,19 +4353,19 @@
             ],
             "label": "50-59",
             "is_high_band": false,
-            "n": 41,
-            "win": 13,
+            "n": 44,
+            "win": 16,
             "loss": 25,
             "push": 3,
-            "record": "13-25-3",
-            "decided": 38,
-            "hit_rate": 0.3421,
+            "record": "16-25-3",
+            "decided": 41,
+            "hit_rate": 0.3902,
             "hit_rate_ci": [
-              0.2121,
-              0.5011
+              0.2566,
+              0.5427
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -13.182
+            "units_flat_-110": -10.454
           },
           {
             "band": [
@@ -4470,31 +4470,31 @@
           "units_flat_-110": -0.454
         },
         "below_high_band": {
-          "n": 134,
-          "win": 59,
-          "loss": 69,
+          "n": 144,
+          "win": 67,
+          "loss": 71,
           "push": 6,
-          "record": "59-69-6",
-          "decided": 128,
-          "hit_rate": 0.4609,
+          "record": "67-71-6",
+          "decided": 138,
+          "hit_rate": 0.4855,
           "hit_rate_ci": [
-            0.377,
-            0.5472
+            0.4036,
+            0.5682
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -15.363
+          "units_flat_-110": -10.09
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 10,
-          "n_decided_rest": 128,
+          "n_decided_rest": 138,
           "hit_rate_high": 0.5,
-          "hit_rate_rest": 0.4609,
-          "difference": 0.0391,
+          "hit_rate_rest": 0.4855,
+          "difference": 0.0145,
           "difference_ci": [
-            -0.2381,
-            0.3155
+            -0.2616,
+            0.2903
           ],
           "difference_ci_level": 0.95,
           "p_value": 1.0,
@@ -4503,8 +4503,8 @@
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 10 decided picks at 90+ against 128 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.238 to +0.316 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 2567,
+          "claim": "NOT ENOUGH PICKS TO TELL. 10 decided picks at 90+ against 138 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.262 to +0.290 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 18680,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4588,11 +4588,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 144,
-        "n_scored": 144,
+        "n_total": 154,
+        "n_scored": 154,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 144
+        "n_graded_total": 154
       }
     },
     "streaks": {
@@ -4609,39 +4609,39 @@
       "by_analyst": {
         "vega": {
           "current": {
-            "type": "loss",
-            "length": 2
+            "type": "win",
+            "length": 5
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 544
+          "n_decided": 554
         },
         "atlas": {
           "current": {
-            "type": "loss",
-            "length": 4
+            "type": "win",
+            "length": 5
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 544
+          "n_decided": 554
         },
         "nova": {
-          "current": {
-            "type": "win",
-            "length": 13
-          },
-          "best_win_streak": 13,
-          "best_loss_streak": 10,
-          "n_decided": 544
-        },
-        "scout": {
           "current": {
             "type": "loss",
             "length": 1
           },
+          "best_win_streak": 13,
+          "best_loss_streak": 10,
+          "n_decided": 554
+        },
+        "scout": {
+          "current": {
+            "type": "win",
+            "length": 1
+          },
           "best_win_streak": 10,
           "best_loss_streak": 10,
-          "n_decided": 544
+          "n_decided": 554
         }
       },
       "analyst_order": [
@@ -4855,17 +4855,17 @@
       "summary": "ARCHIVE vs DISPLAY. The write-once served-pick stores are the ARCHIVE layer: append-only, immutable, hash-pinned, never the board. The adaptive desk is the DISPLAY layer: one strategy locked per date from strictly-prior history, and the only thing the site shows or counts. The two populations disagree by design from 2026-08-02; each is reconciled against its OWN ledger, never against the other."
     },
     "overall": {
-      "n": 76,
-      "win": 41,
-      "loss": 30,
+      "n": 81,
+      "win": 44,
+      "loss": 32,
       "push": 5,
-      "roi": 0.1366,
-      "hit_rate": 0.5775,
-      "units_flat": 9.698,
+      "roi": 0.1369,
+      "hit_rate": 0.5789,
+      "units_flat": 10.406,
       "units_weighted": {
-        "units": 18.491,
-        "staked": 139.0,
-        "roi": 0.133,
+        "units": 19.907,
+        "staked": 149.0,
+        "roi": 0.1336,
         "n_offladder_flat_1u": 0
       }
     },
@@ -4887,17 +4887,17 @@
         "includes_expanded_n": 0
       },
       "4": {
-        "n": 17,
-        "win": 11,
-        "loss": 4,
+        "n": 22,
+        "win": 14,
+        "loss": 6,
         "push": 2,
-        "roi": 0.4404,
-        "hit_rate": 0.7333,
-        "units_flat": 6.606,
+        "roi": 0.3657,
+        "hit_rate": 0.7,
+        "units_flat": 7.314,
         "units_weighted": {
-          "units": 13.212,
-          "staked": 30.0,
-          "roi": 0.4404,
+          "units": 14.628,
+          "staked": 40.0,
+          "roi": 0.3657,
           "n_offladder_flat_1u": 0
         },
         "includes_expanded_n": 0
@@ -4967,17 +4967,17 @@
         }
       },
       "adaptive_desk": {
-        "n": 73,
-        "win": 39,
-        "loss": 29,
+        "n": 78,
+        "win": 42,
+        "loss": 31,
         "push": 5,
-        "roi": 0.1293,
-        "hit_rate": 0.5735,
-        "units_flat": 8.793,
+        "roi": 0.1302,
+        "hit_rate": 0.5753,
+        "units_flat": 9.501,
         "units_weighted": {
-          "units": 17.586,
-          "staked": 136.0,
-          "roi": 0.1293,
+          "units": 19.002,
+          "staked": 146.0,
+          "roi": 0.1302,
           "n_offladder_flat_1u": 0
         }
       },
@@ -5035,7 +5035,7 @@
       "nightly_engine",
       "strategy_forge"
     ],
-    "n_unified_picks": 76,
+    "n_unified_picks": 81,
     "no_double_count": true,
     "expanded_band": {
       "active_from": "2026-07-24",
@@ -5183,6 +5183,12 @@
           "units_flat": 9.698,
           "units_weighted": 18.491,
           "n": 76
+        },
+        {
+          "date": "2026-08-17",
+          "units_flat": 10.406,
+          "units_weighted": 19.907,
+          "n": 81
         }
       ],
       "by_star_perf": {
@@ -5192,9 +5198,9 @@
           "roi": 0.0413
         },
         "4": {
-          "n": 17,
-          "hit": 0.7333,
-          "roi": 0.4404
+          "n": 22,
+          "hit": 0.7,
+          "roi": 0.3657
         },
         "3": {
           "n": 3,
@@ -5210,20 +5216,20 @@
       "calibration_buckets": [
         {
           "bucket_mid": 0.475,
-          "n": 33,
-          "predicted": 0.4915,
-          "realized": 0.5152
+          "n": 35,
+          "predicted": 0.4912,
+          "realized": 0.5143
         },
         {
           "bucket_mid": 0.525,
-          "n": 34,
-          "predicted": 0.5099,
-          "realized": 0.6176
+          "n": 36,
+          "predicted": 0.5103,
+          "realized": 0.6111
         },
         {
           "bucket_mid": 0.575,
-          "n": 1,
-          "predicted": 0.5568,
+          "n": 2,
+          "predicted": 0.5658,
           "realized": 1.0
         }
       ],
@@ -5240,13 +5246,13 @@
         },
         {
           "month": "2026-08",
-          "n": 70,
-          "win": 35,
-          "loss": 30,
+          "n": 75,
+          "win": 38,
+          "loss": 32,
           "push": 5,
-          "hit": 0.5385,
-          "roi": 0.0595,
-          "units_flat": 3.871
+          "hit": 0.5429,
+          "roi": 0.0654,
+          "units_flat": 4.579
         }
       ],
       "streaks": {
@@ -5435,38 +5441,38 @@
         "what": "The one pick we actually serve on this game: the champion's play if it has one, otherwise the model's best playable lean, otherwise a PASS.",
         "is_headline": true,
         "activation_date": "2026-07-20",
-        "n": 76,
-        "win": 41,
-        "loss": 30,
+        "n": 81,
+        "win": 44,
+        "loss": 32,
         "push": 5,
-        "roi": 0.1366,
-        "hit_rate": 0.5775,
-        "units_flat": 9.698,
+        "roi": 0.1369,
+        "hit_rate": 0.5789,
+        "units_flat": 10.406,
         "units_weighted": {
-          "units": 18.491,
-          "staked": 139.0,
-          "roi": 0.133,
+          "units": 19.907,
+          "staked": 149.0,
+          "roi": 0.1336,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-30",
-        "last_graded_date": "2026-08-15",
+        "last_graded_date": "2026-08-17",
         "evidence_split": {
           "unknown": {
-            "n": 76,
-            "win": 41,
-            "loss": 30,
+            "n": 81,
+            "win": 44,
+            "loss": 32,
             "push": 5,
-            "roi": 0.1366,
-            "hit_rate": 0.5775,
-            "units_flat": 9.698,
+            "roi": 0.1369,
+            "hit_rate": 0.5789,
+            "units_flat": 10.406,
             "units_weighted": {
-              "units": 18.491,
-              "staked": 139.0,
-              "roi": 0.133,
+              "units": 19.907,
+              "staked": 149.0,
+              "roi": 0.1336,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-30",
-            "last_graded_date": "2026-08-15",
+            "last_graded_date": "2026-08-17",
             "kind": "live",
             "what": "source not stamped"
           }
@@ -5950,29 +5956,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 561,
-          "win": 269,
-          "loss": 275,
+          "n": 571,
+          "win": 277,
+          "loss": 277,
           "push": 17,
-          "hit_rate": 0.4945,
-          "decided": 544,
+          "hit_rate": 0.5,
+          "decided": 554,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4527,
-            0.5364
+            0.4585,
+            0.5415
           ],
-          "last10": "W-W-L-L-W-L-L-W-L-L",
+          "last10": "W-W-W-L-L-W-W-W-W-W",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-16",
+          "last_date": "2026-08-17",
           "n_reconstructed_oos": 331,
-          "n_live": 230,
-          "own_side_over_rate": 0.6096,
-          "mean_abs_edge_vs_market": 0.0154,
+          "n_live": 240,
+          "own_side_over_rate": 0.6165,
+          "mean_abs_edge_vs_market": 0.0155,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 230 were served live; the arithmetic is identical either way because the model is identical either way. This is the price analyst's own ledger, graded separately from the product pick."
+          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 240 were served live; the arithmetic is identical either way because the model is identical either way. This is the price analyst's own ledger, graded separately from the product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -5987,29 +5993,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 561,
-          "win": 253,
-          "loss": 291,
+          "n": 571,
+          "win": 260,
+          "loss": 294,
           "push": 17,
-          "hit_rate": 0.4651,
-          "decided": 544,
+          "hit_rate": 0.4693,
+          "decided": 554,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4236,
-            0.5071
+            0.4281,
+            0.5109
           ],
-          "last10": "W-L-L-W-W-W-L-L-L-L",
+          "last10": "L-W-L-W-L-W-W-W-W-W",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-16",
+          "last_date": "2026-08-17",
           "n_reconstructed_oos": 331,
-          "n_live": 230,
-          "own_side_over_rate": 0.5116,
-          "mean_abs_edge_vs_market": 0.0298,
+          "n_live": 240,
+          "own_side_over_rate": 0.5149,
+          "mean_abs_edge_vs_market": 0.03,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 230 were served live; the arithmetic is identical either way because the model is identical either way. This is the conditions analyst's own ledger, graded separately from the product pick."
+          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 240 were served live; the arithmetic is identical either way because the model is identical either way. This is the conditions analyst's own ledger, graded separately from the product pick."
         },
         "nova": {
           "key": "nova",
@@ -6024,29 +6030,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 561,
-          "win": 275,
-          "loss": 269,
+          "n": 571,
+          "win": 280,
+          "loss": 274,
           "push": 17,
-          "hit_rate": 0.5055,
-          "decided": 544,
+          "hit_rate": 0.5054,
+          "decided": 554,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4636,
-            0.5473
+            0.4639,
+            0.5469
           ],
-          "last10": "W-W-W-W-W-W-W-W-W-W",
+          "last10": "L-W-W-W-L-L-W-L-W-L",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-16",
+          "last_date": "2026-08-17",
           "n_reconstructed_oos": 331,
-          "n_live": 230,
+          "n_live": 240,
           "own_side_over_rate": 0.4991,
-          "mean_abs_edge_vs_market": 0.0219,
+          "mean_abs_edge_vs_market": 0.0218,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 230 were served live; the arithmetic is identical either way because the model is identical either way. This is the hitting analyst's own ledger, graded separately from the product pick."
+          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 240 were served live; the arithmetic is identical either way because the model is identical either way. This is the hitting analyst's own ledger, graded separately from the product pick."
         },
         "scout": {
           "key": "scout",
@@ -6061,67 +6067,67 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 561,
-          "win": 275,
-          "loss": 269,
+          "n": 571,
+          "win": 281,
+          "loss": 273,
           "push": 17,
-          "hit_rate": 0.5055,
-          "decided": 544,
+          "hit_rate": 0.5072,
+          "decided": 554,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4636,
-            0.5473
+            0.4657,
+            0.5487
           ],
-          "last10": "W-L-L-W-L-W-L-W-W-L",
+          "last10": "L-W-L-W-L-W-W-W-L-W",
           "first_date": "2026-07-01",
-          "last_date": "2026-08-16",
+          "last_date": "2026-08-17",
           "n_reconstructed_oos": 331,
-          "n_live": 230,
-          "own_side_over_rate": 0.4242,
+          "n_live": 240,
+          "own_side_over_rate": 0.4273,
           "mean_abs_edge_vs_market": 0.0257,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 230 were served live; the arithmetic is identical either way because the model is identical either way. This is the pitching analyst's own ledger, graded separately from the product pick."
+          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 240 were served live; the arithmetic is identical either way because the model is identical either way. This is the pitching analyst's own ledger, graded separately from the product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-17T09:16:29Z",
+      "updated": "2026-08-18T04:01:08Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "A RECORD WITH A PROVEN FENCE. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so every graded row is genuinely out of sample \u2014 the leakage audit proves the fence four ways. The four read DISJOINT feature slices and their sides agree only about as often as chance: four independent reads on every game, which is exactly what makes their disagreement worth rendering. The sample size is printed beside every rate, and the record deepens nightly."
     },
     "consensus_history": {
       "by_state": {
         "UNANIMOUS": {
-          "n": 5,
-          "win": 4,
-          "loss": 1,
+          "n": 8,
+          "win": 6,
+          "loss": 2,
           "push": 0,
-          "hit_rate": 0.8,
-          "roi": 0.5772,
-          "n_decided": 5,
+          "hit_rate": 0.75,
+          "roi": 0.4617,
+          "n_decided": 8,
           "hit_ci95": [
-            0.2836,
-            0.9949
+            0.3491,
+            0.9681
           ],
-          "p_vs_coinflip": 0.375,
+          "p_vs_coinflip": 0.289063,
           "bh_significant": false
         },
         "MAJORITY": {
-          "n": 22,
-          "win": 13,
-          "loss": 8,
+          "n": 24,
+          "win": 14,
+          "loss": 9,
           "push": 1,
-          "hit_rate": 0.619,
-          "roi": 0.2192,
-          "n_decided": 21,
+          "hit_rate": 0.6087,
+          "roi": 0.1958,
+          "n_decided": 23,
           "hit_ci95": [
-            0.3844,
-            0.8189
+            0.3854,
+            0.8029
           ],
-          "p_vs_coinflip": 0.38331,
+          "p_vs_coinflip": 0.404873,
           "bh_significant": false
         },
         "SPLIT": {
@@ -6184,18 +6190,18 @@
           }
         },
         "MAJORITY_3-1|dissent=vega|under": {
-          "n": 6,
-          "win": 2,
-          "loss": 4,
+          "n": 8,
+          "win": 3,
+          "loss": 5,
           "push": 0,
-          "hit_rate": 0.3333,
-          "roi": -0.3518,
-          "n_decided": 6,
+          "hit_rate": 0.375,
+          "roi": -0.2762,
+          "n_decided": 8,
           "hit_ci95": [
-            0.0433,
-            0.7772
+            0.0852,
+            0.7551
           ],
-          "p_vs_coinflip": 0.6875,
+          "p_vs_coinflip": 0.726563,
           "bh_significant": false,
           "family": "MAJORITY_3-1",
           "call": "under",
@@ -6313,18 +6319,18 @@
           }
         },
         "UNANIMOUS_4|over": {
-          "n": 5,
-          "win": 4,
-          "loss": 1,
+          "n": 8,
+          "win": 6,
+          "loss": 2,
           "push": 0,
-          "hit_rate": 0.8,
-          "roi": 0.5772,
-          "n_decided": 5,
+          "hit_rate": 0.75,
+          "roi": 0.4617,
+          "n_decided": 8,
           "hit_ci95": [
-            0.2836,
-            0.9949
+            0.3491,
+            0.9681
           ],
-          "p_vs_coinflip": 0.375,
+          "p_vs_coinflip": 0.289063,
           "bh_significant": false,
           "family": "UNANIMOUS_4",
           "call": "over",
@@ -6333,8 +6339,8 @@
           }
         }
       },
-      "n_games_with_all_four_graded": 76,
-      "headline": "MEASURED, EVEN WITH THE MARKET. Across the 11 rows this table renders, on 76 games with all four v2 reads, none has cleared the family-wide Benjamini-Hochberg bar at q=0.1 (1 row(s) clear 50% uncorrected, short of the family-wide bar).",
+      "n_games_with_all_four_graded": 81,
+      "headline": "MEASURED, EVEN WITH THE MARKET. Across the 11 rows this table renders, on 81 games with all four v2 reads, none has cleared the family-wide Benjamini-Hochberg bar at q=0.1 (1 row(s) clear 50% uncorrected, short of the family-wide bar).",
       "n_rows_rendered": 11,
       "n_rows_surviving_bh": 0,
       "multiple_comparison_q": 0.1,
@@ -8778,7 +8784,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-17T23:25:19Z",
+      "updated": "2026-08-18T05:26:00Z",
       "order": [
         "vega",
         "atlas",
@@ -10357,14 +10363,14 @@
             "The price analyst \u00b7 The Price",
             "The conditions analyst \u00b7 The Conditions"
           ],
-          "n_disagreements": 275,
+          "n_disagreements": 278,
           "wins": {
-            "vega": 142,
-            "atlas": 126
+            "vega": 144,
+            "atlas": 127
           },
           "pushes": 7,
-          "n_both_graded": 561,
-          "line": "When the price analyst and the conditions analyst disagree: The price analyst 142, the conditions analyst 126"
+          "n_both_graded": 571,
+          "line": "When the price analyst and the conditions analyst disagree: The price analyst 144, the conditions analyst 127"
         },
         {
           "pair": [
@@ -10375,32 +10381,32 @@
             "The price analyst \u00b7 The Price",
             "The hitting analyst \u00b7 The Bats"
           ],
-          "n_disagreements": 290,
-          "wins": {
-            "vega": 139,
-            "nova": 145
-          },
-          "pushes": 6,
-          "n_both_graded": 561,
-          "line": "When the price analyst and the hitting analyst disagree: The price analyst 139, the hitting analyst 145"
-        },
-        {
-          "pair": [
-            "vega",
-            "scout"
-          ],
-          "names": [
-            "The price analyst \u00b7 The Price",
-            "The pitching analyst \u00b7 The Arms"
-          ],
-          "n_disagreements": 300,
+          "n_disagreements": 295,
           "wins": {
             "vega": 143,
-            "scout": 149
+            "nova": 146
+          },
+          "pushes": 6,
+          "n_both_graded": 571,
+          "line": "When the price analyst and the hitting analyst disagree: The price analyst 143, the hitting analyst 146"
+        },
+        {
+          "pair": [
+            "vega",
+            "scout"
+          ],
+          "names": [
+            "The price analyst \u00b7 The Price",
+            "The pitching analyst \u00b7 The Arms"
+          ],
+          "n_disagreements": 304,
+          "wins": {
+            "vega": 146,
+            "scout": 150
           },
           "pushes": 8,
-          "n_both_graded": 561,
-          "line": "When the price analyst and the pitching analyst disagree: The price analyst 143, the pitching analyst 149"
+          "n_both_graded": 571,
+          "line": "When the price analyst and the pitching analyst disagree: The price analyst 146, the pitching analyst 150"
         },
         {
           "pair": [
@@ -10411,14 +10417,14 @@
             "The conditions analyst \u00b7 The Conditions",
             "The hitting analyst \u00b7 The Bats"
           ],
-          "n_disagreements": 245,
+          "n_disagreements": 249,
           "wins": {
-            "atlas": 109,
-            "nova": 131
+            "atlas": 112,
+            "nova": 132
           },
           "pushes": 5,
-          "n_both_graded": 561,
-          "line": "When the conditions analyst and the hitting analyst disagree: The conditions analyst 109, the hitting analyst 131"
+          "n_both_graded": 571,
+          "line": "When the conditions analyst and the hitting analyst disagree: The conditions analyst 112, the hitting analyst 132"
         },
         {
           "pair": [
@@ -10429,14 +10435,14 @@
             "The conditions analyst \u00b7 The Conditions",
             "The pitching analyst \u00b7 The Arms"
           ],
-          "n_disagreements": 239,
+          "n_disagreements": 240,
           "wins": {
-            "atlas": 104,
+            "atlas": 105,
             "scout": 126
           },
           "pushes": 9,
-          "n_both_graded": 561,
-          "line": "When the conditions analyst and the pitching analyst disagree: The conditions analyst 104, the pitching analyst 126"
+          "n_both_graded": 571,
+          "line": "When the conditions analyst and the pitching analyst disagree: The conditions analyst 105, the pitching analyst 126"
         },
         {
           "pair": [
@@ -10447,14 +10453,14 @@
             "The hitting analyst \u00b7 The Bats",
             "The pitching analyst \u00b7 The Arms"
           ],
-          "n_disagreements": 250,
+          "n_disagreements": 255,
           "wins": {
-            "nova": 121,
-            "scout": 121
+            "nova": 123,
+            "scout": 124
           },
           "pushes": 8,
-          "n_both_graded": 561,
-          "line": "When the hitting analyst and the pitching analyst disagree: The hitting analyst 121, the pitching analyst 121"
+          "n_both_graded": 571,
+          "line": "When the hitting analyst and the pitching analyst disagree: The hitting analyst 123, the pitching analyst 124"
         }
       ],
       "note": "disagreement scoreboards: for each pair, only games where BOTH analysts had a graded read and their sides differed; each side's wins count its OWN graded row (streams grade at their own locked line, so both can push). Computed from the same activation-dated graded ledgers as record.analysts \u2014 sparse until the younger desks accrue; small n means NO conclusion."
@@ -10465,45 +10471,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 0,
-          "win": 0,
-          "loss": 0,
+          "n": 10,
+          "win": 8,
+          "loss": 2,
           "push": 0,
-          "hit_rate": null,
-          "line": "0-0",
+          "hit_rate": 0.8,
+          "line": "8-2",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 0,
-          "win": 0,
-          "loss": 0,
+          "n": 10,
+          "win": 7,
+          "loss": 3,
           "push": 0,
-          "hit_rate": null,
-          "line": "0-0",
+          "hit_rate": 0.7,
+          "line": "7-3",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 0,
-          "win": 0,
-          "loss": 0,
+          "n": 10,
+          "win": 5,
+          "loss": 5,
           "push": 0,
-          "hit_rate": null,
-          "line": "0-0",
+          "hit_rate": 0.5,
+          "line": "5-5",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 0,
-          "win": 0,
-          "loss": 0,
+          "n": 10,
+          "win": 6,
+          "loss": 4,
           "push": 0,
-          "hit_rate": null,
-          "line": "0-0",
+          "hit_rate": 0.6,
+          "line": "6-4",
           "is_betting_record": false
         }
       },
@@ -10568,19 +10574,19 @@
   "adaptive_strategy_record": {
     "version": "adaptive_desk_v20",
     "record_start": "2026-07-01",
-    "through": "2026-08-15",
+    "through": "2026-08-17",
     "overall": {
-      "n": 76,
-      "win": 39,
-      "loss": 30,
+      "n": 81,
+      "win": 42,
+      "loss": 32,
       "push": 7,
-      "roi": 0.1129,
-      "hit_rate": 0.5652,
-      "units_flat": 7.793,
+      "roi": 0.1149,
+      "hit_rate": 0.5676,
+      "units_flat": 8.501,
       "units_weighted": {
-        "units": 15.586,
-        "staked": 138.0,
-        "roi": 0.1129,
+        "units": 17.002,
+        "staked": 148.0,
+        "roi": 0.1149,
         "n_offladder_flat_1u": 0
       }
     },
@@ -10728,6 +10734,15 @@
         "hit_rate": 0.3333,
         "strategy_ref": "forge:w17:5a35a5dcec",
         "strategy_at": "adaptive_strategy_by_date.2026-08-15"
+      },
+      "2026-08-17": {
+        "n": 5,
+        "win": 3,
+        "loss": 2,
+        "push": 0,
+        "hit_rate": 0.6,
+        "strategy_ref": "forge:w17:4fdde70156",
+        "strategy_at": "adaptive_strategy_by_date.2026-08-17"
       }
     },
     "strategy_by_date": {
@@ -14428,16 +14443,16 @@
       "source": "adaptive_desk"
     },
     "2026-08-17": {
-      "n_picks": 0,
-      "n_graded": 0,
-      "wins": 0,
-      "losses": 0,
+      "n_picks": 5,
+      "n_graded": 5,
+      "wins": 3,
+      "losses": 2,
       "pushes": 0,
-      "hit_rate": null,
-      "roi": null,
-      "units": 0.0,
-      "units_weighted": 0.0,
-      "source": "all_pass"
+      "hit_rate": 0.6,
+      "roi": 0.1416,
+      "units": 0.708,
+      "units_weighted": 1.416,
+      "source": "adaptive_desk"
     },
     "2026-08-18": {
       "n_picks": 0,
@@ -14624,15 +14639,15 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "The Orioles have won 3 in a row and meet the Rays at Tropicana Field on Monday, with a sweep on the line for the visitors. Brandon Young (3-1 with a 3.69 ERA over his last 8 starts) goes for the Orioles. Young went 6 innings last time out, giving up 2 runs on 6 hits with 3 walks and 4 strikeouts in a 5-2 win at Minnesota on Tuesday. Shane McClanahan (3-3 with a 3.46 ERA over his last 8 starts) answers for the Rays, and he gave up 1 run on no hits over 3 innings in his last logged start in a 3-2 win against the Rangers on July 30.",
-            "The Rays are 74-49 and have lost 3 in a row; the Orioles are 61-63 and have won 3 in a row. The Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3. The Orioles have won 6 of the 9 meetings between them this season."
+            "Left-hander Shane McClanahan takes the ball for the Rays at Tropicana Field on Monday, against the visiting Orioles, with a sweep on the line for the visitors. Brandon Young (3-1 with a 3.70 ERA over his last 7 starts) goes for the Orioles. Young went 6 innings last time out, giving up 2 runs on 6 hits with 3 walks and 4 strikeouts in a 5-2 win at Minnesota on Tuesday. McClanahan (3-2 with a 2.83 ERA over his last 7 starts) gave up 1 run on no hits over 3 innings in his last logged start in a 3-2 win against the Rangers on July 30.",
+            "The Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3. The Orioles have won 6 of the 9 meetings between them this season."
           ],
-          "text": "The Orioles have won 3 in a row and meet the Rays at Tropicana Field on Monday, with a sweep on the line for the visitors. Brandon Young (3-1 with a 3.69 ERA over his last 8 starts) goes for the Orioles. Young went 6 innings last time out, giving up 2 runs on 6 hits with 3 walks and 4 strikeouts in a 5-2 win at Minnesota on Tuesday. Shane McClanahan (3-3 with a 3.46 ERA over his last 8 starts) answers for the Rays, and he gave up 1 run on no hits over 3 innings in his last logged start in a 3-2 win against the Rangers on July 30.\n\nThe Rays are 74-49 and have lost 3 in a row; the Orioles are 61-63 and have won 3 in a row. The Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3. The Orioles have won 6 of the 9 meetings between them this season.",
+          "text": "Left-hander Shane McClanahan takes the ball for the Rays at Tropicana Field on Monday, against the visiting Orioles, with a sweep on the line for the visitors. Brandon Young (3-1 with a 3.70 ERA over his last 7 starts) goes for the Orioles. Young went 6 innings last time out, giving up 2 runs on 6 hits with 3 walks and 4 strikeouts in a 5-2 win at Minnesota on Tuesday. McClanahan (3-2 with a 2.83 ERA over his last 7 starts) gave up 1 run on no hits over 3 innings in his last logged start in a 3-2 win against the Rangers on July 30.\n\nThe Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3. The Orioles have won 6 of the 9 meetings between them this season.",
           "blurb": {
-            "text": "The Orioles have won 3 in a row and meet the Rays at Tropicana Field on Monday, with a sweep on the line for the visitors. The Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3.",
+            "text": "Left-hander Shane McClanahan takes the ball for the Rays at Tropicana Field on Monday, against the visiting Orioles, with a sweep on the line for the visitors. The Rays have scored 5.4 runs a game over their last fifteen, the Orioles 4.3.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
             "record_stated": true,
-            "n_words": 41
+            "n_words": 42
           },
           "side": null,
           "has_pick": false,
@@ -14878,9 +14893,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -14892,9 +14904,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Three theories against me and none of them can see the number. The price says over at 7.5 and I read it 54%.",
           "take_kind": "dissent"
         },
@@ -14920,9 +14929,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -14940,17 +14946,8 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The ballpark is doing the work in this one: 0.67 runs below a neutral night, 6.8 against 7.5.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -14974,9 +14971,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -14995,9 +14989,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "These two offences have been scoring 0.20 runs below average, which puts them 7.3 against 7.5.",
           "take_kind": "standard"
         },
@@ -15023,9 +15014,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -15038,9 +15026,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Two starters and the two bullpens behind them, and nothing else: 0.15 runs below an average staff \u2014 7.3 against 7.5.",
           "take_kind": "standard"
         }
@@ -15067,17 +15052,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -15558,15 +15534,15 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Riding a 3-game winning run, the Phillies take on the Marlins at Citizens Bank Park on Monday. Janson Junk (4-3 with a 4.78 ERA over his last 8 starts) starts for the Marlins. Junk went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 2 strikeouts in an 8-2 win against the Pirates on Wednesday. Cristopher S\u00e1nchez (6-1 with a 3.55 ERA over his last 8 starts) opposes him for the Phillies, and he threw 6 shutout innings last time out, giving up 4 hits and no walks with 7 strikeouts in a 2-0 loss at St. Louis on Tuesday.",
-            "The Phillies are 67-58 and have won 3 in a row; the Marlins are 64-61 and have won 2 in a row. The Phillies have scored 6.4 runs a game over their last fifteen, the Marlins 5.7. Each of them has taken 5 of the 10 they have played this season."
+            "It is Cristopher S\u00e1nchez for the Phillies against the visiting Marlins at Citizens Bank Park on Monday. Janson Junk (4-2 with a 3.31 ERA over his last 7 starts) starts for the Marlins. Junk went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 2 strikeouts in an 8-2 win against the Pirates on Wednesday. S\u00e1nchez (5-1 with a 4.19 ERA over his last 7 starts) threw 6 shutout innings last time out, giving up 4 hits and no walks with 7 strikeouts in a 2-0 loss at St. Louis on Tuesday.",
+            "The Phillies have scored 6.4 runs a game over their last fifteen, the Marlins 5.7. Each of them has taken 5 of the 10 they have played this season."
           ],
-          "text": "Riding a 3-game winning run, the Phillies take on the Marlins at Citizens Bank Park on Monday. Janson Junk (4-3 with a 4.78 ERA over his last 8 starts) starts for the Marlins. Junk went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 2 strikeouts in an 8-2 win against the Pirates on Wednesday. Cristopher S\u00e1nchez (6-1 with a 3.55 ERA over his last 8 starts) opposes him for the Phillies, and he threw 6 shutout innings last time out, giving up 4 hits and no walks with 7 strikeouts in a 2-0 loss at St. Louis on Tuesday.\n\nThe Phillies are 67-58 and have won 3 in a row; the Marlins are 64-61 and have won 2 in a row. The Phillies have scored 6.4 runs a game over their last fifteen, the Marlins 5.7. Each of them has taken 5 of the 10 they have played this season.",
+          "text": "It is Cristopher S\u00e1nchez for the Phillies against the visiting Marlins at Citizens Bank Park on Monday. Janson Junk (4-2 with a 3.31 ERA over his last 7 starts) starts for the Marlins. Junk went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 2 strikeouts in an 8-2 win against the Pirates on Wednesday. S\u00e1nchez (5-1 with a 4.19 ERA over his last 7 starts) threw 6 shutout innings last time out, giving up 4 hits and no walks with 7 strikeouts in a 2-0 loss at St. Louis on Tuesday.\n\nThe Phillies have scored 6.4 runs a game over their last fifteen, the Marlins 5.7. Each of them has taken 5 of the 10 they have played this season.",
           "blurb": {
-            "text": "Riding a 3-game winning run, the Phillies take on the Marlins at Citizens Bank Park on Monday. Each of them has taken 5 of the 10 they have played this season.",
+            "text": "Each of them has taken 5 of the 10 they have played this season. The Phillies have scored 6.4 runs a game over their last fifteen, the Marlins 5.7.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
             "record_stated": true,
-            "n_words": 31
+            "n_words": 29
           },
           "side": null,
           "has_pick": false,
@@ -15812,9 +15788,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -15826,9 +15799,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 2.4% off the market's on 8. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -15854,9 +15824,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -15869,17 +15836,8 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: under 8, 52%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -15903,9 +15861,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -15924,9 +15879,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "This is the offences themselves and nothing more. On what these bats have been doing: over 8 at 52%.",
           "take_kind": "standard"
         },
@@ -15952,9 +15904,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -15967,9 +15916,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read under 8 at 53%.",
           "take_kind": "standard"
         }
@@ -15996,17 +15942,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -16464,10 +16401,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Right-hander Rhett Lowder takes the ball for the Reds at Great American Ball Park on Monday, against the visiting Cardinals. Andre Pallante (3-2 with a 3.23 ERA over his last 8 starts) starts for the Cardinals. Pallante was untouchable last time out: 6 shutout innings on 4 hits and 3 walks, with 2 strikeouts in a 2-0 win against the Phillies on Tuesday. Lowder (1-5 with a 6.47 ERA over his last 8 starts) gave up 2 runs on 7 hits over 5 1/3 innings last time out in a 5-0 loss at Chicago on Wednesday.",
-            "The Reds are 59-64 and have lost 2 in a row; the Cardinals are 63-61 and have won 2 in a row. The Reds have scored 3.9 runs a game over their last fifteen, the Cardinals 4.9."
+            "Right-hander Rhett Lowder takes the ball for the Reds at Great American Ball Park on Monday, against the visiting Cardinals. Andre Pallante (3-1 with a 2.66 ERA over his last 7 starts) starts for the Cardinals. Pallante was untouchable last time out: 6 shutout innings on 4 hits and 3 walks, with 2 strikeouts in a 2-0 win against the Phillies on Tuesday. Lowder (1-4 with a 6.43 ERA over his last 7 starts) gave up 2 runs on 7 hits over 5 1/3 innings last time out in a 5-0 loss at Chicago on Wednesday.",
+            "The Reds have scored 3.9 runs a game over their last fifteen, the Cardinals 4.9."
           ],
-          "text": "Right-hander Rhett Lowder takes the ball for the Reds at Great American Ball Park on Monday, against the visiting Cardinals. Andre Pallante (3-2 with a 3.23 ERA over his last 8 starts) starts for the Cardinals. Pallante was untouchable last time out: 6 shutout innings on 4 hits and 3 walks, with 2 strikeouts in a 2-0 win against the Phillies on Tuesday. Lowder (1-5 with a 6.47 ERA over his last 8 starts) gave up 2 runs on 7 hits over 5 1/3 innings last time out in a 5-0 loss at Chicago on Wednesday.\n\nThe Reds are 59-64 and have lost 2 in a row; the Cardinals are 63-61 and have won 2 in a row. The Reds have scored 3.9 runs a game over their last fifteen, the Cardinals 4.9.",
+          "text": "Right-hander Rhett Lowder takes the ball for the Reds at Great American Ball Park on Monday, against the visiting Cardinals. Andre Pallante (3-1 with a 2.66 ERA over his last 7 starts) starts for the Cardinals. Pallante was untouchable last time out: 6 shutout innings on 4 hits and 3 walks, with 2 strikeouts in a 2-0 win against the Phillies on Tuesday. Lowder (1-4 with a 6.43 ERA over his last 7 starts) gave up 2 runs on 7 hits over 5 1/3 innings last time out in a 5-0 loss at Chicago on Wednesday.\n\nThe Reds have scored 3.9 runs a game over their last fifteen, the Cardinals 4.9.",
           "blurb": {
             "text": "Right-hander Rhett Lowder takes the ball for the Reds at Great American Ball Park on Monday, against the visiting Cardinals. The Reds have scored 3.9 runs a game over their last fifteen, the Cardinals 4.9.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -16716,9 +16653,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-6h",
-          "n_walls_read": 3,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -16730,9 +16664,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 50.6% over on 9 and I read 53.0% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -16758,9 +16689,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-6h",
-          "n_walls_read": 3,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -16778,17 +16706,8 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the conditions I read, it is over 9 at 53%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -16812,9 +16731,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-6h",
-          "n_walls_read": 3,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -16833,9 +16749,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Somebody has to actually score the runs. The bats are 0.20 off neutral and they say under at 9 \u2014 the rest of the desk can argue.",
           "take_kind": "dissent"
         },
@@ -16861,9 +16774,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-6h",
-          "n_walls_read": 3,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -16876,9 +16786,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Two starters and the two bullpens behind them, and nothing else: 0.13 runs above an average staff \u2014 9.1 against 9.",
           "take_kind": "standard"
         }
@@ -16905,17 +16812,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -17413,10 +17311,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Framber Valdez starts for the Tigers against the Pirates at PNC Park on Monday. Carmen Mlodzinski (6-5, 3.79 ERA) gets the ball for the Pirates. Mlodzinski went 2 1/3 innings last time out, giving up 4 runs on 5 hits with 3 walks and 1 strikeout in an 8-2 loss at Miami on Wednesday. Valdez (7-8, 4.26 ERA) gave up 4 runs on 6 hits over 5 2/3 innings last time out in a 6-4 loss against the Guardians on Wednesday.",
-            "The Pirates are 61-65 and are 4-6 over their last ten; the Tigers are 60-64 and have lost 3 in a row. The Pirates have scored 5.7 runs a game over their last fifteen, the Tigers 4.8."
+            "Framber Valdez starts for the Tigers against the Pirates at PNC Park on Monday. Carmen Mlodzinski (2-4 with a 6.16 ERA over his last 7 starts) gets the ball for the Pirates. Mlodzinski went 2 1/3 innings last time out, giving up 4 runs on 5 hits with 3 walks and 1 strikeout in an 8-2 loss at Miami on Wednesday. Valdez (3-3 with a 4.82 ERA over his last 7 starts) gave up 4 runs on 6 hits over 5 2/3 innings last time out in a 6-4 loss against the Guardians on Wednesday.",
+            "The Pirates have scored 5.7 runs a game over their last fifteen, the Tigers 4.8."
           ],
-          "text": "Framber Valdez starts for the Tigers against the Pirates at PNC Park on Monday. Carmen Mlodzinski (6-5, 3.79 ERA) gets the ball for the Pirates. Mlodzinski went 2 1/3 innings last time out, giving up 4 runs on 5 hits with 3 walks and 1 strikeout in an 8-2 loss at Miami on Wednesday. Valdez (7-8, 4.26 ERA) gave up 4 runs on 6 hits over 5 2/3 innings last time out in a 6-4 loss against the Guardians on Wednesday.\n\nThe Pirates are 61-65 and are 4-6 over their last ten; the Tigers are 60-64 and have lost 3 in a row. The Pirates have scored 5.7 runs a game over their last fifteen, the Tigers 4.8.",
+          "text": "Framber Valdez starts for the Tigers against the Pirates at PNC Park on Monday. Carmen Mlodzinski (2-4 with a 6.16 ERA over his last 7 starts) gets the ball for the Pirates. Mlodzinski went 2 1/3 innings last time out, giving up 4 runs on 5 hits with 3 walks and 1 strikeout in an 8-2 loss at Miami on Wednesday. Valdez (3-3 with a 4.82 ERA over his last 7 starts) gave up 4 runs on 6 hits over 5 2/3 innings last time out in a 6-4 loss against the Guardians on Wednesday.\n\nThe Pirates have scored 5.7 runs a game over their last fifteen, the Tigers 4.8.",
           "blurb": {
             "text": "Framber Valdez starts for the Tigers against the Pirates at PNC Park on Monday. The Pirates have scored 5.7 runs a game over their last fifteen, the Tigers 4.8.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -17667,9 +17565,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -17681,9 +17576,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 50.0% over on 8.5 and I read 50.3% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -17709,9 +17601,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -17724,17 +17613,8 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.34 runs above an average night \u2014 8.8 against 8.5.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -17758,9 +17638,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": true,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -17778,9 +17655,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is over 8.5 at 53%.",
           "take_kind": "standard"
         },
@@ -17806,9 +17680,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -17821,9 +17692,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 8.5 at 50%.",
           "take_kind": "standard"
         }
@@ -17850,17 +17718,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -18338,15 +18197,15 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "The Mets have won 3 in a row and meet the Padres at Citi Field on Monday. Walker Buehler (7-5, 4.88 ERA) gets the ball for the Padres. Buehler went 6 innings last time out, giving up 1 run on 3 hits with 2 walks and 5 strikeouts in an 11-2 win against the Brewers on Tuesday. Nolan McLean (8-8, 3.42 ERA) goes the other way for the Mets, and he gave up 1 run on 1 hit over 6 innings last time out in a 4-0 loss at Atlanta on Tuesday.",
-            "The Mets are 56-69 and have won 3 in a row; the Padres are 67-58 and are 8-2 over their last ten. The Mets have scored 3.5 runs a game over their last fifteen, the Padres 4.2. The Mets have won 2 of the 3 meetings between them this season."
+            "It is Nolan McLean for the Mets against the visiting Padres at Citi Field on Monday. Walker Buehler (2-1 with a 5.57 ERA over his last 7 starts) gets the ball for the Padres. Buehler went 6 innings last time out, giving up 1 run on 3 hits with 2 walks and 5 strikeouts in an 11-2 win against the Brewers on Tuesday. McLean (3-3 with a 2.61 ERA over his last 7 starts) gave up 1 run on 1 hit over 6 innings last time out in a 4-0 loss at Atlanta on Tuesday.",
+            "The Mets have scored 3.5 runs a game over their last fifteen, the Padres 4.2. The Mets have won 2 of the 3 meetings between them this season."
           ],
-          "text": "The Mets have won 3 in a row and meet the Padres at Citi Field on Monday. Walker Buehler (7-5, 4.88 ERA) gets the ball for the Padres. Buehler went 6 innings last time out, giving up 1 run on 3 hits with 2 walks and 5 strikeouts in an 11-2 win against the Brewers on Tuesday. Nolan McLean (8-8, 3.42 ERA) goes the other way for the Mets, and he gave up 1 run on 1 hit over 6 innings last time out in a 4-0 loss at Atlanta on Tuesday.\n\nThe Mets are 56-69 and have won 3 in a row; the Padres are 67-58 and are 8-2 over their last ten. The Mets have scored 3.5 runs a game over their last fifteen, the Padres 4.2. The Mets have won 2 of the 3 meetings between them this season.",
+          "text": "It is Nolan McLean for the Mets against the visiting Padres at Citi Field on Monday. Walker Buehler (2-1 with a 5.57 ERA over his last 7 starts) gets the ball for the Padres. Buehler went 6 innings last time out, giving up 1 run on 3 hits with 2 walks and 5 strikeouts in an 11-2 win against the Brewers on Tuesday. McLean (3-3 with a 2.61 ERA over his last 7 starts) gave up 1 run on 1 hit over 6 innings last time out in a 4-0 loss at Atlanta on Tuesday.\n\nThe Mets have scored 3.5 runs a game over their last fifteen, the Padres 4.2. The Mets have won 2 of the 3 meetings between them this season.",
           "blurb": {
-            "text": "The Mets have won 3 in a row and meet the Padres at Citi Field on Monday. The Mets have won 2 of the 3 meetings between them this season.",
+            "text": "The Mets have won 2 of the 3 meetings between them this season. The Mets have scored 3.5 runs a game over their last fifteen, the Padres 4.2.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
             "record_stated": true,
-            "n_words": 30
+            "n_words": 28
           },
           "side": null,
           "has_pick": false,
@@ -18592,9 +18451,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -18606,9 +18462,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Three theories against me and none of them can see the number. The price says over at 8 and I read it 52%.",
           "take_kind": "dissent"
         },
@@ -18634,9 +18487,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -18649,17 +18499,8 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The conditions are loud here \u2014 0.36 runs of deviation from a neutral night, and they point under on 8.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Top 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -18683,9 +18524,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -18704,9 +18542,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "These two offences have been scoring 0.48 runs below average, which puts them 7.5 against 8.",
           "take_kind": "standard"
         },
@@ -18732,9 +18567,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -18747,9 +18579,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Two starters and the two bullpens behind them, and nothing else: 0.17 runs below an average staff \u2014 7.8 against 8.",
           "take_kind": "standard"
         }
@@ -18776,17 +18605,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -19286,10 +19106,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "It is Alec Gamboa for the Red Sox against the visiting Diamondbacks at Fenway Park on Monday. Mitch Bratt (1-1, 3.74 ERA) goes for the Diamondbacks. Bratt went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 4 strikeouts in a 3-2 loss against the Rockies on Tuesday. Gamboa (0-0, 1.59 ERA).",
-            "The Red Sox are 66-58 and are 3-7 over their last ten; the Diamondbacks are 66-59 and are 5-5 over their last ten. The Red Sox have scored 4.5 runs a game over their last fifteen, the Diamondbacks 4.7."
+            "It is Alec Gamboa for the Red Sox against the visiting Diamondbacks at Fenway Park on Monday. Mitch Bratt (1-1 with a 3.74 ERA over his last 7 starts) goes for the Diamondbacks. Bratt went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 4 strikeouts in a 3-2 loss against the Rockies on Tuesday. Gamboa.",
+            "The Red Sox have scored 4.5 runs a game over their last fifteen, the Diamondbacks 4.7."
           ],
-          "text": "It is Alec Gamboa for the Red Sox against the visiting Diamondbacks at Fenway Park on Monday. Mitch Bratt (1-1, 3.74 ERA) goes for the Diamondbacks. Bratt went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 4 strikeouts in a 3-2 loss against the Rockies on Tuesday. Gamboa (0-0, 1.59 ERA).\n\nThe Red Sox are 66-58 and are 3-7 over their last ten; the Diamondbacks are 66-59 and are 5-5 over their last ten. The Red Sox have scored 4.5 runs a game over their last fifteen, the Diamondbacks 4.7.",
+          "text": "It is Alec Gamboa for the Red Sox against the visiting Diamondbacks at Fenway Park on Monday. Mitch Bratt (1-1 with a 3.74 ERA over his last 7 starts) goes for the Diamondbacks. Bratt went 6 innings last time out, giving up 2 runs on 4 hits with 1 walk and 4 strikeouts in a 3-2 loss against the Rockies on Tuesday. Gamboa.\n\nThe Red Sox have scored 4.5 runs a game over their last fifteen, the Diamondbacks 4.7.",
           "blurb": {
             "text": "The Red Sox have scored 4.5 runs a game over their last fifteen, the Diamondbacks 4.7. The Red Sox have scored 4.5 runs a game over their last fifteen.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -19539,9 +19359,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -19553,9 +19370,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "A 0.5% gap to the de-vigged price at 9 \u2014 the tape whispers over. I say so and I don't dress it up.",
           "take_kind": "standard"
         },
@@ -19581,9 +19395,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": false,
           "starters_announced": null,
@@ -19601,17 +19412,8 @@
             "ump_strikeouts",
             "ump_walks"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The ballpark is doing the work in this one: 0.19 runs above a neutral night, 9.2 against 9.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 1st \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-17T23:19:54Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -19635,9 +19437,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -19656,9 +19455,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Somebody has to actually score the runs. The bats are 0.17 off neutral and they say under at 9 \u2014 the rest of the desk can argue.",
           "take_kind": "dissent"
         },
@@ -19684,9 +19480,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -19699,9 +19492,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 9 at 52%.",
           "take_kind": "standard"
         }
@@ -19728,17 +19518,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -20099,7 +19880,7 @@
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-17T10:10:07Z",
         "timestamp": "2026-08-17T10:10:07Z",
         "lead_time": "readiness",
@@ -20236,10 +20017,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Mart\u00edn P\u00e9rez starts for the Braves against the Twins at Target Field on Monday. Bailey Ober (7-4, 4.64 ERA) gets the ball for the Twins. Ober went 6 innings last time out, giving up 5 runs on 8 hits with 1 walk and 4 strikeouts in a 5-2 loss against the Orioles on Tuesday. P\u00e9rez (8-6, 2.96 ERA) threw 6 shutout innings last time out, giving up 4 hits and 3 walks with 2 strikeouts in a 4-0 win against the Mets on Tuesday.",
-            "The Twins are 60-65 and have lost 3 in a row; the Braves are 74-50 and are 5-5 over their last ten. The Twins have scored 5.9 runs a game over their last fifteen, the Braves 4.1."
+            "Mart\u00edn P\u00e9rez starts for the Braves against the Twins at Target Field on Monday. Bailey Ober (1-2 with a 5.84 ERA over his last 7 starts) gets the ball for the Twins. Ober went 6 innings last time out, giving up 5 runs on 8 hits with 1 walk and 4 strikeouts in a 5-2 loss against the Orioles on Tuesday. P\u00e9rez (2-2 with a 2.88 ERA over his last 7 starts) threw 6 shutout innings last time out, giving up 4 hits and 3 walks with 2 strikeouts in a 4-0 win against the Mets on Tuesday.",
+            "The Twins have scored 5.9 runs a game over their last fifteen, the Braves 4.1."
           ],
-          "text": "Mart\u00edn P\u00e9rez starts for the Braves against the Twins at Target Field on Monday. Bailey Ober (7-4, 4.64 ERA) gets the ball for the Twins. Ober went 6 innings last time out, giving up 5 runs on 8 hits with 1 walk and 4 strikeouts in a 5-2 loss against the Orioles on Tuesday. P\u00e9rez (8-6, 2.96 ERA) threw 6 shutout innings last time out, giving up 4 hits and 3 walks with 2 strikeouts in a 4-0 win against the Mets on Tuesday.\n\nThe Twins are 60-65 and have lost 3 in a row; the Braves are 74-50 and are 5-5 over their last ten. The Twins have scored 5.9 runs a game over their last fifteen, the Braves 4.1.",
+          "text": "Mart\u00edn P\u00e9rez starts for the Braves against the Twins at Target Field on Monday. Bailey Ober (1-2 with a 5.84 ERA over his last 7 starts) gets the ball for the Twins. Ober went 6 innings last time out, giving up 5 runs on 8 hits with 1 walk and 4 strikeouts in a 5-2 loss against the Orioles on Tuesday. P\u00e9rez (2-2 with a 2.88 ERA over his last 7 starts) threw 6 shutout innings last time out, giving up 4 hits and 3 walks with 2 strikeouts in a 4-0 win against the Mets on Tuesday.\n\nThe Twins have scored 5.9 runs a game over their last fifteen, the Braves 4.1.",
           "blurb": {
             "text": "Mart\u00edn P\u00e9rez starts for the Braves against the Twins at Target Field on Monday. The Twins have scored 5.9 runs a game over their last fifteen, the Braves 4.1.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -20267,8 +20048,8 @@
         "our_prob": 0.5655,
         "ev": 0.0073,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:00:49Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -20298,8 +20079,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:00:49Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -20333,7 +20114,7 @@
           "score": 1.0,
           "result": null,
           "lead_time": "readiness",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "forge_no_bet",
           "reason": "The day's rule read this game and did not call a side."
@@ -20371,7 +20152,7 @@
           "score": 1.8,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "junk_cell",
           "reason": "Evidence here is junk \u2014 the model's history in this spot is one-sided"
@@ -20409,7 +20190,7 @@
           "score": 0.59,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Lean \u2014 the new run-line stream, graded in public from day one. A lean, never a bet.",
@@ -20430,7 +20211,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 an independent 20,000-run read that prices games within a whisker of the market. A lean, never a bet.",
@@ -20450,14 +20231,14 @@
         "run_line_price_home": -128.0,
         "run_line_price_away": 131.0,
         "book": "betrivers",
-        "captured_at": "2026-08-17T23:19:53Z",
+        "captured_at": "2026-08-18T00:00:26Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-18T00:00:26Z",
         "game_pk": 823668,
         "date": "2026-08-17",
         "first_pitch_utc": "2026-08-17T23:40:00+00:00",
         "total_line_at_book": 9.0,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 8.5,
         "total_move": 0.5,
         "p_over_devig": 0.5108342361863489,
@@ -20466,32 +20247,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: The market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'the conditions analyst: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 9.0,
-        "pregame_total_compared": 9.0,
-        "total_price_over": -109.0,
-        "total_price_under": -110.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "betrivers",
-          "pregame_total": 9.0,
-          "total": 9.0,
-          "move": 0.0,
-          "total_price_over": -109.0,
-          "total_price_under": -110.0
-        },
-        "n_books": 23,
-        "as_of": "2026-08-17T23:17:29Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -20515,9 +20271,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -20529,9 +20282,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 2.3% off the market's on 9. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -20557,9 +20307,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -20572,9 +20319,6 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The conditions are loud here \u2014 0.34 runs of deviation from a neutral night, and they point over on 9.",
           "take_kind": "standard"
         },
@@ -20600,9 +20344,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": true,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -20620,9 +20361,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is over 9 at 51%.",
           "take_kind": "standard"
         },
@@ -20648,9 +20386,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -20663,9 +20398,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 9 at 50%.",
           "take_kind": "standard"
         }
@@ -20692,17 +20424,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -20719,7 +20442,7 @@
             "line_basis": "locked_pregame_total",
             "pregame_total": 9.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": null,
             "desk_votes": {
               "over": 4,
@@ -21043,7 +20766,7 @@
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-17T12:11:16Z",
         "timestamp": "2026-08-17T12:11:16Z",
         "lead_time": "readiness",
@@ -21180,10 +20903,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Right-hander Mason Barnett takes the ball for the Athletics at Kauffman Stadium on Monday, against the Royals. Michael Wacha (5-8, 3.46 ERA) goes for the Royals. Wacha went 6 2/3 innings last time out, giving up 3 runs on 7 hits with no walks and 5 strikeouts in a 5-4 loss at Los Angeles on Tuesday. Barnett (1-3, 6.16 ERA) gave up 6 runs on 5 hits over 4 innings last time out in a 12-4 loss against the Rays on Tuesday.",
-            "The Royals are 51-74 and are 3-7 over their last ten; the Athletics are 49-75 and are 4-6 over their last ten. The Royals have scored 4.6 runs a game over their last fifteen, the Athletics 4.5. The Athletics are 2-1 against the Royals this season."
+            "Right-hander Mason Barnett takes the ball for the Athletics at Kauffman Stadium on Monday, against the Royals. Michael Wacha (0-3 with a 3.86 ERA over his last 7 starts) goes for the Royals. Wacha went 6 2/3 innings last time out, giving up 3 runs on 7 hits with no walks and 5 strikeouts in a 5-4 loss at Los Angeles on Tuesday. Barnett gave up 6 runs on 5 hits over 4 innings last time out in a 12-4 loss against the Rays on Tuesday.",
+            "The Royals have scored 4.6 runs a game over their last fifteen, the Athletics 4.5. The Athletics are 2-1 against the Royals this season."
           ],
-          "text": "Right-hander Mason Barnett takes the ball for the Athletics at Kauffman Stadium on Monday, against the Royals. Michael Wacha (5-8, 3.46 ERA) goes for the Royals. Wacha went 6 2/3 innings last time out, giving up 3 runs on 7 hits with no walks and 5 strikeouts in a 5-4 loss at Los Angeles on Tuesday. Barnett (1-3, 6.16 ERA) gave up 6 runs on 5 hits over 4 innings last time out in a 12-4 loss against the Rays on Tuesday.\n\nThe Royals are 51-74 and are 3-7 over their last ten; the Athletics are 49-75 and are 4-6 over their last ten. The Royals have scored 4.6 runs a game over their last fifteen, the Athletics 4.5. The Athletics are 2-1 against the Royals this season.",
+          "text": "Right-hander Mason Barnett takes the ball for the Athletics at Kauffman Stadium on Monday, against the Royals. Michael Wacha (0-3 with a 3.86 ERA over his last 7 starts) goes for the Royals. Wacha went 6 2/3 innings last time out, giving up 3 runs on 7 hits with no walks and 5 strikeouts in a 5-4 loss at Los Angeles on Tuesday. Barnett gave up 6 runs on 5 hits over 4 innings last time out in a 12-4 loss against the Rays on Tuesday.\n\nThe Royals have scored 4.6 runs a game over their last fifteen, the Athletics 4.5. The Athletics are 2-1 against the Royals this season.",
           "blurb": {
             "text": "Right-hander Mason Barnett takes the ball for the Athletics at Kauffman Stadium on Monday, against the Royals. The Athletics are 2-1 against the Royals this season.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -21211,8 +20934,8 @@
         "our_prob": 0.456,
         "ev": -0.0028,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:00:49Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -21242,8 +20965,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:00:49Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -21276,7 +20999,7 @@
           "score": 1.0,
           "result": null,
           "lead_time": "readiness",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "forge_no_bet",
           "reason": "The day's rule read this game and did not call a side."
@@ -21314,7 +21037,7 @@
           "score": 1.12,
           "result": null,
           "lead_time": "T-12h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -21352,7 +21075,7 @@
           "score": 0.87,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Lean \u2014 the new run-line stream, graded in public from day one. A lean, never a bet.",
@@ -21373,7 +21096,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 an independent 20,000-run read that prices games within a whisker of the market. A lean, never a bet.",
@@ -21393,14 +21116,14 @@
         "run_line_price_home": 112.0,
         "run_line_price_away": -120.0,
         "book": "betrivers",
-        "captured_at": "2026-08-17T23:19:53Z",
+        "captured_at": "2026-08-18T00:00:26Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-18T00:00:26Z",
         "game_pk": 824077,
         "date": "2026-08-17",
         "first_pitch_utc": "2026-08-17T23:40:00+00:00",
         "total_line_at_book": 8.5,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 9.0,
         "total_move": 0.0,
         "p_over_devig": 0.4891657638136511,
@@ -21409,32 +21132,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: The market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'the conditions analyst: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 9.0,
-        "pregame_total_compared": 9.0,
-        "total_price_over": -103.0,
-        "total_price_under": -117.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "betrivers",
-          "pregame_total": 8.5,
-          "total": 9.0,
-          "move": 0.5,
-          "total_price_over": -103.0,
-          "total_price_under": -117.0
-        },
-        "n_books": 23,
-        "as_of": "2026-08-17T23:17:29Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -21458,9 +21156,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -21472,9 +21167,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "The board de-vigs to 48.9% over on 9 and I read 50.3% \u2014 I'm taking the over. I bet the disagreement, not the level.",
           "take_kind": "standard"
         },
@@ -21500,9 +21192,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -21515,9 +21204,6 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.42 runs above an average night \u2014 9.4 against 9.",
           "take_kind": "standard"
         },
@@ -21543,9 +21229,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -21564,9 +21247,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Somebody has to actually score the runs. The bats are 0.10 off neutral and they say under at 9 \u2014 the rest of the desk can argue.",
           "take_kind": "dissent"
         },
@@ -21592,9 +21272,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-12h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -21607,9 +21284,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Runs come from bad pitching. I grade the arms and only the arms, and they read over 9 at 51%.",
           "take_kind": "standard"
         }
@@ -21636,17 +21310,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -21663,7 +21328,7 @@
             "line_basis": "locked_pregame_total",
             "pregame_total": 9.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": null,
             "desk_votes": {
               "over": 3,
@@ -22009,7 +21674,7 @@
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-17T10:10:07Z",
         "timestamp": "2026-08-17T10:10:07Z",
         "lead_time": "readiness",
@@ -22146,10 +21811,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "Shota Imanaga starts for the Cubs against the visiting White Sox at Wrigley Field on Monday. Luis Castillo (4-9, 4.96 ERA) goes for the White Sox. Castillo was untouchable last time out: 7 shutout innings on 1 hit and 2 walks, with 10 strikeouts in a 5-0 win against the Reds on Wednesday. Imanaga (8-9, 3.74 ERA) gave up 4 runs on 6 hits over 4 2/3 innings last time out in an 8-6 win at Washington on Tuesday.",
-            "The Cubs are 72-53 and have lost 2 in a row; the White Sox are 65-58 and have won 3 in a row. The Cubs have scored 7.5 runs a game over their last fifteen, the White Sox 5.1. The season series is 2-1 to the White Sox."
+            "Shota Imanaga starts for the Cubs against the visiting White Sox at Wrigley Field on Monday. Luis Castillo (2-3 with a 4.50 ERA over his last 7 starts) goes for the White Sox. Castillo was untouchable last time out: 7 shutout innings on 1 hit and 2 walks, with 10 strikeouts in a 5-0 win against the Reds on Wednesday. Imanaga (3-3 with a 2.31 ERA over his last 7 starts) gave up 4 runs on 6 hits over 4 2/3 innings last time out in an 8-6 win at Washington on Tuesday.",
+            "The Cubs have scored 7.5 runs a game over their last fifteen, the White Sox 5.1. The season series is 2-1 to the White Sox."
           ],
-          "text": "Shota Imanaga starts for the Cubs against the visiting White Sox at Wrigley Field on Monday. Luis Castillo (4-9, 4.96 ERA) goes for the White Sox. Castillo was untouchable last time out: 7 shutout innings on 1 hit and 2 walks, with 10 strikeouts in a 5-0 win against the Reds on Wednesday. Imanaga (8-9, 3.74 ERA) gave up 4 runs on 6 hits over 4 2/3 innings last time out in an 8-6 win at Washington on Tuesday.\n\nThe Cubs are 72-53 and have lost 2 in a row; the White Sox are 65-58 and have won 3 in a row. The Cubs have scored 7.5 runs a game over their last fifteen, the White Sox 5.1. The season series is 2-1 to the White Sox.",
+          "text": "Shota Imanaga starts for the Cubs against the visiting White Sox at Wrigley Field on Monday. Luis Castillo (2-3 with a 4.50 ERA over his last 7 starts) goes for the White Sox. Castillo was untouchable last time out: 7 shutout innings on 1 hit and 2 walks, with 10 strikeouts in a 5-0 win against the Reds on Wednesday. Imanaga (3-3 with a 2.31 ERA over his last 7 starts) gave up 4 runs on 6 hits over 4 2/3 innings last time out in an 8-6 win at Washington on Tuesday.\n\nThe Cubs have scored 7.5 runs a game over their last fifteen, the White Sox 5.1. The season series is 2-1 to the White Sox.",
           "blurb": {
             "text": "Shota Imanaga starts for the Cubs against the visiting White Sox at Wrigley Field on Monday. The Cubs have scored 7.5 runs a game over their last fifteen, the White Sox 5.1.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -22177,8 +21842,8 @@
         "our_prob": 0.4158,
         "ev": -0.0073,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:41:02Z",
         "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
@@ -22208,8 +21873,8 @@
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:41:02Z",
         "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
@@ -22243,7 +21908,7 @@
           "score": 1.0,
           "result": null,
           "lead_time": "readiness",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "forge_no_bet",
           "reason": "The day's rule read this game and did not call a side."
@@ -22281,7 +21946,7 @@
           "score": 1.66,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -22319,7 +21984,7 @@
           "score": 0.32,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Lean \u2014 the new run-line stream, graded in public from day one. A lean, never a bet.",
@@ -22340,7 +22005,7 @@
           "score": null,
           "result": null,
           "lead_time": "T-1h",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 an independent 20,000-run read that prices games within a whisker of the market. A lean, never a bet.",
@@ -22360,14 +22025,14 @@
         "run_line_price_home": 138.0,
         "run_line_price_away": -143.0,
         "book": "lowvig",
-        "captured_at": "2026-08-17T23:19:53Z",
+        "captured_at": "2026-08-18T00:40:38Z",
         "wall": "T-1h",
-        "locked_at": null,
+        "locked_at": "2026-08-18T00:40:38Z",
         "game_pk": 824641,
         "date": "2026-08-17",
         "first_pitch_utc": "2026-08-18T00:05:00+00:00",
         "total_line_at_book": 8.0,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 8.5,
         "total_move": -0.5,
         "p_over_devig": 0.5108342361863489,
@@ -22376,32 +22041,7 @@
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: The market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'the conditions analyst: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 8.0,
-        "pregame_total_compared": 8.0,
-        "total_price_over": -118.0,
-        "total_price_under": 103.0,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": {
-          "book": "lowvig",
-          "pregame_total": 8.0,
-          "total": 8.0,
-          "move": 0.0,
-          "total_price_over": -118.0,
-          "total_price_under": 103.0
-        },
-        "n_books": 23,
-        "as_of": "2026-08-17T23:17:29Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": false,
-        "move": 0.0,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -22425,9 +22065,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -22439,9 +22076,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 2.8% off the market's on 8. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -22467,9 +22101,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -22482,9 +22113,6 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 0.21 runs above an average night \u2014 8.2 against 8.",
           "take_kind": "standard"
         },
@@ -22510,9 +22138,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -22531,9 +22156,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the bats, it is over 8 at 52%.",
           "take_kind": "standard"
         },
@@ -22559,9 +22181,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 5,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -22574,9 +22193,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Everything starts with who's throwing. 0.19 runs off neutral on the arms, under 8 \u2014 I'll take that against the room.",
           "take_kind": "dissent"
         }
@@ -22603,17 +22219,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -22630,7 +22237,7 @@
             "line_basis": "locked_pregame_total",
             "pregame_total": 8.0,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": null,
             "desk_votes": {
               "over": 3,
@@ -22966,15 +22573,15 @@
       "pick": {
         "status": "PASS",
         "side": null,
-        "line": 11.0,
-        "vegas_line": 11.0,
+        "line": 10.5,
+        "vegas_line": 10.5,
         "stars": 1,
         "score": 1.0,
         "star_tier": "Rule pass",
         "price": null,
         "suggested_units": null,
         "result": null,
-        "locked": false,
+        "locked": true,
         "locked_at_utc": "2026-08-17T10:10:07Z",
         "timestamp": "2026-08-17T10:10:07Z",
         "lead_time": "readiness",
@@ -23111,10 +22718,10 @@
           "generator": "rule_voice_v2",
           "identity": "matchup_facts/1.3",
           "paragraphs": [
-            "It is Blake Snell for the Dodgers against the Rockies at Coors Field on Monday. Tomoyuki Sugano (12-5, 4.43 ERA) starts for the Rockies. Sugano went 6 innings last time out, giving up 2 runs on 6 hits with no walks and 5 strikeouts in a 3-2 win at Arizona on Tuesday. Snell (0-1, 5.00 ERA) gave up 1 run on 3 hits over 6 innings last time out in a 5-4 win against the Royals on Tuesday.",
-            "The Rockies are 50-74 and are 5-5 over their last ten; the Dodgers are 74-51 and have lost 2 in a row. The Rockies have scored 6.1 runs a game over their last fifteen, the Dodgers 5.7. The Dodgers are 7-3 against the Rockies this season."
+            "It is Blake Snell for the Dodgers against the Rockies at Coors Field on Monday. Tomoyuki Sugano (5-1 with a 4.24 ERA over his last 7 starts) starts for the Rockies. Sugano went 6 innings last time out, giving up 2 runs on 6 hits with no walks and 5 strikeouts in a 3-2 win at Arizona on Tuesday. Snell gave up 1 run on 3 hits over 6 innings last time out in a 5-4 win against the Royals on Tuesday.",
+            "The Rockies have scored 6.1 runs a game over their last fifteen, the Dodgers 5.7. The Dodgers are 7-3 against the Rockies this season."
           ],
-          "text": "It is Blake Snell for the Dodgers against the Rockies at Coors Field on Monday. Tomoyuki Sugano (12-5, 4.43 ERA) starts for the Rockies. Sugano went 6 innings last time out, giving up 2 runs on 6 hits with no walks and 5 strikeouts in a 3-2 win at Arizona on Tuesday. Snell (0-1, 5.00 ERA) gave up 1 run on 3 hits over 6 innings last time out in a 5-4 win against the Royals on Tuesday.\n\nThe Rockies are 50-74 and are 5-5 over their last ten; the Dodgers are 74-51 and have lost 2 in a row. The Rockies have scored 6.1 runs a game over their last fifteen, the Dodgers 5.7. The Dodgers are 7-3 against the Rockies this season.",
+          "text": "It is Blake Snell for the Dodgers against the Rockies at Coors Field on Monday. Tomoyuki Sugano (5-1 with a 4.24 ERA over his last 7 starts) starts for the Rockies. Sugano went 6 innings last time out, giving up 2 runs on 6 hits with no walks and 5 strikeouts in a 3-2 win at Arizona on Tuesday. Snell gave up 1 run on 3 hits over 6 innings last time out in a 5-4 win against the Royals on Tuesday.\n\nThe Rockies have scored 6.1 runs a game over their last fifteen, the Dodgers 5.7. The Dodgers are 7-3 against the Rockies this season.",
           "blurb": {
             "text": "The Dodgers are 7-3 against the Rockies this season. The Rockies have scored 6.1 runs a game over their last fifteen, the Dodgers 5.7.",
             "record_line": "Over the 17 nights that chose it (Jul 31 to Aug 16) this rule went 126-46-8.",
@@ -23135,16 +22742,16 @@
         "line": 1.5,
         "home_line": 1.5,
         "vegas_line": 1.5,
-        "price": 154,
+        "price": 166,
         "best_book": null,
         "stars": 1,
-        "score": 0.41,
-        "our_prob": 0.3904,
-        "ev": -0.0084,
+        "score": 1.06,
+        "our_prob": 0.3804,
+        "ev": 0.0118,
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:41:02Z",
+        "lead_time": "T-1h",
         "mode": "lean_only",
         "activation_date": "2026-07-27",
         "is_new_stream": true,
@@ -23158,24 +22765,24 @@
       "simulator": {
         "status": "LEAN",
         "side": "over",
-        "line": 10.75,
-        "vegas_line": 10.75,
-        "p_over": 0.7086,
-        "p_over_market": 0.5039,
-        "sim_edge": 0.2047,
-        "price": null,
-        "best_book": null,
+        "line": 10.5,
+        "vegas_line": 10.5,
+        "p_over": 0.7035,
+        "p_over_market": 0.5217,
+        "sim_edge": 0.1818,
+        "price": -117.0,
+        "best_book": "onexbet",
         "stars": 1,
         "score": null,
-        "sim_mu": 13.816,
+        "sim_mu": 13.665,
         "sim_median": 13,
-        "sim_sd": 5.581,
+        "sim_sd": 5.476,
         "n_sims": 20000,
         "hfa": "on",
         "result": null,
-        "locked": false,
-        "locked_at_utc": null,
-        "lead_time": "T-3h",
+        "locked": true,
+        "locked_at_utc": "2026-08-18T00:41:02Z",
+        "lead_time": "T-1h",
         "mode": "transparent_voice",
         "activation_date": "2026-07-28",
         "is_new_stream": true,
@@ -23189,7 +22796,8 @@
           "T-24h",
           "T-12h",
           "T-6h",
-          "T-3h"
+          "T-3h",
+          "T-1h"
         ]
       },
       "strategies": [
@@ -23200,14 +22808,14 @@
           "is_headline": true,
           "is_served_source": false,
           "side": null,
-          "line": 11.0,
-          "vegas_line": 11.0,
+          "line": 10.5,
+          "vegas_line": 10.5,
           "price": null,
           "stars": 1,
           "score": 1.0,
           "result": null,
           "lead_time": "readiness",
-          "locked": false,
+          "locked": true,
           "expanded_band": false,
           "pass_why": "forge_no_bet",
           "reason": "The day's rule read this game and did not call a side."
@@ -23240,12 +22848,12 @@
           "side": "over",
           "line": 10.5,
           "vegas_line": 10.5,
-          "price": -116,
+          "price": -117,
           "stars": 1,
-          "score": 0.84,
+          "score": 1.34,
           "result": null,
-          "lead_time": "T-6h",
-          "locked": false,
+          "lead_time": "T-1h",
+          "locked": true,
           "expanded_band": false,
           "pass_why": "ev_gate",
           "reason": "Priced out \u2014 no value at the real price"
@@ -23278,12 +22886,12 @@
           "side": "home",
           "line": 1.5,
           "vegas_line": 1.5,
-          "price": 154,
+          "price": 166,
           "stars": 1,
-          "score": 0.41,
+          "score": 1.06,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": false,
+          "lead_time": "T-1h",
+          "locked": true,
           "expanded_band": false,
           "pass_why": "unproven_stream",
           "reason": "Lean \u2014 the new run-line stream, graded in public from day one. A lean, never a bet.",
@@ -23297,68 +22905,50 @@
           "is_headline": false,
           "is_served_source": false,
           "side": "over",
-          "line": 10.75,
-          "vegas_line": 10.75,
-          "price": null,
+          "line": 10.5,
+          "vegas_line": 10.5,
+          "price": -117.0,
           "stars": 1,
           "score": null,
           "result": null,
-          "lead_time": "T-3h",
-          "locked": false,
+          "lead_time": "T-1h",
+          "locked": true,
           "expanded_band": false,
           "pass_why": "sim_no_edge",
           "reason": "Physics simulator \u2014 an independent 20,000-run read that prices games within a whisker of the market. A lean, never a bet.",
           "market": "total",
-          "sim_p_over": 0.7086,
-          "sim_p_over_market": 0.5039,
-          "sim_mu": 13.816,
+          "sim_p_over": 0.7035,
+          "sim_p_over_market": 0.5217,
+          "sim_mu": 13.665,
           "sim_median": 13,
           "sim_n_sims": 20000
         }
       ],
       "pregame_line": {
-        "total": 11.0,
-        "total_price_over": null,
-        "total_price_under": null,
+        "total": 10.5,
+        "total_price_over": -117.0,
+        "total_price_under": 112.0,
         "run_line": 1.5,
-        "run_line_price_home": 154.0,
-        "run_line_price_away": -164.0,
-        "book": null,
-        "captured_at": "2026-08-17T23:19:53Z",
-        "wall": "T-3h",
-        "locked_at": null,
+        "run_line_price_home": 166.0,
+        "run_line_price_away": -169.0,
+        "book": "onexbet",
+        "captured_at": "2026-08-18T00:40:38Z",
+        "wall": "T-1h",
+        "locked_at": "2026-08-18T00:40:38Z",
         "game_pk": 824320,
         "date": "2026-08-17",
         "first_pitch_utc": "2026-08-18T00:40:00+00:00",
         "total_line_at_book": 10.5,
-        "is_locked": false,
+        "is_locked": true,
         "total_open": 11.5,
-        "total_move": -0.75,
-        "p_over_devig": 0.5038871528379737,
+        "total_move": -1.0,
+        "p_over_devig": 0.5217391304347826,
         "n_books": 22.0,
         "first_captured_at": "2026-08-17T09:08:44Z",
         "source": "fact_serve_point_in_time",
         "note": "THE PREGAME LINE, LOCKED: The market state at the LAST wall before first pitch \u2014 the number this game actually started at, captured from the point-in-time serve fact store (every captured row's decision timestamp is provably before first pitch). It is refreshed only while the game has not started; the first cycle after first pitch stamps locked_at and the record is immutable forever after. Every analyst read on the card carries `vs_line` \u2014 the exact line THAT engine was priced against \u2014 so a card can say 'the conditions analyst: OVER 8.5 (priced vs 8.5)' and you can see at a glance whether an analyst is on the same number as the locked pregame line."
       },
-      "line_now": {
-        "total": 10.5,
-        "pregame_total_compared": 11.0,
-        "total_price_over": null,
-        "total_price_under": null,
-        "book": null,
-        "comparison_basis": "book_consensus_median",
-        "same_basis": true,
-        "same_book_check": null,
-        "n_books": 22,
-        "as_of": "2026-08-17T23:17:29Z",
-        "source": "odds_snapshots_pregame_totals",
-        "market": "full_game_total",
-        "moved_vs_pregame": true,
-        "move": -0.5,
-        "max_plausible_move": 2.0,
-        "display_only": true,
-        "note": "the CURRENT read of the SAME full-game pregame totals market the locked line was captured from, display only. It exists so a pregame move never mutates the locked line. It is suppressed entirely once the game starts \u2014 after first pitch there is no pregame market to compare against. The comparison is same-book, or else both sides use the identical book-consensus-median basis (books are never mixed), and a comparison implying an implausible full-game move is refused rather than shipped. In-play/remaining-runs totals are never read here. Never graded, never a bet, never in any record."
-      },
+      "line_now": null,
       "analysts": [
         {
           "key": "vega",
@@ -23382,9 +22972,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": true,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -23396,9 +22983,6 @@
           "completeness_tier": "full",
           "completeness_note": "The price analyst read its whole slice on this game at T-3h: 8 of 8 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "My number sits 2.1% off the market's on 10.75. That gap is the whole position \u2014 over.",
           "take_kind": "standard"
         },
@@ -23424,9 +23008,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": true,
           "starters_announced": null,
@@ -23439,9 +23020,6 @@
           "completeness_tier": "full",
           "completeness_note": "The conditions analyst read its whole slice on this game at T-3h: 7 of 7 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Park, altitude, roof, the time of day and the man behind the plate put this 1.96 runs above an average night \u2014 12.7 against 10.75.",
           "take_kind": "standard"
         },
@@ -23467,9 +23045,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": false,
           "umpire_assigned": null,
           "starters_announced": null,
@@ -23488,9 +23063,6 @@
             "bats_top5_vs_hand",
             "bats_lineups_known"
           ],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "This is the offences themselves and nothing more. On what these bats have been doing: over 10.75 at 55%.",
           "take_kind": "standard"
         },
@@ -23516,9 +23088,6 @@
           "conviction_calibrated": false,
           "read_wall": "T-3h",
           "is_final_wall": true,
-          "first_wall_with_a_read": "T-24h",
-          "n_walls_read": 4,
-          "changed_side_across_walls": false,
           "lineup_posted": null,
           "umpire_assigned": null,
           "starters_announced": true,
@@ -23531,9 +23100,6 @@
           "completeness_tier": "full",
           "completeness_note": "The pitching analyst read its whole slice on this game at T-3h: 14 of 14 levers populated, 100% of its model's weight.",
           "levers_neutral_filled": [],
-          "no_read_reason": null,
-          "no_read_reason_code": null,
-          "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "Two starters and the two bullpens behind them, and nothing else: 0.70 runs above an average staff \u2014 11.4 against 10.75.",
           "take_kind": "standard"
         }
@@ -23560,17 +23126,8 @@
           "run_line_call_lives_at": "games[].diamondedge.spread_call"
         },
         "source": "analyst_v2_stream",
-        "walls": {
-          "vega": "T-3h",
-          "atlas": "T-3h",
-          "nova": "T-3h",
-          "scout": "T-3h"
-        },
         "all_at_final_wall": true,
-        "n_at_final_wall": 4,
-        "earliest_wall_in_use": "T-3h",
-        "provisional": false,
-        "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
+        "provisional": false
       },
       "diamondedge": {
         "action": "AVOID",
@@ -23583,11 +23140,11 @@
           "ou_call": {
             "side": "over",
             "side_basis": "desk_majority",
-            "line": 11.0,
+            "line": 10.5,
             "line_basis": "locked_pregame_total",
-            "pregame_total": 11.0,
+            "pregame_total": 10.5,
             "line_matches_pregame_total": true,
-            "line_is_locked_pregame": false,
+            "line_is_locked_pregame": true,
             "price": null,
             "desk_votes": {
               "over": 4,
@@ -23809,10 +23366,10 @@
                 "vs_bet": null
               },
               "atlas_predicted_score": {
-                "side": null,
+                "side": "over",
                 "predicted_total": 11.0,
-                "vs_line": 11.0,
-                "vs_bet": null
+                "vs_line": 10.5,
+                "vs_bet": "same"
               }
             },
             "all_voices_agree_with_bet": null,

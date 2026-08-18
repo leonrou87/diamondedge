@@ -1408,6 +1408,11 @@ details.more[open]>summary::after{transform:rotate(180deg)}
 /* season line drops to its own quiet second line under the name (was wrapping mid-stat);
    order:10 keeps the › tap-affordance up on the name row */
 .pit-chip .pit-sub{flex-basis:100%;margin-left:41px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;order:10}
+/* the starter's face on the chip — same 120px spot the player card loads, 19px here.
+   flex ignores the .pav.xs inline vertical-align, so it centers itself; the sub-line's
+   indent grows by the face's 19px + 7px gap so it stays aligned under the name. */
+.pit-chip .pav.xs{align-self:center;margin-right:0}
+.pit-chip.has-face .pit-sub{margin-left:67px}
 /* ---- DiamondEdge branding kicker on every pick surface ---- */
 .de-k{display:inline-flex;align-items:center;font-family:var(--disp);font-weight:700;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--golddeep);white-space:nowrap}
 /* ---- inline editorial icons ---- */
@@ -1591,9 +1596,6 @@ details.more[open]>summary::after{transform:rotate(180deg)}
 .lho.dir-hit{background:var(--dirgoodbg);border-color:var(--dirgoodline)}
 .lho.dir-close{background:var(--dirnearbg);border-color:var(--dirnearline)}
 .lho.dir-miss{background:var(--dirbadbg);border-color:var(--dirbadline)}
-/* TIGHT MASTHEAD — compact vertical footprint; short punchy headline + small dek,
-   clearly separated from the lead story by a rule. The ONE red accent is its kicker. */
-.masthead{margin:0 2px 10px}
 .de-toast{position:fixed;left:50%;bottom:calc(max(7px,var(--sab)) + 54px + 12px);transform:translateX(-50%) translateY(12px);z-index:130;font-family:var(--disp);font-weight:600;font-size:14px;letter-spacing:.02em;color:var(--n3);background:rgba(var(--panec),.92);border:1px solid rgba(var(--rimc),.12);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-radius:999px;padding:10px 18px;box-shadow:0 8px 26px var(--sh5);opacity:0;pointer-events:none;transition:opacity .25s ease,transform .25s var(--spring);max-width:calc(100vw - 32px);text-align:center}
 .de-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .social{margin:22px 2px 4px;padding:16px 4px 4px;border-top:2px solid rgba(var(--tintc),.12)}
@@ -1675,6 +1677,11 @@ details.more[open]>summary::after{transform:rotate(180deg)}
   .gamepage>.gp-head,.gamepage>.gp-body{width:min(760px,100%);margin:0 auto}
   .gamepage>.gp-head{border-radius:20px 20px 0 0}
   .gamepage>.gp-body{border-radius:0 0 20px 20px}
+  /* ONE WORDMARK PER SCREEN (UX iter 2). On desktop the game page is a centered panel
+     and the app masthead stays visible above it — two DIAMONDEDGE wordmarks at once.
+     The panel keeps the diamond mark as its go-home tap; the letters stay the
+     masthead's alone. Phones cover the masthead entirely, so they keep the full lockup. */
+  .gamepage .gp-brand .gp-brand-tx{display:none}
 }
 /* PAGE HEADER */
 .gp-head{position:relative;z-index:2;display:flex;align-items:center;gap:12px;flex-shrink:0;
@@ -1725,7 +1732,7 @@ details.more[open]>summary::after{transform:rotate(180deg)}
    and given a floor tall enough to cover it, clipped by the hero's own overflow:hidden. */
 /* THE PARK MASTHEAD IS GONE (Leon, 2026-08-10: "really didn't work at all, remove all of
    it"). Blur, crisp and background variants were all tried; none landed. The hero is the
-   clean paper card again. public/parks/*.webp stay on disk, unreferenced. */
+   clean paper card again. public/parks/*.webp deleted 2026-08-17 (nothing referenced them). */
 .gp-hero::before,.gp-hero::after{z-index:0}
 .gp-hero>*{position:relative;z-index:1}
 .gp-mu{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}

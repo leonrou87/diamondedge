@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T00:00:50Z",
+  "generated_utc": "2026-08-18T05:20:54Z",
   "games": [
     {
       "game_id": "2026-08-17-Baltimore Orioles-Tampa Bay Rays-822939",
@@ -1355,7 +1355,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-12h",
@@ -1384,7 +1386,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-6h",
@@ -1413,7 +1417,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-3h",
@@ -1442,7 +1448,9 @@
           "best_book": "williamhill_us",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-1h",
@@ -1471,10 +1479,18 @@
           "best_book": "williamhill_us",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-18T00:41:02Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-17-Los Angeles Dodgers-Colorado Rockies-824320",
@@ -1519,7 +1535,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-12h",
@@ -1548,7 +1566,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-6h",
@@ -1577,7 +1597,9 @@
           "best_book": "mybookieag",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-3h",
@@ -1605,7 +1627,9 @@
           },
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         },
         {
           "lead_time": "T-1h",
@@ -1634,10 +1658,18 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-18T00:41:02Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-18T00:41:02Z",
+        "label": "Locked at T-1h \u00b7 O/U 10.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     }
   ],
   "premium_variant": "public",
