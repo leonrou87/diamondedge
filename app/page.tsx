@@ -10270,6 +10270,83 @@ export default function Home() {
     function dailyRecordFor(dateISO: string) {
       return dayRecordMap()[dateISO] || null;
     }
+    /* ═══ EVERY LEAGUE'S GRADED PICKS, DAY BY DAY (owner order, 2026-08-18) ═══
+       The day-by-day archive surfaces — the calendar's W-L pills, the Desk's daily map
+       and the "Every pick, day by day" list — covered MLB only, while the NFL/WNBA/MLS
+       tracker payloads carry their own graded cards on the same wire. These helpers read
+       those cards: the result exactly as served (`result`: WIN/LOSS/PUSH/VOID), the call
+       off the served structured fields (`pick`/`ou_call` + `line`), never re-derived and
+       never re-graded.
+
+       WHAT THIS IS NOT: a blend of league RECORDS. dayRecordMap(), the MLB headline, the
+       cumulative-units curve and every league record row are untouched — each ledger stays
+       its own line. This is the same public per-day facts, listed together on the surfaces
+       whose subject is "the day", not "the league".
+
+       THE SERVED-DATA LIMIT, stated rather than papered over: a tracker payload carries
+       only a rolling card window (platform multisport/picks/ms_picks.py, WINDOW_BACK_D=3
+       days back), so a league's graded picks older than that window are in no public
+       payload and cannot appear here. Days beyond the window keep their MLB-only row —
+       that is a gap in the served data, never a claim the league did not play. */
+    function msGradedCards() {
+      const out: any[] = [];
+      MS_TABS.forEach((lg: string) => {
+        try { loadMsSport(lg); } catch {}   // fire-and-forget; answered from cache once landed
+        const d = msData[lg];
+        (((d && d.games) || []) as any[]).forEach((c: any) => {
+          const res = String((c && c.result) || "").toUpperCase();
+          if (res !== "WIN" && res !== "LOSS" && res !== "PUSH" && res !== "VOID") return;
+          const day = String(c.date || "").slice(0, 10);
+          if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
+          out.push({ lg, day, res, card: c });
+        });
+      });
+      return out;
+    }
+    function msDayRecords() {
+      const out: any = {};
+      msGradedCards().forEach(({ lg, day, res }: any) => {
+        if (res === "VOID") return;   // a void counts nowhere — same rule as MLB
+        const r = (out[day] = out[day] || { w: 0, l: 0, p: 0, n: 0, leagues: {} });
+        if (res === "WIN") r.w++; else if (res === "LOSS") r.l++; else r.p++;
+        r.n++;
+        const lab = lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || String(lg).toUpperCase());
+        const e = (r.leagues[lab] = r.leagues[lab] || { w: 0, l: 0, p: 0 });
+        if (res === "WIN") e.w++; else if (res === "LOSS") e.l++; else e.p++;
+      });
+      return out;
+    }
+    /* The whole desk's day map: the MLB day ledger with every league's served graded
+       cards added per date. UNITS ARE NOT TOUCHED: the multisport ledgers publish no
+       unit figures anywhere, and inventing zeros would misprice a mixed day — so a
+       day's units remain exactly the MLB ledger's units, and a mixed day carries its
+       per-league split (`leagues`) so a tooltip can say which books the W-L spans. */
+    function dayRecordMapAll() {
+      const out = dayRecordMap();
+      const ms = msDayRecords();
+      Object.keys(ms).forEach((k) => {
+        const a = ms[k];
+        const b = out[k];
+        const W = (b ? b.w : 0) + a.w, L = (b ? b.l : 0) + a.l;
+        out[k] = {
+          ...(b || { units: null, nPicks: null, nVoid: null, roi: null }),
+          w: W, l: L, p: (b ? b.p : 0) + a.p,
+          n: (b && b.n ? b.n : 0) + a.n,
+          hit: W + L > 0 ? W / (W + L) : null,
+          leagues: { ...(b && b.w + b.l + b.p > 0 ? { MLB: { w: b.w, l: b.l, p: b.p } } : {}), ...a.leagues },
+        };
+      });
+      return out;
+    }
+    function dailyRecordAllFor(dateISO: string) {
+      return dayRecordMapAll()[dateISO] || null;
+    }
+    // "3–1 (MLB 2–1 · WNBA 1–0)" — the mixed-day tooltip suffix; "" for a single-book day
+    function dayLeaguesTxt(r: any) {
+      const lgs = r && r.leagues && typeof r.leagues === "object" ? Object.keys(r.leagues) : [];
+      if (lgs.length < 2) return "";
+      return ` (${lgs.map((k) => `${k} ${r.leagues[k].w}–${r.leagues[k].l}${r.leagues[k].p ? `–${r.leagues[k].p}` : ""}`).join(" · ")})`;
+    }
     /* ONE VERDICT ON A DAY. "How did this day go" was decided in three places, three ways,
        and one of them could not work at all:
 
@@ -11510,10 +11587,10 @@ export default function Home() {
        carry this on three surfaces, ALL optional, and every reader here returns nothing
        when its field is absent — a pre-era payload renders BYTE-IDENTICAL, and no sentence
        below is ever composed without the served field behind it:
-         · record.eras — the record PARTITIONED by era stamp. The new era's line starts 0-0
-           at its first graded pick and renders as ITS OWN line, never summed with (or into)
-           the cumulative line beside it. Rides inside `record`, which the public gate
-           passes whole, so this arrives the moment the engine publishes it.
+         · record.eras — the record PARTITIONED by era stamp. NOT DISPLAYED (owner order,
+           2026-08-18): readers get one cumulative line per league, and the top-level
+           record.regular / record.preseason figures already sum every era. The partition
+           stays served as internal bookkeeping; no reader surface renders it.
          · payload.adaptive — the selector's own status (today's frozen rule per regime).
            Owner-allowlisted on the public tracker gate since platform commit 2ff407e
            (v4/serve/desk_policy.py _TRACKER_PUBLIC_TOP) — served publicly, and still
@@ -11586,56 +11663,19 @@ export default function Home() {
       const wallSentence = msWallH != null
         ? `every pick freezes at its own wall, about ${msWallH} hour${msWallH === 1 ? "" : "s"} before the game starts, and grades here in the open`
         : `every pick freezes at its own wall, before the game starts, and grades here in the open`;
-      /* ── THE ADAPTIVE ERA'S OWN LINE (see the block note above MS_CANDIDATE_WORDS) ──
-         Rendered ONLY when the served payload carries the era. Its chips are the era's OWN
-         record — starting 0-0, exactly as served in record.eras — and are never the
-         cumulative chips beside the headline: the two lines never sum, here or anywhere. */
-      const eraRow = (() => {
-        const eras = rec.eras && typeof rec.eras === "object" ? rec.eras : null;
-        // the cards themselves say which engine line is the original one — read, not guessed
-        const legacyEra = (() => {
-          for (const x of ((d && d.games) || []) as any[]) {
-            const mt = x && x.model_type;
-            if (typeof mt === "string" && mt) return mt;
-          }
-          return "de_ms_v1";
-        })();
-        const newKeys = eras
-          ? Object.keys(eras).filter((k) => k !== legacyEra && eras[k] && typeof eras[k] === "object")
-          : [];
-        const ast = d && d.adaptive && typeof d.adaptive === "object" && typeof d.adaptive.era === "string" ? d.adaptive : null;
-        if (!newKeys.length && !ast) return "";
-        const fromISO = String((ast && ast.adaptive_from) || "").slice(0, 10);
-        const fromLab = isISO(fromISO)
-          ? new Date(fromISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
-          : "";
-        // today's frozen rule, straight off the selector's own served status — the one
-        // sentence here that names a strategy, and only when the payload names it first.
-        /* THE FLOOR IS GONE, AND SO IS ITS SENTENCE (owner order, D_MIN=0 — platform
-           commit 2ff407e; audited live 2026-08-17). With the divergence floor removed,
-           `below_floor` only ever records a tie resolved to the default, so the old
-           "doesn't have enough graded nights yet" copy stated a reason that is no longer
-           true of any stamp. One sentence for every frozen rule — including the night the
-           standard approach keeps on its own merit. */
-        let todayTx = "";
-        if (ast && ast.today && typeof ast.today === "object") {
-          const t = (Object.values(ast.today) as any[]).find((x: any) => x && x.candidate);
-          if (t) {
-            const w = Number(t.window_nights);
-            todayTx = ` Tonight's rule: ${esc(msCandidateWords(t.candidate))} — the rule with the best graded record here${isFinite(w) && w > 0 ? ` over the last ${Math.round(w)} night${Math.round(w) === 1 ? "" : "s"}` : ""}.`;
-          }
-        } else if (ast && ast.status === "armed_no_history") {
-          todayTx = " Nothing has been chosen yet — this league has no graded history for the nightly check to read.";
-        }
-        const eraChips = newKeys.map((k) => {
-          const e = (eras as any)[k];
-          const pPlayed = e.preseason && ((e.preseason.wins || 0) + (e.preseason.losses || 0) + (e.preseason.pushes || 0) > 0);
-          const rPlayed = e.regular && ((e.regular.wins || 0) + (e.regular.losses || 0) + (e.regular.pushes || 0) > 0);
-          return `${pPlayed || preNow ? chip("Preseason", line(e.preseason)) : ""}${rPlayed || !preNow ? chip("Regular season", line(e.regular)) : ""}`;
-        }).join("");
-        return `<div class="msrec-erarow"><span class="er-tag">${fromLab ? `New era · ${esc(fromLab)}` : "New era"}</span><span class="er-tx">Each night the engine now re-checks its own graded results here and freezes the rule that has actually been winning — the standard approach holds until a challenger earns it.${todayTx} This era's picks grade on their own line, starting 0-0 — never added into the record above.</span>${eraChips}</div>`;
-      })();
-      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: ${esc(wallSentence)}. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}${eraRow}</div>`;
+      /* ── THE "NEW ERA" SUB-ROW IS GONE (owner order, 2026-08-18) ──
+         From 2026-08-17 to 2026-08-18 this strip carried a second, dashed-off line —
+         "New era · Aug 17 … This era's picks grade on their own line, starting 0-0 —
+         never added into the record above" — rendering `record.eras` (the adaptive
+         selector's partition of the same graded picks) as its own public track. The
+         owner's call: readers get ONE cumulative record per league. The top-level
+         `record.regular` / `record.preseason` chips above already ARE that cumulative
+         line (the engine sums every era into them — verified on the served WNBA payload:
+         eras 2-1 + 0-0, top line 2-1), so nothing is lost by not partitioning it on
+         screen. `record.eras`, `payload.adaptive` and every era stamp stay served and
+         stay internal bookkeeping; the per-card adaptive stamp (msAdaptiveStampOf) and
+         the frozen-rule copy on game surfaces are untouched. */
+      return `<div class="future-note msrec"><span class="fn-ic">◆</span><div class="fn-body"><b>${esc(lab)} picks — ${esc(gradedFrom)}</b><span>A new track, on its own record: ${esc(wallSentence)}. Preseason and regular season never mix — and there are no backtest claims, ever.</span></div>${chips}</div>`;
     }
     function metaRow() {
       if (MS_TABS.has(league)) return safeHtml("sport record strip", () => msRecordStripHtml(league), "");
@@ -11705,7 +11745,8 @@ export default function Home() {
         const isToday = cur === today;
         const isFuture = cur > today;
         const on = cur === curDate;
-        cells.push(`<button class="dcell ${on ? "on" : ""} ${isToday ? "today" : ""} ${isFuture ? "future" : ""}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
+        // class list composed without the empty-interpolation gaps (`class="dcell   "`)
+        cells.push(`<button class="${["dcell", on && "on", isToday && "today", isFuture && "future"].filter(Boolean).join(" ")}" data-date="${cur}" aria-label="${dt.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}">
           <span class="dc-wd">${isToday ? "Today" : dt.toLocaleDateString("en-US", { weekday: "short" }).slice(0, 2)}</span>
           <span class="dc-d">${dt.getDate()}</span>
         </button>`);
@@ -12234,7 +12275,9 @@ export default function Home() {
     function openCalendarPage() {
       detail = detailWithGameReturn({ _cal: true, _layer: "cal" });
       const today = todayISO();
-      const rmap = (() => { try { return dayRecordMap(); } catch { return {} as any; } })();
+      // EVERY LEAGUE'S GRADED PICKS on the pills (owner order, 2026-08-18) — the merged
+      // day map; leagues still loading patch in below without moving the reader's scroll.
+      let rmap = (() => { try { return dayRecordMapAll(); } catch { return {} as any; } })();
       const gameDays: any = {};
       (((indexData && (indexData.dates || indexData.keyed_dates)) || []) as any[]).forEach((d: any) => {
         const k = String(d || "").slice(0, 10);
@@ -12328,6 +12371,26 @@ export default function Home() {
         if (was !== curDate) selectDate();   // the board loads the chosen day beneath
       };
       bindSwipeBack($("gamepage"));
+      /* League tracker payloads still in flight patch their graded days in once they
+         land — same lazy pattern as the Desk's league-records section. The grid alone
+         repaints (the click handler is a property on #gp-body, which stays), the scroll
+         is kept, and a failed fetch simply leaves the MLB-only pills standing. */
+      Promise.allSettled(Array.from(MS_TABS as any).map((lg: any) => loadMsSport(lg))).then(() => {
+        try {
+          const b = $("gp-body");
+          const pg = $("gamepage");
+          if (!b || !pg || !pg.classList.contains("calpage")) return;
+          const rmap2 = dayRecordMapAll();
+          if (JSON.stringify(rmap2) === JSON.stringify(rmap)) return;
+          rmap = rmap2;
+          const keep = b.scrollTop;
+          b.querySelectorAll(".cp-month").forEach((m: any) => {
+            const fresh = monthHtml(String(m.dataset.cm || ""));
+            if (fresh) m.outerHTML = fresh;
+          });
+          b.scrollTop = keep;
+        } catch {}
+      }).catch(() => {});
     }
 
     function bindCards() {
@@ -14098,7 +14161,12 @@ export default function Home() {
       const yMin = lo - pad, yMax = hi + pad;
       // Taller than the plain step line was: the marker now needs a lane above OR below the
       // number, and the padding above/below the extremes is what it lives in.
-      const W = 320, H = 152, L = 34, R = 12, T = 16, B = 30;
+      /* …but a total that NEVER moved (most MLB games) has one level and one marker lane —
+         at the full height that drew a big empty plot with a lone line in it, which reads
+         as a chart that failed to load. A flat domain takes a shorter canvas; every wall
+         still shows, the marker still has its lane, nothing is dropped. */
+      const flat = hi - lo < 0.001;
+      const W = 320, H = flat ? 104 : 152, L = 34, R = 12, T = 16, B = 30;
       const px = (i: number) => L + (i * (W - L - R)) / Math.max(1, w.length - 1);
       const py = (v: number) => T + (H - T - B) * (1 - (v - yMin) / Math.max(0.001, yMax - yMin));
       const plotB = H - B, plotR = W - R;
@@ -16098,8 +16166,17 @@ export default function Home() {
         if (st !== "PICK" && st !== "VOID") return;
         (byDate[g.date] = byDate[g.date] || []).push(g);
       });
+      /* EVERY LEAGUE, SAME ARCHIVE (owner order, 2026-08-18). The NFL/WNBA/MLS trackers'
+         graded cards join their days — result exactly as served, the call off the served
+         pick string, each row wearing its league tag. Their payloads carry only a rolling
+         card window (see msGradedCards), so older multisport days are absent from the wire
+         and simply keep their MLB rows: a data gap, never a restated record. */
+      const msByDate: any = {};
+      msGradedCards().forEach((x: any) => {
+        (msByDate[x.day] = msByDate[x.day] || []).push(x);
+      });
       // PAST picks — prior days only (today's board lives on Games/News until it grades)
-      const dates = Array.from(new Set([...Object.keys(byDate), ...Object.keys(dayNotes)]))
+      const dates = Array.from(new Set([...Object.keys(byDate), ...Object.keys(dayNotes), ...Object.keys(msByDate)]))
         .filter((k) => k && k < todayISO()).sort().reverse();
       if (!dates.length) return "";
       const shown = dates.slice(0, ppShown);
@@ -16109,19 +16186,21 @@ export default function Home() {
         return raw ? teamShort(raw) : "—";
       };
       const dayBlock = (k: string, open: boolean) => {
-        const r = dailyRecordFor(k) || ({} as any);
+        // the merged day record — every league's graded picks, MLB units (see dayRecordMapAll)
+        const r = dailyRecordAllFor(k) || ({} as any);
         const dd = new Date(k + "T12:00:00").toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
         const note = dayNotes[k];
         const noteTag = note ? (note.records_incomplete ? "records incomplete" : note.kind === "no_games_scheduled" ? "no games" : "small slate") : "";
-        // a flagged day with NO picks renders as an honest note row — a gap in
-        // the archive is stated out loud, never left as a silent hole
-        if (!byDate[k]) {
+        const msList = (msByDate[k] || []) as any[];
+        // a flagged day with NO picks in any league renders as an honest note row — a gap
+        // in the archive is stated out loud, never left as a silent hole
+        if (!byDate[k] && !msList.length) {
           return `<div class="pp-day pp-noteonly"><div class="pp-notehead"><span class="pp-date">${esc(dd)}</span><span class="pp-wl dim">${esc(noteTag || "no picks")}</span></div><div class="pp-notetext">${esc((note && note.note) || "No picks this day.")}</div></div>`;
         }
         const noteLine = note ? `<div class="pp-notetext inday">${esc(note.note)}</div>` : "";
         const wl = r.n ? wlTxt(r) : "";
         const roi = r.roi != null ? `${r.roi >= 0 ? "+" : ""}${(r.roi * 100).toFixed(0)}%` : "";
-        const list = byDate[k].slice().sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
+        const list = (byDate[k] || []).slice().sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
         const rows = list.map((g: any) => {
           const p = g.pick;
           const isV = String(p.status || "").toUpperCase() === "VOID";
@@ -16138,9 +16217,25 @@ export default function Home() {
              plain facts in a fixed order: who played, what we called, how it went. */
           return `<button class="pp-row${isV ? " isvoid" : ""}" data-ppgid="${esc(g.game_id)}" data-ppdate="${esc(String(g.date || k))}"><span class="pp-mu">${esc(muName(g, "away"))} @ ${esc(muName(g, "home"))}</span><span class="pp-side">${esc(side)}${p.price != null ? ` <i>${fmtOdds(p.price)}</i>` : ""}</span>${res}</button>`;
         }).join("");
-        const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length;
-        const nP = list.length - nV;
-        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${dayToneCls(r)}">${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}">${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}</div></details>`;
+        /* THE OTHER LEAGUES' ROWS — the served card verbatim: league tag, matchup, the
+           served pick string ("UNDER 171.5"), the served result. No price and no game page
+           exist on these cards, so the row is plain (not a button) and carries no odds. */
+        const msRows = msList.map((x: any) => {
+          const c = x.card || {};
+          const lab = x.lg === "soccer" ? "MLS" : (SPORT_LABEL[x.lg] || String(x.lg).toUpperCase());
+          const side = String(c.pick || "").trim()
+            || (c.ou_call ? `${String(c.ou_call).toUpperCase()}${c.line != null ? ` ${lineStr(c.line)}` : ""}` : "");
+          const res = x.res === "VOID" ? `<span class="ppres voidppd" title="Voided — no action">VOID</span>`
+            : x.res === "WIN" ? resultStamp("won", "sm")
+            : x.res === "LOSS" ? resultStamp("lost", "sm")
+            : resultStamp("pushed", "sm");
+          const mu = `${teamShort(c.away_team || c.away_abbr || "")} @ ${teamShort(c.home_team || c.home_abbr || "")}`;
+          return `<div class="pp-row ppms${x.res === "VOID" ? " isvoid" : ""}"><span class="pp-mu"><i class="pp-lg">${esc(lab)}</i>${esc(mu)}</span><span class="pp-side">${esc(side)}</span>${res}</div>`;
+        }).join("");
+        const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length
+          + msList.filter((x: any) => x.res === "VOID").length;
+        const nP = list.length + msList.length - nV;
+        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${dayToneCls(r)}"${dayLeaguesTxt(r) ? ` title="${esc(wl + dayLeaguesTxt(r))}"` : ""}>${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}"${dayLeaguesTxt(r) ? ` title="Return on the MLB picks — the other leagues' ledgers publish no prices or units"` : ""}>${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}${msRows}</div></details>`;
       };
       return `<div class="ixc pastpicks"><div class="ixc-h">Every pick, day by day</div><div class="ixc-sub">The call we published, and how it finished. Most recent first.</div>
         ${shown.map((k, i) => dayBlock(k, i === 0)).join("")}
@@ -20412,6 +20507,12 @@ export default function Home() {
             <b>${esc(String(r.label || t))}</b>
           </div>
           <div class="rstr-figs">
+            ${/* THE SAMPLE IS SAID ON THE ROW (owner call, 2026-08-18: the block "looks
+                  wrong — very few data points"). The served cut IS this thin — the committee
+                  stopped choosing the board on 2026-08-08, so the tiers stopped accruing —
+                  and a 1-0 row that does not say n=1 invites reading it as a rate. The count
+                  is the served n, printed first so nothing here can be read bigger than it is. */""}
+            <span class="rstr-f rstr-n"><b>n=${Number(r.n || 0)}</b><i>pick${Number(r.n || 0) === 1 ? "" : "s"}</i></span>
             <span class="rstr-f"><b>${esc(wlTxt(r))}</b><i>record</i></span>
             ${hit != null && dec >= HIT_MIN_DECIDED ? `<span class="rstr-f"><b>${(hit * 100).toFixed(1)}%</b><i>hit</i></span>` : ""}
             ${/* A TRUE MINUS SIGN, like every other units figure on this page. This row
@@ -20424,6 +20525,18 @@ export default function Home() {
         </div>`;
       }).join("");
       const n = blk.rows.reduce((a: number, x: any) => a + Number(x.r.n || 0), 0);
+      /* WHEN THESE PICKS HAPPENED — off the served first/through stamps, so the thinness
+         has its dates on it: "3 picks" reads very differently once it says all three
+         graded on one night a week before the mechanism retired. No served stamps ⇒ no
+         claim. */
+      const firsts = blk.rows.map(({ r }: any) => String(r.first || "").slice(0, 10)).filter(isISO).sort();
+      const throughs = blk.rows.map(({ r }: any) => String(r.through || "").slice(0, 10)).filter(isISO).sort();
+      const spanTxt = (() => {
+        if (!firsts.length || !throughs.length) return "";
+        const a = firsts[0], b = throughs[throughs.length - 1];
+        const lab = (iso: string) => new Date(iso + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+        return a === b ? ` All of them graded on ${lab(a)}.` : ` They graded between ${lab(a)} and ${lab(b)}.`;
+      })();
       return `<section class="rstr">
         <header class="rstr-head">
           <span class="rstr-kick">A cut of the record</span>
@@ -20438,7 +20551,7 @@ export default function Home() {
               was the second telling on one figure. The foot then keeps only the framing. */""}
         <p class="rstr-foot">${n} graded pick${n === 1 ? "" : "s"} across the three tiers${censusLine
           ? " — a cut of the record, never a shortlist."
-          : `. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.`}</p>
+          : `. <b>Every pick counts in the DiamondEdge record regardless of its tier — including every pick with no vote to cut on.</b> This is a cut of that population, never a shortlist.`}${esc(spanTxt)}${n > 0 && n < 10 ? ` <b>Far too few to conclude anything</b> — the cut is kept because it was pre-registered, not because it has an answer yet.` : ""}</p>
       </section>`;
     }
     /* ═══════════════ FIGURE: THE FORTNIGHT LEDGER ═══════════════
@@ -21087,12 +21200,15 @@ export default function Home() {
       return out;
     }
     function dailyRecordRows(_d?: any) {
-      const map = dayRecordMap();
+      // THE WHOLE DESK'S FORTNIGHT (owner order, 2026-08-18): every league's graded picks
+      // count in these cells, per day. Units stay the MLB ledger's — the multisport
+      // ledgers publish none — see dayRecordMapAll's note.
+      const map = dayRecordMapAll();
       const days: string[] = [];
       for (let i = 13; i >= 0; i--) days.push(shiftDate(todayISO(), -i));
       return days.map((k) => {
         const r = map[k];
-        return r ? { k, n: r.n, w: r.w, l: r.l, p: r.p, units: r.units }
+        return r ? { k, n: r.n, w: r.w, l: r.l, p: r.p, units: r.units, leagues: r.leagues }
                  : { k, n: 0, w: 0, l: 0, p: 0, units: null as any };
       });
     }
@@ -21205,8 +21321,9 @@ export default function Home() {
          · Preseason and regular season stay separate lines (same chip-visibility logic as
            the tab strip: the preseason line shows when preseason ball is on that board or
            the line already has grades in it).
-         · record.eras (the adaptive era partition) renders as ITS OWN sub-line exactly as
-           the strip renders it — never folded into the legacy line beside it.
+         · record.eras (the adaptive era partition) is NOT displayed — one cumulative
+           line per league (owner order, 2026-08-18); the top-level figures already sum
+           every era, and the partition stays internal bookkeeping.
          · Off-season leagues say the honest thing — the record starts with the season —
            in the strip's own language, with the served season_note.
          · A league whose payload has not arrived (or failed) renders NOTHING: no row, no
@@ -21240,35 +21357,13 @@ export default function Home() {
       const fig = (k: string, v: string) => v
         ? `<span class="sc-wl"><b>${dash(v)}</b><i>${esc(k)}</i></span>` : "";
       const figs = `${prePlayed || preNow ? fig("preseason", line(rec.preseason)) : ""}${regPlayed || !preNow ? fig("regular season", line(rec.regular)) : ""}`;
-      // ── the adaptive era's own line, rendered ONLY when served (record.eras) ──
-      const era = (() => {
-        const eras = rec.eras && typeof rec.eras === "object" ? rec.eras : null;
-        if (!eras) return "";
-        const legacyEra = (() => {
-          for (const x of ((d && d.games) || []) as any[]) {
-            const mt = x && x.model_type;
-            if (typeof mt === "string" && mt) return mt;
-          }
-          return "de_ms_v1";
-        })();
-        const newKeys = Object.keys(eras).filter((k) => k !== legacyEra && eras[k] && typeof eras[k] === "object");
-        if (!newKeys.length) return "";
-        const ast = d && d.adaptive && typeof d.adaptive === "object" ? d.adaptive : null;
-        const fromISO = String((ast && ast.adaptive_from) || "").slice(0, 10);
-        const fromLab = isISO(fromISO)
-          ? new Date(fromISO + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })
-          : "";
-        const chips = newKeys.map((k) => {
-          const e = (eras as any)[k];
-          const pPlayed = e.preseason && ((e.preseason.wins || 0) + (e.preseason.losses || 0) + (e.preseason.pushes || 0) > 0);
-          const rPlayed = e.regular && ((e.regular.wins || 0) + (e.regular.losses || 0) + (e.regular.pushes || 0) > 0);
-          return `${pPlayed || preNow ? fig("preseason", line(e.preseason)) : ""}${rPlayed || !preNow ? fig("regular season", line(e.regular)) : ""}`;
-        }).join("");
-        if (!chips) return "";
-        return `<div class="sc-era"><span class="sc-eratag">${fromLab ? `New era · ${esc(fromLab)}` : "New era"}</span><span class="sc-eratx">This era's picks grade on their own line — never added to the record above.</span><div class="sc-figs">${chips}</div></div>`;
-      })();
-      if (!figs && !era) return "";
-      return `<div class="scoperow lgr"><div class="sc-head"><span class="sc-k">${esc(lab)}</span><span class="sc-sub">${esc(sub)}</span></div>${figs ? `<div class="sc-figs">${figs}</div>` : ""}${era}</div>`;
+      /* THE "NEW ERA" SUB-LINE IS GONE (owner order, 2026-08-18 — same call as the strip's:
+         see msRecordStripHtml). One cumulative line per league: the top-level
+         record.regular / record.preseason figures already sum every era's graded picks
+         (the engine folds record.eras into them), so this row IS the whole public ledger.
+         record.eras stays served and stays internal bookkeeping — nothing here reads it. */
+      if (!figs) return "";
+      return `<div class="scoperow lgr"><div class="sc-head"><span class="sc-k">${esc(lab)}</span><span class="sc-sub">${esc(sub)}</span></div><div class="sc-figs">${figs}</div></div>`;
     }
     function leagueRecordsSection() {
       const rows: string[] = [];
@@ -21402,7 +21497,7 @@ export default function Home() {
         const u = Number(r.units || 0);
         const tone = dayTone(r);
         const wl = r.n ? wlTxt(r) : "";
-        return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl} · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : " · no picks"}">
+        return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl}${dayLeaguesTxt(r)}${r.units != null ? ` · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : ""}` : " · no picks"}">
           <b class="cal-d">${esc(dnum)}</b>${wl ? `<i class="cal-wl">${esc(wl)}</i>` : `<i class="cal-wl dim">·</i>`}
         </span>`;
       }).join("");
@@ -21719,12 +21814,32 @@ export default function Home() {
          analyst sheet's two links and the story CTAs — now calls goDeskResults(), which is
          just "open the Desk", because the record is the first thing on it. */
       bindClick("dp-share", () => shareRecord());
-      bindClick("pp-more", () => {
+      const bindArchiveMore = () => bindClick("pp-more", () => {
         ppShown += 14;
         const sec = $("desk-archive");
-        if (sec) { sec.innerHTML = pastPicksSection(betaData); wireHistoryRows(sec); }
+        if (sec) { sec.innerHTML = pastPicksSection(betaData); wireHistoryRows(sec); bindArchiveMore(); }
       }, { optional: "only rendered while there are more days to show" });
+      bindArchiveMore();
       wireHistoryRows($("desk-archive"));
+      /* THE OTHER LEAGUES' GRADED CARDS land after first paint (their tracker payloads
+         load lazily) — patch the fortnight map and the day-by-day archive in place when
+         they do, once, without moving the reader (owner order, 2026-08-18: the day-by-day
+         surfaces carry every league's graded picks). A failed fetch changes nothing. */
+      Promise.allSettled(Array.from(MS_TABS as any).map((lg: any) => loadMsSport(lg))).then(() => {
+        try {
+          if (tab !== "desk") return;
+          const w14 = v.querySelector(".dp-14");
+          if (w14) {
+            const fresh = deskLast14Widget(betaData);
+            if (fresh && fresh !== w14.outerHTML) w14.outerHTML = fresh;
+          }
+          const sec = $("desk-archive");
+          if (sec) {
+            const fresh = pastPicksSection(betaData);
+            if (fresh && fresh !== sec.innerHTML) { sec.innerHTML = fresh; wireHistoryRows(sec); bindArchiveMore(); }
+          }
+        } catch {}
+      }).catch(() => {});
       bindClick("dp-toresearch", () => switchTab("research"));
       // THE IN-TEXT RESEARCH LINKS. Deep-linked: each one opens its own paper, not the tab.
       // Anchor + role=button ⇒ the keyboard contract is ours to honour, so Enter and Space

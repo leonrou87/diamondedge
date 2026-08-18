@@ -809,7 +809,12 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 /* The date strip is a plain scroller of typographic cells with ONE dark capsule under the
    selected day — the iOS segmented idiom. The old emerald "liquid lens" (a glowing green
    pane sliding under the days) was the single most futuristic element on the first screen. */
-.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;border-radius:0;background:transparent;border:0;box-shadow:none;scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain;overscroll-behavior-y:none;touch-action:pan-x}
+.datestrip{position:relative;flex:1;display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:2px 0;border-radius:0;background:transparent;border:0;box-shadow:none;scroll-snap-type:x proximity;scroll-padding-inline:40%;overscroll-behavior-x:contain;overscroll-behavior-y:none;touch-action:pan-x;
+  /* the strip is auto-centred on the selected day, so BOTH edges clip a neighbouring cell
+     mid-glyph on every visit ("3", "TODAY 1|8"). The same soft fade the league rail wears
+     makes the cut read as "more to scroll", not a rendering fault. */
+  -webkit-mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent);
+  mask:linear-gradient(90deg,transparent,#000 16px,#000 calc(100% - 16px),transparent)}
 .datestrip::-webkit-scrollbar{display:none}
 .datestrip .dcell{scroll-snap-align:center}
 .dcell.on{background:rgba(var(--tintc),.1);box-shadow:inset 0 0 0 1px rgba(var(--rimc),.1)}
@@ -853,7 +858,18 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .future-note .fn-body{display:flex;flex-direction:column;gap:3px;min-width:0}
 /* headline <b> only — inline bolds inside the copy stay sans (they were inheriting the
    16px serif and reading as a different typeface mid-sentence) */
-.future-note .fn-body>b{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink)}
+.future-note .fn-body>b{font-family:var(--serif);font-weight:600;font-size:17px;color:var(--ink);text-wrap:balance}
+/* At phone widths the countdown chip was squeezed into the leftover third of the row and
+   wrapped its own monospace time onto three lines ("2:00 PM / PT") inside a 999px radius —
+   a pill turned accidental circle. It takes a row of its own instead; the pill shape and
+   the one-line time survive at any width the strings can reach.
+   (`.msrec` reuses this chassis for the sport record strip and lays its chips out its own
+   way below — the schedule banner is the only surface this touches.) */
+@media(max-width:560px){
+  .future-note:not(.msrec){flex-wrap:wrap}
+  .future-note:not(.msrec) .fn-body{flex:1 1 0}   /* basis 0 keeps it beside the icon */
+  .future-note:not(.msrec) .fn-countdown{flex:1 1 100%;margin:2px 0 0}
+}
 .future-note .fn-body span{font-family:var(--sans);font-size:14px;line-height:1.5;color:var(--ink2)}
 .future-note .fn-body span b{font-weight:700;color:var(--ink)}
 .datetools{display:flex;align-items:center;gap:6px;flex-shrink:0;position:relative}
@@ -917,7 +933,11 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
      · --tile-min is a real floor. Below it the board drops to ONE column rather than
        halving the cards, so "drop columns, never shrink them" still holds.
    Column counts: 2 up to 719px · 3 to 1023px · 4 above. */
-.slate{--tile-min:148px;display:grid;grid-template-columns:repeat(2,minmax(var(--tile-min),1fr));gap:10px}
+/* `dense` exists for ONE case: the mid-board ad is spliced after the sixth card, which is a
+   whole number of rows at 2 and 3 columns but strands a 2-cell hole at 4 (desktop saw
+   row 2 half-empty, then the ad, every 15-game slate). Dense lets the next two tiles fill
+   that hole before the full-width ad; with every tile 1×1 the tiles' own order never changes. */
+.slate{--tile-min:148px;display:grid;grid-template-columns:repeat(2,minmax(var(--tile-min),1fr));grid-auto-flow:row dense;gap:10px}
 @media(max-width:339px){.slate{grid-template-columns:minmax(0,1fr)}}
 @media(min-width:720px){.slate{grid-template-columns:repeat(3,minmax(var(--tile-min),1fr));gap:12px}}
 @media(min-width:1024px){.slate{grid-template-columns:repeat(4,minmax(var(--tile-min),1fr));gap:14px}}
@@ -935,6 +955,10 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 @media(hover:hover){.tile:hover{transform:translateY(-1px);box-shadow:var(--e1)}}
 .tile:active{transform:translateY(0) scale(.994)}
 .tile:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+/* The chrome controls (dock, league rail, date strip, date tools) fell back to the UA's
+   `outline:auto` while every card had a designed ring — one keyboard focus style, everywhere.
+   Inset, because these all live in clipped scrollers or the dock capsule. */
+.dock-item:focus-visible,.sporttab:focus-visible,.dcell:focus-visible,.dtool:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
 /* LIVE is the only state that changes the card's own surface, and it does it with a
    2px top rule in the LIVE GOLD (--livemark) — the scoreboard convention, not a bloom.
    This comment said "1px" and "the live red" for one sprint after both had stopped
@@ -1026,15 +1050,8 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .future-note.msrec .fn-countdown{flex-shrink:0}
 .future-note.msrec .fn-countdown+.fn-countdown{margin-left:0}
 @media(max-width:560px){.future-note.msrec .fn-countdown{margin-left:0}}
-/* THE ADAPTIVE ERA'S OWN LINE (ms_adaptive_v1, 2026-08-17): a full-width sub-row of the
-   sport record strip — the era tag, one plain sentence, and the era's OWN record chips,
-   which start 0-0 exactly as served in record.eras and are never the cumulative chips
-   beside the headline (the two lines never sum). Renders only when the served payload
-   carries the era; absent ⇒ absent, and the strip is byte-identical to before. */
-.msrec-erarow{flex-basis:100%;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px;padding-top:9px;border-top:1px dashed var(--goldline)}
-.msrec-erarow .er-tag{flex-shrink:0;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);color:var(--golddeep);white-space:nowrap}
-.msrec-erarow .er-tx{flex:1 1 240px;min-width:0;font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink2)}
-.msrec-erarow .fn-countdown{margin-left:0}
+/* (.msrec-erarow — the strip's "New era" sub-row — deleted with its markup, owner order
+   2026-08-18: one cumulative record line per league; record.eras stays internal.) */
 /* the game page's one-line provenance note for an adaptive-era pick (the delay note's
    chassis): renders only when the tracker card behind the game carries the stamp. */
 .gp-adaptnote{margin-top:8px;padding:9px 12px;border-radius:var(--r-sm);background:var(--glass-hi);box-shadow:inset 0 0 0 1px var(--glass-brd);font-family:var(--sans);font-size:12.5px;line-height:1.45;color:var(--ink3)}
@@ -1222,8 +1239,13 @@ main{max-width:1080px;margin:0 auto;padding:0 max(12px,var(--sar)) calc(70px + v
 .state .st-ico{font-family:var(--disp);font-weight:700;font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);background:rgba(var(--rimc),.11);display:inline-block;border-radius:9px;padding:5px 12px;margin-bottom:12px;box-shadow:0 1px 4px var(--sh3)}
 .state .spinner{width:30px;height:30px;border:3px solid var(--line2);border-top-color:var(--acc);border-radius:50%;margin:0 auto 14px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.state .big{font-family:var(--disp);font-weight:600;font-size:18px;color:var(--ink);text-transform:uppercase;letter-spacing:.05em}
-.state .sm{font-size:14px;margin-top:6px;color:var(--ink3)}
+/* balance stops the one-word widow ("…AUGUST / 18") these all-caps headlines threw at 375 */
+.state .big{font-family:var(--disp);font-weight:600;font-size:18px;color:var(--ink);text-transform:uppercase;letter-spacing:.05em;text-wrap:balance}
+.state .sm{font-size:14px;margin-top:6px;color:var(--ink3);text-wrap:pretty}
+/* On a phone the 70px pad pushed the state's one message to the viewport bottom, under the
+   fixed dock, on every off-season / no-games-today league tab (the era strip above it already
+   spends most of the screen). Less air on top = the message paints where it can be read. */
+@media(max-width:719px){.state{padding:26px 18px 34px}}
 /* ── THE FAILED-SURFACE STATE ──────────────────────────────────────────────────────────────
    Every contained failure lands here (see the ERROR CONTAINMENT block in page.tsx). It is a
    designed state, not an error message: it names what did not load in a reader's words, says
@@ -2818,9 +2840,10 @@ body.tab-pan-left,body.tab-pan-right{overflow-x:clip}
 /* leagues: kill the chip look entirely — quiet uppercase text + a sliding underline ink */
 .subhead.subtle{border-bottom:1px solid var(--line3);padding-bottom:0;margin-bottom:12px}
 .subhead.subtle .sporttabs{padding:0;gap:0;
-  /* soft right-edge fade so an off-screen league (NFL at 375px) reads as "more to scroll",
-     not a hard mid-word clip */
-  -webkit-mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent);mask:linear-gradient(90deg,#000 calc(100% - 28px),transparent)}
+  /* soft fade at BOTH edges so an off-screen league (NFL at 375px) reads as "more to
+     scroll", not a hard mid-word clip — the left edge clips the same way once the rail
+     is scrolled (the first tab's own 12px padding keeps it clear of the fade at rest) */
+  -webkit-mask:linear-gradient(90deg,transparent,#000 10px,#000 calc(100% - 28px),transparent);mask:linear-gradient(90deg,transparent,#000 10px,#000 calc(100% - 28px),transparent)}
 .subhead.subtle .sporttab{border-radius:0;padding:8px 12px 10px;min-height:34px;background:transparent!important}
 .subhead.subtle .sporttab::before{display:none}
 .subhead.subtle .sporttab.on{color:var(--ink)}
@@ -3213,7 +3236,9 @@ body.sheet-open .dock{pointer-events:none}
 .ps-signals .sg{min-width:0}
 .ps-signals .sg.up{color:var(--g3)}
 .ps-signals .sg.down{color:var(--r3)}
-.ps-signals .sg-sep{font-style:normal;color:var(--ink4);opacity:.7;flex-shrink:0}
+/* the container is a plain block, so the joiner needs its own air — without the margins the
+   briefing printed "…(1.29x runs)·Home starter…", interpunct flush against both clauses */
+.ps-signals .sg-sep{font-style:normal;color:var(--ink4);opacity:.7;flex-shrink:0;margin:0 6px}
 /* detail Preview: the slightly fuller list, one quiet glass card + honest microcopy */
 .sigcard{background:var(--glass-hi);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid var(--glass-brd);border-radius:var(--r-md);box-shadow:var(--e0);padding:13px 16px 11px;margin:0 0 12px}
 .sigcard .sig-k{font-family:var(--disp);font-weight:700;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink2);margin-bottom:4px}
@@ -3842,6 +3867,12 @@ img.nws-pcrest{background:rgba(255,255,255,.92);padding:3px}
    two gold vocabularies on the same row and the reason the surface read as "gold picks and
    green picks all different". The row is matchup · call · outcome now, full stop.) */
 .pp-mu{font-family:var(--disp);font-weight:700;font-size:13px;color:var(--ink);flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* a multisport archive row: same chassis, a league tag ahead of the matchup, no game
+   page behind it (the tracker card has none) so no pointer affordance */
+.pp-row.ppms{cursor:default}
+.pp-row.ppms:hover{background:var(--glass-hi)}
+.pp-lg{font-style:normal;font-family:var(--disp);font-weight:800;font-size:9px;letter-spacing:.09em;color:var(--golddeep);
+  background:var(--goldbg);border:1px solid var(--goldline);border-radius:6px;padding:1.5px 5px;margin-right:7px;vertical-align:1px}
 /* the call sits right of the matchup and takes the slack, so the outcome stamp is always
    flush right and the column of stamps reads straight down the day */
 .pp-side{margin-left:auto;display:inline-flex;align-items:baseline;gap:5px;font-family:var(--disp);font-weight:800;font-size:13px;color:var(--ink);white-space:nowrap;flex-shrink:0}
@@ -4818,7 +4849,9 @@ main{padding-left:max(18px,var(--sal));padding-right:max(18px,var(--sar))}
    four coloured rectangles. The colour now lives in the sigil and a 3px top rule.
    ══════════════════════════════════════════════════════════════════════════════ */
 .deskpage{padding:8px 0 20px;max-width:900px;margin:0 auto}
-.dp-mast{margin:0 0 16px;max-width:760px}
+/* auto-centred: at 760px inside the 900px desk column it sat 70px left of the centred
+   wordmark/dock while every section below it is 900 and centred — the whole page read tilted */
+.dp-mast{margin:0 auto 16px;max-width:760px}
 /* ══ THE RESULTS REGION — AND THE RING THAT IS GONE (2026-08-09) ══
    This region used to answer "where did I just go" with a gold ring and a soft lift that
    faded out on their own, because "the full record" landed the reader MID-PAGE on a long
@@ -5891,7 +5924,9 @@ a.acct-link{text-decoration:none}
    It is an <a> precisely so it BREAKS ACROSS LINES like the words around it — a <button> is
    an inline-block box at any `display` value, which pushed each linked phrase onto a line of
    its own and stranded the following full stop on the next one. */
-.rlink{display:inline;margin:0;padding:0;border:0;background:none;cursor:pointer;
+.rlink{display:inline;margin:0;padding:6px 0;border:0;background:none;cursor:pointer;
+  /* vertical padding on an INLINE box never moves the line grid — it only grows the touch
+     target, which measured 17px tall against the 24px floor */
   font:inherit;color:inherit;letter-spacing:inherit;text-align:left;
   text-decoration:underline;text-decoration-color:rgba(var(--goldc),.62);
   text-decoration-thickness:1.5px;text-underline-offset:2.5px;
@@ -5923,20 +5958,15 @@ a.acct-link{text-decoration:none}
 .sc-u.neg b{color:var(--r3)}
 @media(max-width:400px){.sc-figs{gap:8px 18px}.sc-figs b{font-size:18px}}
 /* ══ LEAGUE RECORDS — one row per league, never summed (owner order 2026-08-17) ══
-   The scoperow chassis, one row per league on the Desk's record surface. The era
-   sub-line mirrors .msrec-erarow: the era's own served line, dashed off from the
-   cumulative line above it, never added to it. */
+   The scoperow chassis, one row per league on the Desk's record surface — one
+   cumulative line per league (.sc-era, the "New era" sub-line, deleted with its
+   markup, owner order 2026-08-18; record.eras stays internal bookkeeping). */
 .dp-lgrecs{margin:2px 0 0}
 .dp-lgrecs .dp-section-k{margin-top:18px}
 .dp-lgnote{font-family:var(--sans);font-size:13px;line-height:1.45;color:var(--ink3);margin:0 2px}
 .dp-lgrecs .scopes{margin:10px 0 0}
 .scoperow.lgr .sc-figs b{font-size:18px}
 .scoperow.lgr .sc-head{margin-bottom:8px}
-.sc-era{display:flex;align-items:baseline;gap:6px 12px;flex-wrap:wrap;margin-top:10px;padding-top:9px;border-top:1px dashed var(--goldline)}
-.sc-era .sc-eratag{flex-shrink:0;font-family:var(--disp);font-weight:700;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:var(--goldbg);border:1px solid var(--goldline);color:var(--golddeep);white-space:nowrap}
-.sc-era .sc-eratx{flex:1 1 170px;min-width:0;font-family:var(--sans);font-size:12px;line-height:1.4;color:var(--ink3)}
-.sc-era .sc-figs{flex-basis:100%;margin-top:2px}
-.sc-era .sc-figs b{font-size:16px}
 @media(max-width:400px){.scoperow.lgr .sc-figs b{font-size:16px}}
 /* ══ RESEARCH: A SCANNABLE STUDY INDEX ══
    One row per study: a status dot, the title, the finding in one line. Depth on tap. */
@@ -7478,7 +7508,9 @@ button.nf-btn{appearance:none;-webkit-appearance:none;border:0;cursor:pointer}
 .nss-ctl p{font-family:var(--research-serif);font-size:14px;line-height:1.58;color:var(--ink2);margin:0}
 .nss-ctl p b{font-family:var(--disp);font-weight:800;color:var(--ink)}
 .nss-ctl p.nss-ctl-x{margin-top:7px;font-family:var(--sans);font-size:12.5px;color:var(--ink3)}
-.nss-ctl-go{margin-top:9px;border:0;background:transparent;padding:0;cursor:pointer;
+/* padding grows the tap target from 14px tall to ~34px; the negative margins cancel it out
+   of the layout so the label sits exactly where the old zero-padding button put it */
+.nss-ctl-go{margin:-1px 0 -10px;border:0;background:transparent;padding:10px 0;cursor:pointer;
   font-family:var(--disp);font-weight:800;font-size:11px;letter-spacing:.09em;text-transform:uppercase;
   color:var(--golddeep)}
 .nss-ctl-go:active{opacity:.6}

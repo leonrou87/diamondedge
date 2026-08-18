@@ -112,6 +112,53 @@ esac
 FILE="$DIR/public/$SRC"
 STAMP_PATH="$DIR/scripts/$STAMP"
 
+# ═══ THE PUBLISH DEBT RECEIPT (2026-08-18, RUNBOOK class C-F) ═══════════════
+# "A persistent 'production owes this generation' intent that survives process
+# exit does not exist" — the honest-list item. The RETRY already survives
+# process exit structurally (the sha stamp below is written only on success,
+# so the next 5-minute tick re-attempts the same upsert), but nothing RECORDED
+# the outstanding debt, so a failing storm (the 08-08 522s: 43 consecutive,
+# 2h37m) was visible only as error lines in a log nobody opens, and "how long
+# has production been owed this board" was unanswerable. The receipt is that
+# record: written on a failed upsert, carrying WHEN the debt opened and how
+# many ticks have failed since; deleted the moment production is made whole
+# (a successful upsert, or a heartbeat proving the content already landed).
+# check_feed_freshness's `publish debt` row reads it and FAILs past 30 min —
+# six consecutive failed ticks, past every transient this chain has seen
+# recover on its own. Best-effort throughout: bookkeeping about a failed
+# publish must never be able to fail the publish machinery itself.
+DEBT_PATH="$DIR/scripts/.publish_debt_${KEY}.json"
+debt_record() {  # $1 = http code of the failed attempt
+  _debt_py "$DEBT_PATH" "$KEY" "$SHA" "$1" 2>/dev/null || true
+}
+_debt_py() {  # tiny helper kept as a function so set -e can never trip on it
+  python3 - "$@" <<'PYEOF'
+import datetime, json, sys
+path, key, sha, http = sys.argv[1:5]
+now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+try:
+    with open(path) as f:
+        d = json.load(f)
+    if not isinstance(d, dict):
+        d = {}
+except Exception:
+    d = {}
+d = {"key": key, "owed_sha": sha,
+     "since": d.get("since") or now,          # when the debt OPENED
+     "last_attempt_utc": now,
+     "attempts": int(d.get("attempts") or 0) + 1,
+     "last_http": http}
+with open(path, "w") as f:
+    json.dump(d, f, indent=1)
+PYEOF
+}
+debt_clear() {
+  if [ -f "$DEBT_PATH" ]; then
+    rm -f "$DEBT_PATH" 2>/dev/null || true
+    echo "$(date '+%F %T') $LABEL publish debt CLEARED — production is whole"
+  fi
+}
+
 # ── ONE WRITER PER KEY ──────────────────────────────────────────────────────
 # Unconditional, and before any work. Both schedulers (the launchd job and
 # nightly_scrub.SYNC_SET) run this script, so without the lock they race for
@@ -177,6 +224,10 @@ if [ -f "$STAMP_PATH" ] && [ "$(cat "$STAMP_PATH")" = "$SHA" ]; then
     -H "Content-Type: application/json" -H "Prefer: return=minimal" \
     --data-binary "{\"updated_at\":\"$(date -u '+%Y-%m-%dT%H:%M:%SZ')\"}")
   if [ "$HB_HTTP" = "200" ] || [ "$HB_HTTP" = "204" ]; then
+    # the sha stamp matching means the CONTENT already landed — any debt
+    # receipt still on disk is from an episode production has since recovered
+    # from (e.g. the stamp was written by a later successful tick).
+    debt_clear
     echo "$(date '+%F %T') $LABEL heartbeat ($HB_HTTP) sha=$SHA — unchanged, already on production"
     exit 0
   fi
@@ -246,6 +297,7 @@ for ATTEMPT in 1 2 3; do
 done
 
 if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
+  debt_clear
   echo "$SHA" > "$STAMP_PATH"
   # THE PUBLISH IS THE INVALIDATION. Only on this branch — the heartbeat above
   # is the "nothing moved" case and must stay free. Never fails the caller.
@@ -257,6 +309,11 @@ if [ "$HTTP" = "200" ] || [ "$HTTP" = "201" ]; then
     | python3 -c 'import json,sys; r=json.load(sys.stdin); print(r[0]["updated_at"] if r else "MISSING")' 2>/dev/null || echo "READBACK_FAILED")
   echo "$(date '+%F %T') synced $LABEL ($HTTP) updated_at=$BACK"
 else
-  echo "$(date '+%F %T') $(echo "$LABEL" | tr '[:lower:]' '[:upper:]') SYNC FAILED http=$HTTP $(head -c 300 "$RESP")" >&2
+  # PRODUCTION IS NOW OWED THIS GENERATION — write the receipt before the
+  # non-zero exit, so the debt and its age survive this process. The next
+  # 5-minute tick re-attempts (the sha stamp above was not advanced); the
+  # freshness guard's `publish debt` row escalates if the debt stands 30 min.
+  debt_record "$HTTP"
+  echo "$(date '+%F %T') $(echo "$LABEL" | tr '[:lower:]' '[:upper:]') SYNC FAILED http=$HTTP $(head -c 300 "$RESP") — debt receipt at $DEBT_PATH" >&2
   exit 1
 fi

@@ -23,7 +23,8 @@
 .rec-mast-dia{width:16px;height:16px;transform:rotate(45deg);border-radius:4px;
   background:linear-gradient(135deg,var(--a2),var(--a0));flex-shrink:0}
 .rec-mast-name{font-family:var(--disp);font-weight:800;font-size:16px;letter-spacing:.02em;color:var(--ink)}
-.rec-mast-back{margin-left:auto;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink3);text-decoration:none}
+/* the padding/negative-margin pair grows the tap target (was 104×22) without moving the masthead */
+.rec-mast-back{margin:-11px 0 -11px auto;padding:11px 0 11px 12px;font-family:var(--disp);font-weight:600;font-size:14px;color:var(--ink3);text-decoration:none}
 .rec-mast-back:hover{color:var(--ink)}
 
 /* ── LEDE ───────────────────────────────────────────────────────────────── */
