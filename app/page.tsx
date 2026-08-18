@@ -2495,6 +2495,9 @@ export default function Home() {
        dutifully logged an `ad_click`. The revenue console would have shown a CTR
        for clicks that reached nothing. A plain href needs no wiring and works
        from the board, the reader, the Desk and the game sheet alike. */
+    /* NO RESPONSIBLE-GAMBLING FINE PRINT ON AD UNITS (owner call, 2026-08-18): safe while
+       every unit is house/display, but most sportsbook AFFILIATE programs contractually
+       require that copy — revisit at partner onboarding before any affiliate goes live. */
     function adHouseHtml(key: string) {
       return `<aside class="ad-slot is-house" data-ad-slot="${esc(key)}" data-ad-partner="house">
         <span class="ad-eyebrow">From DiamondEdge</span>
@@ -2505,7 +2508,6 @@ export default function Home() {
             <i>DiamondEdge · see how the desk has actually done</i>
           </span>
           <span class="ad-p-cta" aria-hidden="true">See</span>
-          <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
         </a>
       </aside>`;
     }
@@ -2517,7 +2519,6 @@ export default function Home() {
       return `<aside class="ad-slot is-display" data-ad-slot="${esc(key)}" data-ad-partner="display">
         <span class="ad-eyebrow">Advertisement</span>
         <div class="ad-net-mount" data-ad-net="${esc(AD_NETWORK.id)}" data-ad-unit="${esc(key)}"></div>
-        <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
       </aside>`;
     }
     /* THE LOADER — THE ONLY PLACE A REMOTE TAG MAY ENTER THIS APP.
@@ -2591,7 +2592,6 @@ export default function Home() {
             <i>${shop ? `${esc(p.label)} · ${esc(p.tagline)}` : esc(p.label)}</i>
           </span>
           <span class="ad-p-cta" aria-hidden="true">Go</span>
-          <span class="ad-p-fine">21+ · Play responsibly — 1-800-GAMBLER</span>
         </a>
       </aside>`;
     }
