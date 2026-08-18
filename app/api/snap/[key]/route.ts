@@ -3,7 +3,7 @@ import { unstable_cache } from "next/cache";
 import { brotliCompressSync, brotliDecompressSync, constants } from "node:zlib";
 import { snapTag } from "../../cache-tags";
 import { currentVersion, KEYS as MANIFEST_KEYS } from "../../manifest-source";
-import { deriveLite } from "./lite";
+import { deriveBoard, deriveLite } from "./lite";
 import { topLevelStamp } from "./stamp";
 
 /* ════════════════════════════════════════════════════════════════════════════
@@ -76,13 +76,18 @@ import { topLevelStamp } from "./stamp";
        arriving rather than by an invalidation blowing a hole in a warm cache.
 
    ─────────────────────────────────────────────────────────────────────────────
-   FOUR SHAPES, so a cheap question can be asked cheaply:
+   FIVE SHAPES, so a cheap question can be asked cheaply:
 
      ?v=1     VERSION ONLY, ~200 bytes. Legacy: the client now learns every
               surface's version from /api/manifest in one request. Kept as the
               fallback for when that is unavailable.
      ?lite=1  PAYLOAD WITHOUT THE PER-GAME DETAIL BLOBS — 8,916,802 -> 4,139,029
               on picks_unified, measured. Not read until someone opens a game.
+     ?board=1 THE BOOT WINDOW — the lite shape cut to the last 10 days with the
+              per-game analysis prose stripped (see deriveBoard in lite.ts):
+              5,618,148 -> 1,256,666 B on picks_unified, measured 2026-08-17.
+              This is what a cold board load reads; the lite/full shapes are
+              deferred until a surface that needs history is actually opened.
      ?game=id ONE GAME, WHOLE. The other half of ?lite=1: when a reader does open
               a game we fetch that game's blobs back (~13 KB) instead of
               re-downloading the history to read a fraction of it.
@@ -226,7 +231,7 @@ function keyIsServed(key: string): boolean {
   return DATED_FAMILIES.includes(key.slice(0, i));
 }
 
-type Mode = "full" | "lite" | "version" | "game";
+type Mode = "full" | "lite" | "board" | "version" | "game";
 
 function cacheHeaders(t: { s: number; swr: number; b?: number }, etag?: string) {
   // The browser's window must never be able to stack a second full generation on
@@ -425,7 +430,7 @@ async function rawVersion(key: string): Promise<{ v: string; updated_at: string 
    topLevelStamp's character scan off the hot path entirely — it now runs once
    per publish instead of once per request. */
 type Blob = { v: string; b: string; n: number };
-type Unit = { full: Blob; lite: Blob };
+type Unit = { full: Blob; lite: Blob; board: Blob };
 
 const BROTLI = (s: string): string => {
   const src = Buffer.from(s, "utf8");
@@ -548,8 +553,19 @@ async function fetchUnit(key: string): Promise<Unit> {
     // failing. More bytes than asked for beats no board at all.
     liteText = fullText;
   }
+  /* The board window is a projection OF THE LITE TEXT (see deriveBoard) — the
+     same degradation ladder applies: a malformed payload answers `?board=1`
+     with the lite shape, and a key the window cannot shrink shares lite's blob
+     and its compression pass. Still ONE origin read for all three shapes. */
+  let boardText = liteText;
+  try {
+    boardText = deriveBoard(liteText);
+  } catch {
+    boardText = liteText;
+  }
   const full = blobOf(fullText);
-  const unit = { full, lite: liteText === fullText ? full : blobOf(liteText) };
+  const lite = liteText === fullText ? full : blobOf(liteText);
+  const unit = { full, lite, board: boardText === liteText ? lite : blobOf(boardText) };
   /* A ROW THAT IS ABSENT IS NOT A ROW THAT IS GOOD. `payload` is null when the
      key has no row at all, and remembering that would mean a later outage gets
      answered with a confident "null" instead of an error — the empty-board
@@ -583,7 +599,11 @@ function once<T>(k: string, f: () => Promise<T>): Promise<T> {
 function cachedUnit(key: string, mv: string, netS: number) {
   return unstable_cache(
     async () => fetchUnit(key),
-    ["snap-unit-v2", key, mv],
+    /* v2 -> v3 on 2026-08-17: Unit grew the `board` blob, and a v2 entry
+       revived from the Data Cache would answer `?board=1` with `undefined`.
+       The bump costs one origin re-read per key on the first post-deploy miss
+       — the same price every publish already pays. */
+    ["snap-unit-v3", key, mv],
     { tags: [snapTag(key)], revalidate: netS },
   );
 }
@@ -650,8 +670,9 @@ export async function GET(
   const mode: Mode =
     url.searchParams.get("v") ? "version"
       : gameId ? "game"
-        : url.searchParams.get("lite") ? "lite"
-          : "full";
+        : url.searchParams.get("board") ? "board"
+          : url.searchParams.get("lite") ? "lite"
+            : "full";
   /* THE PIN. A caller that already knows which generation it wants says so, and
      in exchange gets a URL that never has to be revalidated. Bounded in length
      because it reaches a comparison and a cache key, nothing else — it is never
@@ -691,7 +712,10 @@ export async function GET(
     }
 
     const unit = await once(`u|${key}|${mv}`, cachedUnit(key, mv, netS));
-    const blob = mode === "lite" ? unit.lite : unit.full;
+    // `|| unit.lite` is belt to the v3 cache-key bump's braces: if a pre-board
+    // Unit ever reaches this line anyway, the reader gets more bytes, never a crash.
+    const blob = mode === "board" ? (unit.board || unit.lite)
+      : mode === "lite" ? unit.lite : unit.full;
     const bytes = textOf(blob);
 
     /* THE PINNED PATH. Only a VERIFIED match earns a year of immutability.
@@ -823,9 +847,10 @@ export async function GET(
        probe is ~1 KB and answering it with a stale stamp would tell every
        reader to keep a generation that may have moved, and `?game=` is 13 KB
        fetched only on a tap, where a retry is the honest answer. */
-    const stale = (mode === "full" || mode === "lite") ? lkg.get(key) : undefined;
+    const stale = (mode === "full" || mode === "lite" || mode === "board") ? lkg.get(key) : undefined;
     if (stale) {
-      const blob = mode === "lite" ? stale.lite : stale.full;
+      const blob = mode === "board" ? (stale.board || stale.lite)
+        : mode === "lite" ? stale.lite : stale.full;
       return new NextResponse(textOf(blob), {
         status: 200,
         headers: {

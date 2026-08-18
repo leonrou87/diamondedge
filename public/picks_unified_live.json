@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-18T05:25:44Z",
+  "generated_utc": "2026-08-18T06:05:50Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -8784,7 +8784,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-18T05:26:00Z",
+      "updated": "2026-08-18T06:06:06Z",
       "order": [
         "vega",
         "atlas",

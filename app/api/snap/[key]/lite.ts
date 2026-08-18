@@ -68,6 +68,68 @@ function noWorse(fullText: string, liteText: string): string {
   return liteText.length < fullText.length ? liteText : fullText;
 }
 
+/* ═══ THE BOARD WINDOW (`?board=1`) — WHAT A COLD BOOT ACTUALLY READS ═══
+   2026-08-17, measured in a real browser against production: a cold load decoded
+   9.15 MB, and 5.62 MB of it was `picks_unified?lite=1` — the FULL season
+   history (93 dates, 621 games), fetched at boot so the briefing could show
+   yesterday's recap rows, a handful of recent winners, and the record chips.
+   Every surface that reads deeper history — the Desk, Research, a past date, a
+   game page, an analyst card — already lazy-loads the lite shape when it opens.
+
+   So boot gets a THIRD shape: the lite document windowed to the last
+   BOARD_KEEP_DAYS days, with the per-game analysis prose stripped. Measured on
+   the 2026-08-17 payload: 5,618,148 B lite -> 1,256,666 B board (4.5x), and the
+   games the window keeps carry 24+ graded wins against the briefing's need for
+   at most 9. All TOP-LEVEL keys survive whole — record (incl. the full daily
+   map), by_date_record (93 dates, what the record archive reads), the spec and
+   contract blocks — so no record surface can come up short of what the lite
+   copy would have said.
+
+   WHAT IS STRIPPED, AND WHY IT IS SAFE:
+     * game-level: analysts / consensus / weather / simulator / matchup /
+       pregame_line. The boot readers of history rows (yesterdayRecap,
+       recentWinners, ppdCard, v4GameFor's grade merge) read none of them; the
+       analyst card, which does read `analysts`, upgrades to the lite shape on
+       open (app/page.tsx, openAnalystSheet).
+     * pick-level: the strategy/analysis prose blobs (forge_strategy, game_case,
+       adaptive_strategy, engine_strategy, owner_strategy, signals) — 1.15 MB of
+       the window's own weight, read only on a game page, which hydrates from
+       `?game=` / the lite shape. `confidence` and `pick_rating` are KEPT: they
+       are small and pick-tile surfaces may touch them through v4GameFor.
+
+   Derived from the LITE text (the blobs lite strips are already gone), shares
+   lite's noWorse postcondition, and stamps `_board: true` so the client can
+   never mistake the window for the history (`_lite` rides through from the lite
+   text, and the client's board store is a separate variable that no loadBeta()
+   caller can be satisfied by). One origin read still fills every shape. */
+export const BOARD_KEEP_DAYS = 10;
+export const BOARD_STRIP_GAME = ["analysts", "consensus", "weather", "simulator",
+  "matchup", "pregame_line"] as const;
+export const BOARD_STRIP_PICK = ["forge_strategy", "game_case", "adaptive_strategy",
+  "engine_strategy", "owner_strategy", "signals"] as const;
+
+export function deriveBoard(liteText: string): string {
+  const p = JSON.parse(liteText);
+  if (!p || typeof p !== "object") return liteText;
+  const games = Array.isArray((p as any).games) ? (p as any).games : null;
+  if (!games) return noWorse(liteText, JSON.stringify({ ...(p as any), _board: true }));
+  // Same UTC day arithmetic as the lite cutoff above — today is always inside.
+  const cutoff = new Date(Date.now() - BOARD_KEEP_DAYS * 86400000).toISOString().slice(0, 10);
+  const out: any[] = [];
+  for (const g of games) {
+    if (!(String((g && g.date) || "") >= cutoff)) continue;
+    const c = { ...g };
+    for (const k of BOARD_STRIP_GAME) delete c[k];
+    if (c.pick && typeof c.pick === "object" && !Array.isArray(c.pick)) {
+      const pk = { ...c.pick };
+      for (const k of BOARD_STRIP_PICK) delete pk[k];
+      c.pick = pk;
+    }
+    out.push(c);
+  }
+  return noWorse(liteText, JSON.stringify({ ...(p as any), games: out, _board: true }));
+}
+
 export function deriveLite(fullText: string): string {
   const p = JSON.parse(fullText);
   if (!p || typeof p !== "object") return fullText;

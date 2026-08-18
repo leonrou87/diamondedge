@@ -752,7 +752,7 @@ export default function Home() {
          So the honest state is asserted FIRST: if neither pick feed has been read, the picks
          are pending, because we genuinely do not know. It costs a sub-second "picks are
          still being published" on a true pass and it makes the false pass impossible. */
-      if (!betaLiveData && !betaData) return true;
+      if (!betaLiveData && !betaData && !betaBoardData) return true;
       /* THE SIGNAL IS ON THE PICK, and that is the one place nothing in the render path
          rewrites. The GAME's `status` is overwritten from "upcoming" to "pre" by the
          live-score overlay the moment a snapshot mentions the fixture, and the copy the game
@@ -901,8 +901,12 @@ export default function Home() {
       snapDirectSpent++;
       const sig = ac ? { signal: ac.signal } : {};
       const h = { apikey: KEY, Authorization: `Bearer ${KEY}` };
-      if (opts.lite) {
-        // the projection lives in Postgres; ask for it even when the edge is down
+      if (opts.lite || opts.board) {
+        /* the projection lives in Postgres; ask for it even when the edge is down.
+           `board` deliberately degrades to the LITE projection here — the window
+           is cut in the Vercel route (deriveBoard), there is no board RPC, and a
+           rare outage-path read that is bigger than asked for is the same trade
+           deriveLite's own noWorse rule makes. */
         const r = await fetch(`${SUPA}/rest/v1/rpc/slate_snapshot_lite`, {
           method: "POST", headers: { ...h, "Content-Type": "application/json" },
           body: JSON.stringify({ p_key: k }), ...sig,
@@ -1041,7 +1045,7 @@ export default function Home() {
                not get a pin — they are already frozen by the route's own dated
                rule, so there is nothing left to win there. */
             const cv = await contentVersion(k);
-            const qs = [opts.lite ? "lite=1" : "", cv ? `cv=${encodeURIComponent(cv)}` : ""]
+            const qs = [opts.board ? "board=1" : "", opts.lite ? "lite=1" : "", cv ? `cv=${encodeURIComponent(cv)}` : ""]
               .filter(Boolean).join("&");
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}${qs ? "?" + qs : ""}`,
               { ...(ac ? { signal: ac.signal } : {}) });
@@ -2021,6 +2025,7 @@ export default function Home() {
       try {
         betaLiveData = null; betaLiveAt = 0;                // live board (today/tomorrow)
         betaData = null; betaFull = false;                  // history / record spine
+        betaBoardData = null;                               // boot window of the same feed
         livePayload = null;                                 // past-day merge cache
       } catch {}
       try { refreshAccountButton(); } catch {}
@@ -2758,7 +2763,9 @@ export default function Home() {
       const find = (d: any) => d && (d.games || []).find((x: any) =>
         String(x.game_pk) === gid || String(x.game_pk) === pk || String(x.game_id) === gid);
       const live = find(betaLiveData);
-      const hist = find(betaData);
+      // The boot window stands in for the history until a surface loads it — same
+      // rows for the dates it covers, so the grade-merge below reads identically.
+      const hist = find(betaData) || find(betaBoardData);
       if (live && hist && live.pick && hist.pick) {
         // Today can briefly disagree between the live and full-history feeds. Keep the live
         // row's current slate fields, but preserve any final grade that has already landed in
@@ -3250,7 +3257,7 @@ export default function Home() {
     }
     // The spec block, from whichever loaded feed carries it.
     function strategiesSpec() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const sp = d && (d as any).strategies_spec;
         if (sp && typeof sp === "object") return sp;
       }
@@ -3410,7 +3417,7 @@ export default function Home() {
     function strategyRecordFor(key: any) {
       const k = String(key || "");
       if (!k) return null;
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const bs = d && d.record && d.record.by_strategy;
         if (bs && typeof bs === "object" && bs[k]) {
           const hit = strategyRecords(d).find((r: any) => r.key === k);
@@ -3449,7 +3456,7 @@ export default function Home() {
     }
     function adaptiveDayStrategy(dateISO: string) {
       if (isFutureDate(dateISO)) return null;
-      const srcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
+      const srcs = [livePayload, betaLiveData, betaData, betaBoardData, payload].filter(Boolean);
       for (const src of srcs) {
         const by = src && src.adaptive_strategy_by_date;
         const s = by && by[dateISO];
@@ -3665,7 +3672,7 @@ export default function Home() {
     // Absent ⇒ {} and the roster falls back to the authored copy only.
     function deskSpecFor(key: string) {
       const k = String(key || "").toLowerCase();
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const sp = d && (d as any).analyst_desk_spec;
         const list = sp && Array.isArray(sp.analysts) ? sp.analysts : null;
         if (!list) continue;
@@ -3718,7 +3725,7 @@ export default function Home() {
     };
     function deskSliceFor(key: string) {
       const k = String(key || "").toLowerCase();
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const sp = d && (d as any).analyst_v2_spec;
         const s = sp && sp.slices && typeof sp.slices === "object" ? sp.slices[k] : null;
         if (!s || typeof s !== "object") continue;
@@ -4384,7 +4391,7 @@ export default function Home() {
     // The four VOICES on a matchup panel, folded behind one tap: the chief's rationale is
     // ---- record.analysts → the standings ----
     function deskRecordRows() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         let ra = d && (d as any).record && (d as any).record.analysts;
         if (!ra || typeof ra !== "object" || Array.isArray(ra)) continue;
         // served shape is { order:[...], records:{key:{...}}, note } — a flat {key:{...}}
@@ -4496,7 +4503,7 @@ export default function Home() {
        that produced it. The payload states it in three places; read it, and keep the literal
        only as the last-resort fallback. */
     function recordStartISO() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const r = d && (d as any).record;
         const cand = [
           r && r.analysts && (r.analysts as any).record_start,
@@ -4545,7 +4552,7 @@ export default function Home() {
        use to conclude that it was. So the split is READ and STATED: how many rows were served
        live, how many were reconstructed, and against which training fence. */
     function trainedThroughTxt() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const r = d && (d as any).record;
         const cand = [
           r && r.analysts && (r.analysts as any).trained_through,
@@ -4703,8 +4710,32 @@ export default function Home() {
         <text x="${(X(pts.length - 1) - 7).toFixed(1)}" y="${Math.max(11, Math.min(h - 5, Y(pts[pts.length - 1]) - 7)).toFixed(1)}" text-anchor="end" class="anlp-arc-lab ${up ? "pos" : "neg"}">${pts[pts.length - 1] >= 0 ? "+" : ""}${pts[pts.length - 1]}</text>
       </svg>`;
     }
-    function openAnalystSheet(key: any) {
+    function openAnalystSheet(key: any, rerender = false) {
       const k = String(key || "").toLowerCase();
+      /* THE LEDGER'S SOURCE IS NO LONGER PAID FOR AT BOOT (2026-08-17). This
+         sheet's "Recent calls" / best-and-worst read up to 21 days of
+         games[].analysts, which only the lite history carries — the boot window
+         strips analysts rows (deriveBoard). So the first open fetches the lite
+         shape and repaints IN PLACE when it lands: scroll kept, no second
+         history entry, and until it lands the sheet renders exactly what the
+         live feed knows — the same degraded-but-honest state it always showed
+         when the history feed was slow. */
+      if (!betaData && !rerender) {
+        loadBeta().then(() => {
+          try {
+            const open = document.querySelector(".gamepage.anlpage");
+            if (!open || !open.classList.contains(`an-${k}`)) return;
+            const body = $("gp-body");
+            const st = body ? body.scrollTop : 0;
+            openAnalystSheet(k, true);
+            // the entry animation belongs to the OPEN — a repaint lands already "in"
+            const p2 = $("gamepage");
+            if (p2) p2.classList.add("in");
+            const b2 = $("gp-body");
+            if (b2) b2.scrollTop = st;
+          } catch {}
+        }).catch(() => {});
+      }
       const cast = DESK_CAST[k] || { name: k, title: "Analyst", method: "" };
       const bio = DESK_BIO[k] || ({} as any);
       const spec = deskSpecFor(k) as any;
@@ -4723,7 +4754,7 @@ export default function Home() {
       const useSlice = !!(slice.title || slice.inputs && slice.inputs.length || anThesis);
       // recent calls: newest first across the live + history feeds, deduped by game
       const seen: any = {}; const calls: any[] = [];
-      [betaLiveData, betaData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
+      [betaLiveData, betaData, betaBoardData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
         const gid = String(g.game_id || "");
         if (!gid || seen[gid]) return; seen[gid] = 1;
         const a = (Array.isArray(g.analysts) ? g.analysts : []).map(normAnalystRow).filter(Boolean).find((x: any) => x.key === k);
@@ -4778,7 +4809,7 @@ export default function Home() {
       // TODAY AT THE DESK — their persona-voice takes on today's slate, quoted.
       const takesToday: any[] = [];
       const seenTk: any = {};
-      [betaLiveData, betaData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
+      [betaLiveData, betaData, betaBoardData].forEach((d: any) => ((d && d.games) || []).forEach((g: any) => {
         const gid = String(g.game_id || "");
         if (!gid || seenTk[gid]) return; seenTk[gid] = 1;
         if (String(g.date || "").slice(0, 10) !== todayISO()) return;
@@ -4933,7 +4964,9 @@ export default function Home() {
       layer.innerHTML = html;
       document.body.classList.add("sheet-open");
       requestAnimationFrame(() => { const p2 = $("gamepage"); if (p2) p2.classList.add("in"); });
-      pushLayerEntry("analyst");
+      // an in-place repaint is the SAME layer — a second history entry would make
+      // the back gesture need two swipes
+      if (!rerender) pushLayerEntry("analyst");
       bindClick("gp-back", () => closeDetail());
       bindClick("gp-brand", () => { closeDetail(false, true); switchTab("today"); });
       // goDeskResults() switches the tab itself; calling switchTab first as well started a
@@ -5081,7 +5114,7 @@ export default function Home() {
     // record.desk_recap (single), record.desk_recaps as an array, a {date: recap} map, or
     // the served { latest, history, note, n_written } wrapper.
     function deskRecapsAll() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const rec = d && (d as any).record;
         if (!rec || typeof rec !== "object") continue;
         const out: any[] = []; const seen: any = {};
@@ -5126,7 +5159,7 @@ export default function Home() {
     // Pairwise disagreement scoreboards: on games where two analysts took OPPOSITE sides,
     // who was right? Shapes tolerated: an array of pair rows, or a map keyed "vega_vs_nova".
     function headToHeadRows() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         let hh = d && (d as any).record && (d as any).record.head_to_head;
         if (!hh) continue;
         if (hh.pairs && (Array.isArray(hh.pairs) || typeof hh.pairs === "object")) hh = hh.pairs;
@@ -5210,7 +5243,7 @@ export default function Home() {
 
     // ---- THE WEEKLY RACE (record.weekly_standings + analyst_of_the_week) ----
     function weeklyStandingsData() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const w = d && (d as any).record && (d as any).record.weekly_standings;
         if (!w || typeof w !== "object") continue;
         // served shape: rows live under this_week (a {key: {win,loss,push,…}} map, with a
@@ -5424,7 +5457,7 @@ export default function Home() {
     // site's intellectual centerpiece: rendered like revelations, captioned like science.
     // Every reader is FULLY DEFENSIVE — absent/malformed ⇒ []/null and no surface renders.
     function patternsRaw() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const p = d && (d as any).record && (d as any).record.patterns;
         if (p && typeof p === "object") return p;
       }
@@ -5928,7 +5961,7 @@ export default function Home() {
        components promote a survivor to the lead the moment one exists; ?profmock=1 on
        localhost proves that path. */
     function analystProfilesRaw() {
-      for (const d of [betaLiveData, betaData, livePayload, payload]) {
+      for (const d of [betaLiveData, betaData, betaBoardData, livePayload, payload]) {
         const p = d && (d as any).record && (d as any).record.analyst_profiles;
         if (p && typeof p === "object" && !Array.isArray(p)) return p;
       }
@@ -9656,8 +9689,8 @@ export default function Home() {
         // the tracker copy of a multisport game — the one feed that carries the
         // per-game "No posted total yet" stamp (see perGameWaitOf above)
         (() => { const w = perGameWaitOf(g); return w && w.pe; })(),
-        byId(livePayload), byId(payload), byId(betaLiveData), byId(betaData),
-        sameDay(livePayload), sameDay(payload), sameDay(betaLiveData), sameDay(betaData),
+        byId(livePayload), byId(payload), byId(betaLiveData), byId(betaData), byId(betaBoardData),
+        sameDay(livePayload), sameDay(payload), sameDay(betaLiveData), sameDay(betaData), sameDay(betaBoardData),
         (src as any).picks_eta,
       ];
       for (const c of cand) { const t = line(c); if (t) return t; }
@@ -9708,7 +9741,7 @@ export default function Home() {
          the same object from one source onto the unified, pregame, grid and tracker
          schemas — there is no ordering to get wrong and no feed whose absence costs the
          contract. First hit wins because they are all the same object. */
-      const c = pick(livePayload) || pick(payload) || pick(betaLiveData) || pick(betaData);
+      const c = pick(livePayload) || pick(payload) || pick(betaLiveData) || pick(betaData) || pick(betaBoardData);
       if (c) return c;
       try {
         for (const k of Object.keys(msData || {})) { const t = pick(msData[k]); if (t) return t; }
@@ -10019,11 +10052,14 @@ export default function Home() {
        would swap the full history map for the live feed's short recent window and silently
        drop older dates. dayRecordMap() merges it per-date instead, reading both feeds. */
     function recordRoot() {
-      const a = (betaData && betaData.record) || null;
+      // The boot window carries the history feed's record block whole; the real
+      // history wins the seat the moment a surface loads it.
+      const hsrc = betaData || betaBoardData;
+      const a = (hsrc && hsrc.record) || null;
       const b = (betaLiveData && betaLiveData.record) || null;
       if (!a) return b || {};
       if (!b) return a;
-      const older = feedStampMs(betaData) >= feedStampMs(betaLiveData) ? b : a;
+      const older = feedStampMs(hsrc) >= feedStampMs(betaLiveData) ? b : a;
       const newer = older === a ? b : a;
       /* `daily` IS MERGED PER DATE, NOT WON PER KEY (2026-08-09).
          Every other key here is a whole answer, so newest-wins is right for them. `daily` is
@@ -10047,8 +10083,9 @@ export default function Home() {
     /* Both feeds' record blocks, oldest first — so a per-key merge downstream ends with the
        newest answer. Either may be absent; order is by the feed's own generated_utc. */
     function recordSourcesOldestFirst() {
+      const hsrc = betaData || betaBoardData;   // see recordRoot — same stand-in rule
       return [
-        { rec: (betaData && betaData.record) || null, t: feedStampMs(betaData) },
+        { rec: (hsrc && hsrc.record) || null, t: feedStampMs(hsrc) },
         { rec: (betaLiveData && betaLiveData.record) || null, t: feedStampMs(betaLiveData) },
       ].filter((x) => x.rec).sort((x, y) => x.t - y.t);
     }
@@ -10103,8 +10140,11 @@ export default function Home() {
     function dayRecordMap() {
       const out: any = {};
       const take = (k: string, block: any) => { const d = normDayBlock(block); if (k && d) out[k] = d; };
-      // legacy FIRST so the current contract overwrites it per-day rather than the reverse
-      const legacy = (betaData && betaData.by_date_record) || {};
+      // legacy FIRST so the current contract overwrites it per-day rather than the reverse.
+      // The boot window keeps by_date_record whole (all dates), so this reads the same
+      // map whether the full history has loaded yet or not.
+      const lsrc = betaData || betaBoardData;
+      const legacy = (lsrc && lsrc.by_date_record) || {};
       Object.keys(legacy).forEach((k) => take(k, legacy[k]));
       /* BOTH FEEDS, OLDEST FIRST, MERGED PER DATE. This read `recordRoot().daily`, which —
          back when recordRoot() was an outright store win — meant the history feed's map and
@@ -10408,10 +10448,13 @@ export default function Home() {
     // postponement handling is right). Deduped against the slate's own tiles.
     function ppdGamesFor(dateISO: string, slateGames0: any[]) {
       if (!(league === "all" || league === "mlb")) return [];
-      if (!betaData || !Array.isArray(betaData.games)) return [];
+      // A past-date board triggers the full-history load (see selectDate's guard);
+      // the boot window covers the dates a reader lands on before that resolves.
+      const hsrc = betaData || betaBoardData;
+      if (!hsrc || !Array.isArray(hsrc.games)) return [];
       if (!(dateISO < todayISO())) return [];
       const seen = new Set((slateGames0 || []).map((g: any) => String(g.game_id)));
-      return betaData.games.filter((g: any) =>
+      return hsrc.games.filter((g: any) =>
         g && g.date === dateISO && String(g.status || "") === "postponed"
         && !seen.has(String(g.game_pk)) && !seen.has(String(g.game_id)));
     }
@@ -10879,7 +10922,7 @@ export default function Home() {
     function dayStrategyBlock(dateISO: string) {
       const s = adaptiveDayStrategy(dateISO);
       if (s && s.status !== "ERROR" && (s.label || s.plain_english_rule)) return s;
-      const srcs = [livePayload, betaLiveData, betaData, payload].filter(Boolean);
+      const srcs = [livePayload, betaLiveData, betaData, betaBoardData, payload].filter(Boolean);
       for (const src of srcs) {
         const daily = src && src.record && src.record.daily;
         const rows = Array.isArray(daily) ? daily : [];
@@ -16749,7 +16792,10 @@ export default function Home() {
       // the legacy by_date_record key (it used to read that and nothing else)
       const r = dailyRecordFor(y);
       if (!r || !r.n) return null;
-      const games = (((betaData && betaData.games) || []) as any[])
+      // Yesterday is always inside the boot window, so this slide's pick rows no
+      // longer need the whole season downloaded to render.
+      const hsrc = betaData || betaBoardData;
+      const games = (((hsrc && hsrc.games) || []) as any[])
         .filter((g: any) => g.date === y && g.pick && String(g.pick.status || "").toUpperCase() === "PICK" && g.pick.result)
         .sort((a: any, b: any) => ((b.pick.stars || 0) - (a.pick.stars || 0)));
       return { date: y, rec: r, games: games.slice(0, 5) };
@@ -16782,7 +16828,7 @@ export default function Home() {
           score: fs && fs.away != null ? `${num(fs.away, 0)}–${num(fs.home, 0)}` : "",
         });
       });
-      (((betaData && betaData.games) || []) as any[])
+      ((((betaData || betaBoardData) && (betaData || betaBoardData).games) || []) as any[])
         .filter((x: any) => x && x.pick && gradeOf(x.pick) === "win" && x.final)
         .sort((a: any, b: any) => String(b.date).localeCompare(String(a.date)))
         .forEach((x: any) => {
@@ -18577,11 +18623,14 @@ export default function Home() {
        analyst RECORD comes from record.analysts at the top level, untouched.) */
     let betaFull = false;    // does betaData carry the detail blobs, or is it the projection?
     /* A MEMO THAT ONLY MEMOISES AFTER THE AWAIT IS NOT A MEMO (found 2026-08-08 by watching
-       the network panel). Boot fires loadBeta() from two places on the same tick — the feed
-       warm-up and the meta row — and the `if (betaData)` guard above cannot help either of
-       them, because neither has resolved yet when the other starts. The history was being
-       downloaded TWICE on every cold load, in full, forever. Holding the in-flight promise
-       makes the second caller await the first request instead of issuing its own. */
+       the network panel). Boot used to fire loadBeta() from two places on the same tick —
+       the feed warm-up and the meta row (both now take the board window, see loadBoard) —
+       and the `if (betaData)` guard above cannot help concurrent callers, because neither
+       has resolved yet when the other starts. The history was being downloaded TWICE on
+       every cold load, in full, forever. Holding the in-flight promise makes the second
+       caller await the first request instead of issuing its own — and the same race is
+       still live today whenever two history surfaces open together (a game page while the
+       Desk renders, the deep-link restore beside either). */
     let betaInflight: Promise<any> | null = null;
     async function loadBeta(full = false) {
       if (betaData && (betaFull || !full)) return betaData;
@@ -18642,6 +18691,52 @@ export default function Home() {
       betaFull = !(fresh && fresh._lite === true);
       checkRecordContract(betaData, "picks_unified (history)");
       return betaData;
+    }
+    /* ═══ THE BOARD WINDOW: WHAT BOOT READS INSTEAD OF THE SEASON (2026-08-17) ═══
+       Measured in a real browser against production: a cold load decoded 9.15 MB
+       and 5.62 MB of it was `picks_unified?lite=1` — the whole season's history
+       (93 dates), fetched at boot so the briefing could show yesterday's recap
+       rows, a few recent winners, and the record chips. Every surface that reads
+       DEEPER history — the Desk, Research, a past date, a game page, an analyst
+       card — already lazy-loads the lite shape when it opens, so boot was paying
+       for bytes only a later tap could ever show.
+
+       Boot now asks for `?board=1`: the same document windowed to the last 10
+       days with the per-game analysis prose stripped (deriveBoard in
+       app/api/snap/[key]/lite.ts — 5.62 MB -> 1.26 MB decoded, measured). Same
+       edge cache, same `?cv=` pin, and the route projects all three shapes from
+       ONE Supabase read per publish, so origin egress is unchanged.
+
+       THE WINDOW NEVER IMPERSONATES THE HISTORY. It lives in its own store, and
+       no loadBeta() caller can be satisfied by it — the first Desk / Research /
+       past-date / analyst open still fetches the real lite shape, exactly as it
+       did when a prior session's betaData had been evicted. Boot-visible readers
+       consult it only as the fallback (`betaData || betaBoardData`), so a loaded
+       history always wins. Defer, not delete. */
+    let betaBoardData: any = null;
+    let betaBoardInflight: Promise<any> | null = null;
+    async function loadBoard(force = false): Promise<any> {
+      // the fuller copy already answers everything the window can
+      if (betaData) return betaData;
+      if (!force && betaBoardData) return betaBoardData;
+      if (betaBoardInflight) return betaBoardInflight;
+      const p = (async () => {
+        let fresh: any = null;
+        try { fresh = await snap("picks_unified", SNAP_MS, { board: true }); } catch {}
+        if (fresh && fresh.games) {
+          betaBoardData = applyDeskMock(fresh);
+          checkRecordContract(betaBoardData, "picks_unified (board window)");
+          return betaBoardData;
+        }
+        /* The briefing's history beats must not vanish because the window fetch
+           failed — the lite path has its own retry AND the bundled static
+           fallback, which is exactly the ladder boot climbed before this store
+           existed. */
+        try { return await loadBeta(); } catch {}
+        return null;
+      })();
+      betaBoardInflight = p;
+      try { return await p; } finally { if (betaBoardInflight === p) betaBoardInflight = null; }
     }
     /* ONE GAME'S BLOBS, NOT THE WHOLE ARCHIVE (2026-08-08).
        loadBeta(true) is the blunt way to un-project the history and it costs 2,145,888
@@ -19769,7 +19864,7 @@ export default function Home() {
     // than asserted.
     function adaptiveStrategyMap() {
       const out: any = {};
-      [payload, livePayload, betaData, betaLiveData].filter(Boolean).forEach((src: any) => {
+      [payload, livePayload, betaData, betaBoardData, betaLiveData].filter(Boolean).forEach((src: any) => {
         [src.adaptive_strategy_by_date, src.adaptive_strategy_record && src.adaptive_strategy_record.strategy_by_date]
           .forEach((m: any) => {
             if (!m || typeof m !== "object") return;
@@ -20254,7 +20349,7 @@ export default function Home() {
       // knows or cares what any particular strategy is CALLED — first source with a block
       // for that date wins, and the translator downstream does the naming.
       const byDate: any = {};
-      const srcs = [betaData, betaLiveData, livePayload, payload].filter(Boolean);
+      const srcs = [betaData, betaBoardData, betaLiveData, livePayload, payload].filter(Boolean);
       for (const src of srcs) {
         const daily = src && src.record && src.record.daily;
         const rows: any[] = Array.isArray(daily)
@@ -21289,7 +21384,7 @@ export default function Home() {
     function deskStrategyDate() {
       const today = todayISO();
       const keys: string[] = [];
-      [livePayload, betaLiveData, betaData, payload].filter(Boolean).forEach((src: any) => {
+      [livePayload, betaLiveData, betaData, betaBoardData, payload].filter(Boolean).forEach((src: any) => {
         const by = src && src.adaptive_strategy_by_date;
         if (by && typeof by === "object") keys.push(...Object.keys(by));
         const root = adaptiveStrategyRoot(src);
@@ -21887,7 +21982,9 @@ export default function Home() {
       renderToday(); // skeleton until the payload lands
       // V4 = the default pick source: start both feeds NOW; re-render the pick surfaces
       // the moment they land so every game flips from a placeholder PASS to its real pick.
-      Promise.allSettled([loadBetaLive(), loadBeta()]).then(() => {
+      // The history seat is the BOARD WINDOW (see loadBoard) — the full lite history is
+      // deferred until a surface that actually reads deeper history is opened.
+      Promise.allSettled([loadBetaLive(), loadBoard()]).then(() => {
         deskStale = true;
         repaintToday();
         if (tab === "games" || $("slate-body")) renderSlate(true);
@@ -21978,6 +22075,10 @@ export default function Home() {
         // board ("no picks / old news"). Force the pick + history feeds fresh and re-render.
         betaLiveAt = 0; betaData = null;
         loadBetaLive().then(() => { try { if (tab === "today") renderToday(); else if (tab === "games") renderSlate(true); } catch {} }).catch(() => {});
+        // …and the board window refreshes on the same event — with the ?cv= pin an
+        // unchanged generation is a free browser-cache hit, a new one is fetched fresh,
+        // so the recap/record beats never sit stale after the app was backgrounded.
+        loadBoard(true).then(() => { try { if (tab === "today") renderToday(); else if (tab === "games") renderSlate(true); } catch {} }).catch(() => {});
         // …and the briefing self-heals on the same event. A news feed that failed at boot
         // (offline at launch is the common case) gets another go every time the app comes
         // back to the foreground, so the News tab recovers without a reload.
@@ -21991,13 +22092,14 @@ export default function Home() {
       loadPitchers().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // ERAs onto tiles once the feed lands
       loadTeams().then((d: any) => { if (d) { try { renderSlate(true); } catch {} } }); // team records + streaks onto tiles (degrades if the feed is absent)
       loadBetaLive().catch(() => {}); // warm the pick feed at boot — tiles are v4-only now, this is their source
-      // warm the historical payload too so any prior day's record chip (by_date_record) populates.
+      // warm the BOARD WINDOW too so any prior day's record chip (by_date_record) populates —
+      // it carries the record blocks and by_date_record whole, at a fraction of the history's bytes.
       // REPAINT ⇒ REBIND. This repaint replaces the record chip's markup, which ORPHANS the
       // handler bindMeta() attached at boot. Whether the chip stayed clickable used to come down
       // to which feed resolved last — loadPitchers/loadTeams re-render the slate (and rebind),
       // loadBeta did not — so on a slow connection the chip went dead and stayed dead, and the
       // record-breakdown sheet with it. Never repaint #meta-area without bindMeta().
-      loadBeta().then(() => { try { const m = $("meta-area"); if (m) { m.innerHTML = metaRow(); bindMeta(); } } catch {} }).catch(() => {});
+      loadBoard().then(() => { try { const m = $("meta-area"); if (m) { m.innerHTML = metaRow(); bindMeta(); } } catch {} }).catch(() => {});
       /* ── PULL-TO-REFRESH: THE GAME PAGE, AND NOWHERE ELSE ──
          Leon: "remove it from all pages other than the game page", and it must not fire from
          inside a popover.
