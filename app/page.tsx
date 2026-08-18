@@ -9820,6 +9820,21 @@ export default function Home() {
         const cap = why.charAt(0).toUpperCase() + why.slice(1);
         return `${cap.replace(/\.+$/, "")} — the pick posts the moment it lands, no later than ${t}.`;
       }
+      /* THE SAME WAIT, SECOND EMITTER (adaptive-era audit, 2026-08-17). The multisport
+         tracker stamps the identical per-game wait onto a pending card with NO posted
+         number — basis "ms_wall", `is_per_game: true`, and a complete served sentence in
+         `premium_note` ("No posted total yet — this game is priced once the book hangs a
+         number."). This reader only accepted basis "readiness_wall", so the TOR/WSH
+         Aug 19 sheet skipped the served reason and claimed only a posting time for a
+         game the book had not priced. The served note leads verbatim (it carries no
+         relative day word); the day/time half stays composed below, same as ever. */
+      const msLead = (() => {
+        if (!pe || pe.is_per_game !== true) return "";
+        const note = g && typeof g.premium_note === "string" ? g.premium_note.trim() : "";
+        if (note) return `${note.replace(/\.+$/, "")}. `;
+        const w2 = typeof pe.why === "string" ? pe.why.trim() : "";
+        return w2 ? `${(w2.charAt(0).toUpperCase() + w2.slice(1)).replace(/\.+$/, "")}. ` : "";
+      })();
       const d = gameDateISO(g);
       /* WHY THE TIME VARIES, said once, in the sentence that states the time (UX H3,
          2026-08-17). "Posts by 7:40 AM" on one game and "by 1:10 PM" on the next read as
@@ -9831,10 +9846,10 @@ export default function Home() {
       const _whW: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
       const _noun = WALL_NOUN[String((g && g.sport) || "").toLowerCase()] || "start";
       const vary = _wh != null ? ` Times vary because each game's pick posts about ${_whW[_wh] || `${_wh} hours`} before that game's own ${_noun}.` : "";
-      if (!d) return `Our picks for this game post by ${t}.${vary}`;
+      if (!d) return `${msLead}Our picks for this game post by ${t}.${vary}`;
       const when = d === todayISO() ? "today" : d === shiftDate(todayISO(), 1) ? "tomorrow"
         : new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
-      return `Our picks for ${when} post by ${t}.${vary}`;
+      return `${msLead}Our picks for ${when} post by ${t}.${vary}`;
     }
     /* ════════ THE RESULT STAMP — a different object from the pick ════════
        Leon: "for RIGHT / WRONG use another treatment." So the outcome does not borrow ONE
