@@ -2145,10 +2145,23 @@ export default function Home() {
        a couple of emails an hour — fine for launch, but production volume needs custom
        SMTP in the Supabase dashboard (owner step; the kytepush@gmail.com app password
        can serve). The 429 is surfaced honestly rather than retried. */
+    /* THE TRAILING SLASH IS LOAD-BEARING (measured on production, 2026-08-18).
+       `location.origin` has no trailing slash, and GoTrue's allow-list glob
+       `https://diamondedge.kytepush.com/**` does NOT match the bare origin — the
+       documented Supabase gotcha. GoTrue silently fell back to the shared
+       project's Site URL, https://golf.kytepush.com, so every emailed link
+       signed the reader in ON THE GOLF APP and DiamondEdge asked again: the
+       exact "sends the email, asks to log in again" loop the owner reported.
+       Verified end to end: the emailed /auth/v1/verify link carried
+       redirect_to=https://golf.kytepush.com. `authRedirect()` (origin + "/")
+       matches the existing glob, so no dashboard change is needed. Every
+       GoTrue redirect_to must go through this helper — never raw
+       location.origin. */
+    const authRedirect = () => location.origin + "/";
     async function supaSendMagicLink(email: string): Promise<{ ok: boolean; reason?: string }> {
       if (!SUPA || !KEY) return { ok: false, reason: "unconfigured" };
       try {
-        const r = await fetch(`${SUPA}/auth/v1/otp?redirect_to=${encodeURIComponent(location.origin)}`, {
+        const r = await fetch(`${SUPA}/auth/v1/otp?redirect_to=${encodeURIComponent(authRedirect())}`, {
           method: "POST", headers: { "Content-Type": "application/json", apikey: KEY },
           body: JSON.stringify({ email, create_user: true, gotrue_meta_security: {} }),
         });
@@ -2160,7 +2173,7 @@ export default function Home() {
     // Google OAuth is a plain redirect through GoTrue's /authorize; the same hash
     // completion below finishes it. Gated on NEXT_PUBLIC_AUTH_GOOGLE=1 — the button
     // only renders once the owner has wired the Google client in the Supabase dashboard.
-    const supaGoogleUrl = () => `${SUPA}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(location.origin)}`;
+    const supaGoogleUrl = () => `${SUPA}/auth/v1/authorize?provider=google&redirect_to=${encodeURIComponent(authRedirect())}`;
     /* THE REDIRECT BACK. GoTrue verifies the emailed token server-side and lands the
        reader on location.origin with the session in the URL FRAGMENT — the fragment
        never reaches our server or any log, and it is scrubbed from the address bar
