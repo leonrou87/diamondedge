@@ -708,6 +708,15 @@ export default function Home() {
       // a graded or in-progress game is never pending, whatever anything else says
       const st = String(g.status || "").toLowerCase();
       if (st === "final" || st === "live") return false;
+      /* ═══ A FROZEN MULTISPORT DECISION IS NOT PENDING (cluster C, 2026-08-18) ═══
+         The de_ms_v1 board copy says `premium_public: "pending"` until something puts a
+         pick OBJECT on it — and a frozen PASS never does, so a WNBA game the engine
+         decided at its 1 PM wall kept the "pending" stamp (and this function's true)
+         until the final. The tracker copy of the same game is the pick authority and
+         publishes the decision as a string ("UNDER 171.5" / "PASS") the moment it
+         freezes; when that copy is in hand, it wins over the board copy's stale stamp.
+         See msDecisionOf for the served-fields contract. */
+      if (msDecisionOf(g)) return false;
       /* ═══ A SEALED CARD IS DECIDED, NOT PENDING (prod regression 2026-08-14) ═══
          The whole board read PICKS SOON / NO PICK signed-out on a day the forge had
          posted every game: the public payload redacts the side, so every test below
@@ -2710,7 +2719,15 @@ export default function Home() {
       const vg = v4GameFor(g);
       const pk = vg && vg.pick;
       const s = String((pk && pk.pass_reason) || "").trim();
-      return s && s.length <= 200 && !/_/.test(s) ? s : "";
+      if (s && s.length <= 200 && !/_/.test(s)) return s;
+      /* de_ms_v1 (cluster C, 2026-08-18): the multisport engine writes its pass
+         sentence into the tracker card's `why` ("The signals net out to -1 points
+         against a total of 161.5 — below our 1.5-point bar, so no bet."), served
+         and public. Same verbatim-only rule as above: a sentence the desk wrote,
+         or nothing — the frontend never composes a reason for a pass it did not make. */
+      const msd = msDecisionOf(g);
+      const w = msd && msd.pick === "PASS" ? String((msd.card && msd.card.why) || "").trim() : "";
+      return w && w.length <= 200 && !/_/.test(w) ? w : "";
     }
     /* PRICE NOT OBTAINABLE — what we wanted vs what is really there.
        PREFERRED: a served structured block (`pick.price_unobtainable`, or the same block on
@@ -4051,13 +4068,50 @@ export default function Home() {
          be an MLB game quoting a football total. So the sport is part of the match. */
       const sp = String((g && g.sport) || "").toLowerCase();
       if (!sp) return null;
+      /* MLS IS THE ONE SPORT WITH TWO NAMES (cluster C, 2026-08-18, measured on the
+         live feeds). The pregame board assembles MLS cards as ui-sport "soccer"
+         (competition "MLS"); the `mls` tracker key's cards say sport "mls". The
+         equality below could therefore never match an MLS game — every read through
+         this join (odds, the per-game wait stamp, the frozen decision) silently
+         missed for MLS while working for WNBA/NFL. Same-namespace ids (ESPN event
+         ids on both copies) make the id half safe; only the NAME needed translating,
+         in both directions, and only for this one pair. */
+      const spN = sp === "mls" ? "soccer" : sp;
       for (const k of Object.keys(msData || {})) {
         const d = msData[k];
-        const hit = d && (d.games || []).find((x: any) =>
-          String((x && x.sport) || "").toLowerCase() === sp
-          && (String(x.game_id) === gid || String(x.espn_id) === gid));
+        const hit = d && (d.games || []).find((x: any) => {
+          const xs = String((x && x.sport) || "").toLowerCase();
+          return (xs === "mls" ? "soccer" : xs) === spN
+            && (String(x.game_id) === gid || String(x.espn_id) === gid);
+        });
         if (hit) return hit;
       }
+      return null;
+    }
+    /* ═══ THE FROZEN DECISION RIDES THE TRACKER COPY, AS A STRING (cluster C, 2026-08-18) ═══
+       Owner report: WNBA tiles read "PICKS SOON" forever. Measured on the live feeds:
+       when the multisport engine freezes a game at its wall the decision is published
+       PUBLICLY on the tracker card as `pick` — "UNDER 171.5", or the honest "PASS" —
+       pre-final (desk_policy.redact_tracker_card, the 2026-08-16 "the call is free"
+       ruling). But the BOARD copy the tile renders is only re-expressed with a pick
+       OBJECT when there is a ticket (serve_pregame_picks builds total_pick from a
+       frozen totals pick); a frozen PASS writes NOTHING the board's decided-test sees,
+       so redact_pregame_card stamps `premium_public: "pending"` on a game the desk
+       already decided — and picksPending() dutifully rendered "picks coming" over a
+       made decision, all day, until the final flipped the card to settled (where the
+       pass then rendered as a BLANK tile, the other half of this bug).
+       This helper is the one reader of that fact: the served pick string off whichever
+       copy carries it — own card first (tracker boards render their own cards on some
+       surfaces), tracker copy by sport+id second. "PASS" is a decision here, on
+       purpose: pending must mean "nobody has looked", never "we passed". Null unless
+       a served string exists. */
+    function msDecisionOf(g: any) {
+      if (!g || !MS_TABS.has(String(g.sport || "").toLowerCase())) return null;
+      const own = typeof g.pick === "string" ? g.pick.trim() : "";
+      if (own) return { pick: own.toUpperCase() === "PASS" ? "PASS" : own, card: g };
+      const t = msCardFor(g);
+      const tp = t && typeof t.pick === "string" ? t.pick.trim() : "";
+      if (tp) return { pick: tp.toUpperCase() === "PASS" ? "PASS" : tp, card: t };
       return null;
     }
     function pregameLine(g: any) {
@@ -6938,8 +6992,10 @@ export default function Home() {
         msInflight[lg] = null;
         if (d && String(d.sport || "").toLowerCase() === msKey(lg)) {
           msData[lg] = d; msAt[lg] = Date.now();
-          // repaint quietly if the reader is looking at this league right now
-          try { if (tab === "games" && league === lg) renderSlate(true); } catch {}
+          // repaint quietly if the reader is looking at this league right now — or at
+          // the ALL board, whose tiles read the same tracker copies for the frozen
+          // decision and the per-game wait (cluster C, 2026-08-18)
+          try { if (tab === "games" && (league === lg || league === "all")) renderSlate(true); } catch {}
         }
         return msData[lg] || null;
       })();
@@ -9035,8 +9091,30 @@ export default function Home() {
          `passReasonProse` already read the same object, which is why the tile has had the
          WORDS for this all along and no state to hang them on. */
       const servedPk = (() => { const vg = v4GameFor(g); return vg && vg.pick && typeof vg.pick === "object" ? vg.pick : null; })();
+      /* ═══ THE de_ms_v1 DECISION, WHEN NO PICK OBJECT CARRIES IT (cluster C, 2026-08-18) ═══
+         Every test above reads pick OBJECTS — and the multisport tracker publishes its
+         frozen decision as a served STRING ("UNDER 171.5" / "PASS"), which the board copy
+         only mirrors into `total_pick` on a ticket, minutes later, and NEVER on a pass.
+         Measured live: the Aug 17 WNBA final (DAL@GS, tracker `pick: "PASS"`) rendered a
+         tile with a blank right half — a pass indistinguishable from a card that failed
+         to load, on a board where the empty slot is the pass's own language. Two reads:
+           · "PASS"      → the pass verdict, exactly as MLB passes render (the served
+                           `why` sentence rides in via passReasonProse's ms fallback);
+           · a totals side → the served ticket, verbatim, for the window before the board
+                           copy catches up — the string is the pick authority's own words,
+                           never a side composed here. Non-totals strings (spread leans
+                           have no board surface on the tile) change nothing. */
+      const msd = !served && !pl && !chief && !servedPk ? msDecisionOf(g) : null;
+      if (msd && msd.pick !== "PASS" && /^(OVER|UNDER)\s+\d/i.test(msd.pick)) {
+        const mLn = msd.pick.match(/(\d+(\.\d+)?)/);
+        const mPl = normPlay({ action: "TAKE", side: msd.pick, line: mLn ? Number(mLn[1]) : null }, "total");
+        if (mPl) {
+          const mStars = msd.card && msd.card.stars != null ? Math.round(Number(msd.card.stars)) : null;
+          return { kind: isBet(mPl) ? "play" : "lean", word: "DiamondEdge Pick", side: msd.pick, leanSide: "", cls: isBet(mPl) ? "v-play" : "v-lean", stars: mStars, price: null, pl: mPl };
+        }
+      }
       const kind = !served
-        ? (pl || chief || servedPk ? "pass" : null)
+        ? (pl || chief || servedPk || (msd && msd.pick === "PASS") ? "pass" : null)
         : (act === "PLAY" || act === "LEAN" ? (act === "PLAY" ? "play" : "lean") : byStars);
       if (!kind) return null;
       return {
@@ -9859,7 +9937,21 @@ export default function Home() {
       const raw = picksEtaRaw(g);
       // a served string is used verbatim when it is short enough to be a tag; otherwise the tag
       // stays two words and the full sentence rides on the title/aria and the group header
-      return raw && raw.length <= 22 ? raw : "PICKS SOON";
+      if (raw && raw.length <= 22) return raw;
+      /* ═══ "SOON" IS NOT A TIME, AND THE TIME IS KNOWN (cluster C, 2026-08-18) ═══
+         Owner report: WNBA tiles read "PICKS SOON" all morning while the header one
+         inch above them said "PICKS POST 1:00 PM PT" — both computed in this file,
+         from the same served contract, and only one of them said it. When the server
+         has stated this game's wall (`pp.known`) and that moment has not passed, the
+         tag states the moment: the same picksEtaTime derivation every other surface
+         uses, so the tag and the header cannot disagree. No contract ⇒ the honest
+         two words, exactly as before — a missing payload may cost a reader a precise
+         time, never hand them a wrong one. */
+      if (pp && pp.known && !pp.posted) {
+        const t = picksEtaTime(g, day);
+        if (t && `PICKS ${t}`.length <= 22) return `PICKS ${t}`;
+      }
+      return "PICKS SOON";
     };
     /* THE LONG FORM IS COMPOSED, NOT SERVED — because the served strings carry a RELATIVE day
        word and the payload outlives the day it was written in. The same feed shipped both
@@ -11871,6 +11963,19 @@ export default function Home() {
           }));
         }
         slateGames = games || [];   // remember what we rendered so findGame can open any of it
+        /* THE TRACKER COPIES FEED THE TILES ON EVERY TAB (cluster C, 2026-08-18). A
+           de_ms_v1 tile's frozen decision ("PASS" / the served side) and its per-game
+           wait stamp live on the TRACKER copy of the game (msDecisionOf / perGameWaitOf)
+           — and those copies were only fetched when the reader stood on that sport's own
+           tab, so the ALL board rendered WNBA/NFL/MLS tiles off the board copy alone and
+           said "picks soon" over decisions already made. Fire-and-forget for each ms
+           sport actually on this board: loadMsSport dedupes (5-min cache + in-flight
+           guard) and repaints quietly when a payload lands. */
+        try {
+          const msNeed = new Set<string>();
+          for (const mg of slateGames) { const s = String((mg && mg.sport) || "").toLowerCase(); if (MS_TABS.has(s)) msNeed.add(s); }
+          msNeed.forEach((s) => { try { loadMsSport(s); } catch {} });
+        } catch {}
         // VISIBLE-VOID: the day's postponed games (rained out / cancelled) ride the
         // unified history feed and render as dimmed PPD cards — a locked pick can
         // never silently vanish from a day you look back at.
