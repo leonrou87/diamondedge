@@ -1215,6 +1215,37 @@ export default function Home() {
     const gCrest = (g: any, which: "home" | "away", cls = "") =>
       crestImg(g.sport, which === "home" ? g.home_abbr : g.away_abbr, cls, which === "home" ? g.home_logo : g.away_logo);
 
+    /* ═══ WHICH SIDE DID WE BACK — AND THE BLANK ABBREVIATION THAT ANSWERS "HOME" TO
+       EVERYTHING (armed-league readiness, 2026-08-21) ═══
+       Two side-grading surfaces (provisionalResult and the live tracking card) each asked
+       this question with their own copy of the same two lines:
+           backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0
+       `String.indexOf("")` is 0, not -1. So the instant a game arrives with an EMPTY home
+       abbreviation, `backedHome` is true for every side string ever served — and the away
+       test, looking for a real abbr that isn't there, says false. The card then grades a
+       spread or moneyline ticket against the wrong team, silently, with no wrong pixel to
+       notice: a false claim about money, which is the one thing this app may not make.
+
+       This is not hypothetical and it is not an MLB problem. NBA PRESEASON — the slate this
+       league opens on, Oct 3 2026 — is not 30 NBA clubs. Measured on last season's real
+       ESPN schedule (Oct 1-25 2025): 34 distinct team entities, including Guangzhou
+       Loong-Lions, Melbourne United, Hapoel Jerusalem, and one, "Melbourne Pnx", that ESPN
+       serves with NO `abbreviation` field at all. Whatever the platform maps that to, an
+       empty string is the plausible outcome and this predicate is where it lands.
+
+       One reader now, and it REFUSES rather than guesses: an abbreviation that is missing or
+       blank cannot identify a side, so the surface falls through to "not graded here" and
+       waits for the served grade — the same deference every other surface pays. */
+    const backedSideOf = (side: any, homeAb: any, awayAb: any): "home" | "away" | null => {
+      const s = String(side ?? "");
+      const h = String(homeAb ?? "").trim();
+      const a = String(awayAb ?? "").trim();
+      if (!s || !h || !a) return null;            // a blank abbr identifies nothing
+      const inH = s.indexOf(h) >= 0, inA = s.indexOf(a) >= 0;
+      if (inH === inA) return null;               // both or neither — ambiguous, don't guess
+      return inH ? "home" : "away";
+    };
+
     // Graded result for a game's surfaced pick — handles result as an object {status} (de_plays)
     // OR a bare string (raw display_pick, which normPlay can drop). Returns hit|miss|push|null.
     /* THE SIXTEENTH READER OF `result`, AND IT WAS NOT USING THE VOCABULARY (2026-08-16).
@@ -1596,10 +1627,9 @@ export default function Home() {
         if (sc.total === line) return { status: "push", pnl: null };
         return { status: (sc.total > line) === (dir === "over") ? "hit" : "miss", pnl: null };
       }
-      const side = String(pl.side || "");
-      const backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
-      const backedAway = side.indexOf(g.away_abbr) >= 0 && side.indexOf(g.home_abbr) < 0;
-      if (sc.margin == null || (!backedHome && !backedAway)) return null;
+      const backed = backedSideOf(pl.side, g.home_abbr, g.away_abbr);
+      const backedHome = backed === "home";
+      if (sc.margin == null || !backed) return null;
       if (pl.market === "spread") {
         const line = sideLine() != null ? sideLine() : (pl.line != null ? Number(pl.line) : null);
         if (line == null) return null;
@@ -1927,10 +1957,10 @@ export default function Home() {
         return null;
       })();
       if (!sc || sc.margin == null) return null;
-      const side = String(pl.side || "");
-      const backedHome = side.indexOf(g.home_abbr) >= 0 && side.indexOf(g.away_abbr) < 0;
-      const backedAway = side.indexOf(g.away_abbr) >= 0 && side.indexOf(g.home_abbr) < 0;
-      if (!backedHome && !backedAway) return null;
+      const side = String(pl.side || "");   // display copy below reads the served side verbatim
+      const backed = backedSideOf(pl.side, g.home_abbr, g.away_abbr);
+      const backedHome = backed === "home";
+      if (!backed) return null;
       const ab = backedHome ? g.home_abbr : g.away_abbr;
       const ourMargin = backedHome ? sc.margin : -sc.margin;   // + = our side ahead on the scoreboard
       const when = live ? liveWhenPhrase(g, gs) : "";
@@ -11668,8 +11698,19 @@ export default function Home() {
          LEDGER (when its 0-0 line was opened), not about any game. Off-season the strip
          promises the same discipline anchored to the only date that matters there: opening
          night. In season, the dated form returns untouched. */
+      /* …AND THE SAME SENTENCE COMES BACK ON OPENING DAY IF THE TEST IS "OFF-SEASON"
+         (armed-league readiness, 2026-08-21). The fix above is keyed on the league being
+         off-season. But `mode` flips "armed" → "live" and `is_offseason` → false the moment
+         the first slate lands, and the record is STILL 0-0 for the hours until that night's
+         first game grades — so on Oct 3 the NBA strip would print "graded from Aug 10,
+         2026" over an empty ledger, which is the exact sentence the note above was written
+         to kill, forty-eight days later. Same for NHL on Sep 19.
+         The honest test was never the calendar, it is whether this ledger has graded
+         anything yet: a 0-0 track has no "graded from <date>", it has opening night. */
+      const decidedN = (r: any) => r ? (r.wins || 0) + (r.losses || 0) + (r.pushes || 0) : 0;
+      const nothingGraded = decidedN(rec.preseason) + decidedN(rec.regular) === 0;
       const offSeason = !!(d && (d.mode === "armed" || d.is_offseason));
-      const gradedFrom = offSeason ? "graded in the open from opening night" : `graded from ${startLab}`;
+      const gradedFrom = (offSeason || nothingGraded) ? "graded in the open from opening night" : `graded from ${startLab}`;
       /* THE WALL SENTENCE IS NOT A LITERAL EITHER. This read "every pick freezes the night
          before, at its T-16h wall" — which stopped being true on 2026-08-14 and would have
          gone on telling readers so indefinitely. The number comes off the served contract;
@@ -21372,9 +21413,13 @@ export default function Home() {
       const note = String(d.season_note || "").trim().replace(/\.$/, "");
       // Off-season carries no "graded from <past date>" — same reasoning as the strip:
       // the honest anchor for a track with nothing to grade is opening night.
+      // …and an ARMED league that just went live is still a 0-0 track: "graded from Aug 10"
+      // over an empty ledger is the same false anchor the strip fixes. See msRecordStripHtml.
+      const decidedN = (r: any) => r ? (r.wins || 0) + (r.losses || 0) + (r.pushes || 0) : 0;
+      const nothingGraded = decidedN(rec.preseason) + decidedN(rec.regular) === 0;
       const sub = offSeason
         ? `off-season — the record starts with the season${note ? `. ${note}` : ""}`
-        : (startLab ? `graded from ${startLab}` : "graded in the open");
+        : (startLab && !nothingGraded ? `graded from ${startLab}` : "graded in the open");
       const prePlayed = rec.preseason && ((rec.preseason.wins || 0) + (rec.preseason.losses || 0) + (rec.preseason.pushes || 0) > 0);
       const regPlayed = rec.regular && ((rec.regular.wins || 0) + (rec.regular.losses || 0) + (rec.regular.pushes || 0) > 0);
       // preseason-now read includes the competition string, same as the strip (audit 2026-08-11)
