@@ -67,12 +67,23 @@ export default function Home() {
       MLS_ID[String(ab || "").toUpperCase()]
         ? `https://a.espncdn.com/i/teamlogos/soccer/500/${MLS_ID[String(ab || "").toUpperCase()]}.png`
         : `https://a.espncdn.com/i/teamlogos/countries/500/${String(ab || "").toLowerCase()}.png`;
+    // EPL club abbr → ESPN team id (all 20 clubs, from the live schedule 2026-08-19) —
+    // the same crest contract as MLS_ID. The served cards also carry home_logo/away_logo
+    // (crestImg prefers those), so this map is the belt to that suspender.
+    const EPL_ID: any = { ARS: 359, AVL: 362, BOU: 349, BHA: 331, BRE: 337, CHE: 363, COV: 388, CRY: 384, EVE: 368, FUL: 370, HUL: 306, IPS: 373, LEE: 357, LIV: 364, MNC: 382, MAN: 360, NEW: 361, NFO: 393, SUN: 366, TOT: 367 };
+    const eplLogo = (ab: any) => EPL_ID[String(ab || "").toUpperCase()] ? `https://a.espncdn.com/i/teamlogos/soccer/500/${EPL_ID[String(ab || "").toUpperCase()]}.png` : "";
     const logoFor = (sp: string, ab: any) =>
       sp === "soccer" ? soccerFlag(ab)
+      : sp === "epl" ? eplLogo(ab)
       : sp === "wnba" ? wnbaLogo(ab)
       : sp === "nba" ? nbaLogo(ab)
       : sp === "nhl" ? nhlLogo(ab)
       : sp === "nfl" ? nflLogo(ab)
+      /* NCAAF: ~134 programs — no abbr→id map could be honest or maintained.
+         The served cards carry ESPN crest URLs (home_logo/away_logo, preferred
+         by crestImg); with no served URL the readable text crest is the
+         fallback, never another sport's logo path. */
+      : sp === "ncaaf" ? ""
       : mlbLogo(ab);
 
     // ===================== HELPERS =====================
@@ -505,20 +516,25 @@ export default function Home() {
     const sgn = (v: any, d = 1) => { if (v == null || isNaN(Number(v))) return "—"; const n = Number(v); return (n > 0 ? "+" : "") + n.toFixed(d); };
     const fmtOdds = (o: any) => { if (o == null || o === "") return "—"; const n = Number(o); if (isNaN(n)) return "—"; if (n >= 100 || n <= -100) return n > 0 ? "+" + Math.round(n) : "" + Math.round(n); const am = n >= 2 ? Math.round((n - 1) * 100) : Math.round(-100 / (n - 1)); return am > 0 ? "+" + am : "" + am; };
     const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
-    const SPORTS = ["mlb", "wnba", "nba", "nhl", "nfl", "soccer"];
+    const SPORTS = ["mlb", "wnba", "nba", "nhl", "nfl", "soccer", "epl", "ncaaf"];
     // Base document title — restored when a game sheet closes; a game sheet sets a per-matchup title
     // so shared/opened ?g= links, bookmarks, browser history and tabs read as the actual game.
     const DEF_TITLE = (typeof document !== "undefined" && document.title) || "DiamondEdge — Today's Picks, Games & Results";
-    const SPORT_LABEL: any = { all: "All", mlb: "MLB", wnba: "WNBA", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer" };
-    const SPORT_ICON: any = { all: "◆", mlb: "⚾", wnba: "🏀", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽" };
-    const SPORT_UNIT: any = { mlb: "runs", wnba: "points", nba: "points", nhl: "goals", nfl: "points", soccer: "goals" };
+    const SPORT_LABEL: any = { all: "All", mlb: "MLB", wnba: "WNBA", nba: "NBA", nhl: "NHL", nfl: "NFL", soccer: "Soccer", epl: "EPL", ncaaf: "NCAAF" };
+    const SPORT_ICON: any = { all: "◆", mlb: "⚾", wnba: "🏀", nba: "🏀", nhl: "🏒", nfl: "🏈", soccer: "⚽", epl: "⚽", ncaaf: "🏈" };
+    const SPORT_UNIT: any = { mlb: "runs", wnba: "points", nba: "points", nhl: "goals", nfl: "points", soccer: "goals", epl: "goals", ncaaf: "points" };
     /* The de_ms_v1 sports (2026-08-10): each has its OWN Supabase key (`nfl`/`nba`/`nhl`/
        `wnba`) carrying the sport's record (preseason and regular graded on separate lines,
        started 0-0 at launch), a `season_note` when the sport is off-season, and the slate.
        These records are brand-new tracks — NEVER blended with MLB's, never given a
        backtest. (MLS is de_ms_v1 too but rides the SOCCER tab: its cards arrive on the
        pregame board with competition "MLS"; its own key `mls` carries the record.) */
-    const MS_SPORTS = new Set(["nfl", "nba", "nhl", "wnba"]);
+    /* EPL and NCAAF (2026-08-19) are de_ms_v1 leagues WITH their own tabs — their
+       board cards and tracker keys both say sport "epl"/"ncaaf", so unlike MLS no
+       tab→key remap is needed. Their records start 0-0 (EPL live from 2026-08-19,
+       first realistic pick Fri Aug 21; NCAAF's season opens Sat Aug 29 — the tab
+       renders the honest next-slate state until then, never a stale board). */
+    const MS_SPORTS = new Set(["nfl", "nba", "nhl", "wnba", "epl", "ncaaf"]);
     /* THE SOCCER TAB IS THE MLS SURFACE (2026-08-11). MLS is a full de_ms_v1 sport —
        its own `mls` tracker key, its own 0-0 record, T-16h walls — but its cards ride
        the existing SOCCER tab (sport "soccer", competition "MLS") rather than a 7th
@@ -528,7 +544,7 @@ export default function Home() {
     const msKey = (lg: string) => (lg === "soccer" ? "mls" : lg);
     // The moment a game starts, named per sport — the pick wall sits some hours before
     // this, and HOW MANY comes off the served picks_post_contract, never a literal here.
-    const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff" };
+    const WALL_NOUN: any = { mlb: "first pitch", nfl: "kickoff", nba: "tip-off", nhl: "puck drop", wnba: "tip-off", soccer: "kickoff", epl: "kickoff", ncaaf: "kickoff" };
     const isISO = (t: any) => /^\d{4}-\d{2}-\d{2}/.test(String(t || ""));
     const isTS = (t: any) => /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}/.test(String(t || ""));
     /* ═══════════ ONE "TODAY" — AND IT IS THE BOARD'S OWN DAY (2026-08-13) ═══════════
@@ -8540,7 +8556,7 @@ export default function Home() {
       } else if (mk === "moneyline") {
         if (v4 && v4.pl && v4.pl.side && v4.price != null) return `${esc(String(v4.pl.side))} ${fmtOdds(v4.price)}`;
         const mp = g.ml_pick; const mpr = (mp && mp.prices) || {};
-        if (g.sport === "soccer" && mpr.home != null && mpr.draw != null) return `1X2 ${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`;
+        if ((g.sport === "soccer" || g.sport === "epl") && mpr.home != null && mpr.draw != null) return `1X2 ${fmtOdds(mpr.home)}·${fmtOdds(mpr.draw)}·${fmtOdds(mpr.away)}`;
         const px = mp ? (mp.price ?? mpr.home ?? mpr.away) : null;
         if (px != null) return `${esc(mp.side || g.home_abbr)} ${fmtOdds(px)}`;
       }
@@ -19074,8 +19090,17 @@ export default function Home() {
     const CLUB_SHORT: any = {
       "Boston Red Sox": "Red Sox", "Red Sox": "Red Sox",
       "Chicago White Sox": "White Sox", "White Sox": "White Sox",
-      "Toronto Blue Jays": "Blue Jays", "Blue Jays": "Blue Jays", "Atlanta United FC": "Atlanta United", "Austin FC": "Austin", "Chicago Fire FC": "Chicago Fire", "FC Cincinnati": "Cincinnati", "Columbus Crew": "Columbus", "Charlotte FC": "Charlotte", "FC Dallas": "Dallas", "D.C. United": "D.C. United", "Houston Dynamo FC": "Houston", "LA Galaxy": "LA Galaxy", "Inter Miami CF": "Inter Miami", "Minnesota United FC": "Minnesota United", "CF Montréal": "Montréal", "CF Montreal": "Montreal", "Nashville SC": "Nashville", "New York City FC": "NYCFC", "Orlando City SC": "Orlando City", "Red Bull New York": "Red Bulls", "New York Red Bulls": "Red Bulls", "Real Salt Lake": "RSL", "San Diego FC": "San Diego", "Seattle Sounders FC": "Seattle Sounders", "Sporting Kansas City": "Sporting KC", "St. Louis CITY SC": "St. Louis City", "Toronto FC": "Toronto", "Vancouver Whitecaps": "Vancouver" };
-    const teamShort = (name: any) => { const s = String(name || "").trim(); if (CLUB_SHORT[s]) return CLUB_SHORT[s]; const w = s.split(/\s+/); return w.length ? w[w.length - 1] : s; };
+      "Toronto Blue Jays": "Blue Jays", "Blue Jays": "Blue Jays", "Atlanta United FC": "Atlanta United", "Austin FC": "Austin", "Chicago Fire FC": "Chicago Fire", "FC Cincinnati": "Cincinnati", "Columbus Crew": "Columbus", "Charlotte FC": "Charlotte", "FC Dallas": "Dallas", "D.C. United": "D.C. United", "Houston Dynamo FC": "Houston", "LA Galaxy": "LA Galaxy", "Inter Miami CF": "Inter Miami", "Minnesota United FC": "Minnesota United", "CF Montréal": "Montréal", "CF Montreal": "Montreal", "Nashville SC": "Nashville", "New York City FC": "NYCFC", "Orlando City SC": "Orlando City", "Red Bull New York": "Red Bulls", "New York Red Bulls": "Red Bulls", "Real Salt Lake": "RSL", "San Diego FC": "San Diego", "Seattle Sounders FC": "Seattle Sounders", "Sporting Kansas City": "Sporting KC", "St. Louis CITY SC": "St. Louis City", "Toronto FC": "Toronto", "Vancouver Whitecaps": "Vancouver",
+      // EPL (2026-08-19): every 2026-27 club whose last word is not its name —
+      // "Coventry City" is not "City" and "Leeds United" is not "United" (three
+      // Uniteds and three Citys share this board). Single-word clubs fall through.
+      "AFC Bournemouth": "Bournemouth", "Brighton & Hove Albion": "Brighton", "Coventry City": "Coventry", "Hull City": "Hull", "Ipswich Town": "Ipswich", "Leeds United": "Leeds", "Manchester City": "Man City", "Manchester United": "Man United", "Newcastle United": "Newcastle", "Nottingham Forest": "Forest", "Tottenham Hotspur": "Tottenham", "West Ham United": "West Ham", "Wolverhampton Wanderers": "Wolves" };
+    /* College nicknames are often TWO words, and the last-word rule mangles them —
+       "North Carolina Tar Heels" is not "Heels". The common two-word nicknames keep
+       both words; anything else still last-words, which stays right for the
+       single-word college nicknames (Trojans, Seminoles) and every pro league. */
+    const NICK2 = new Set(["Tar Heels", "Horned Frogs", "Crimson Tide", "Rainbow Warriors", "Golden Bears", "Golden Eagles", "Golden Gophers", "Golden Flashes", "Golden Hurricane", "Blue Devils", "Blue Raiders", "Blue Hens", "Yellow Jackets", "Green Wave", "Red Raiders", "Red Wolves", "Red Storm", "Demon Deacons", "Fighting Irish", "Fighting Illini", "Nittany Lions", "Scarlet Knights", "Black Knights", "Black Bears", "Sun Devils", "Mean Green", "Ragin' Cajuns", "Mountain Hawks", "River Hawks", "Horned Toads", "Boll Weevils"]);
+    const teamShort = (name: any) => { const s = String(name || "").trim(); if (CLUB_SHORT[s]) return CLUB_SHORT[s]; const w = s.split(/\s+/); const l2 = w.length >= 2 ? w.slice(-2).join(" ") : ""; if (l2 && NICK2.has(l2)) return l2; return w.length ? w[w.length - 1] : s; };
     function bStars(n: any) {
       return "";
     }
@@ -21328,7 +21353,7 @@ export default function Home() {
            in the strip's own language, with the served season_note.
          · A league whose payload has not arrived (or failed) renders NOTHING: no row, no
            error card, exactly like every other tolerant surface on this page. */
-    const LG_RECORD_ORDER = ["nfl", "nba", "wnba", "nhl", "soccer"];
+    const LG_RECORD_ORDER = ["nfl", "nba", "wnba", "nhl", "soccer", "epl", "ncaaf"];
     function msLeagueRecordRow(lg: string) {
       const d = msData[lg];
       const rec = d && d.record;

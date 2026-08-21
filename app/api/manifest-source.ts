@@ -62,6 +62,13 @@ export const KEYS = [
   "nhl",
   "wnba",
   "mls",
+  /* EPL + NCAAF (2026-08-19): the two newest de_ms_v1 tracker keys. Same
+     first-class treatment as the five above — without these the new tabs'
+     snap() would take the exact 404 → proxy-demotion path the 2026-08-10
+     note describes. Verified live before this edit: /api/snap/epl answered
+     `{"error":"unknown key"}` over a published row. */
+  "epl",
+  "ncaaf",
 ];
 
 export type Manifest = { v: Record<string, string>; newest: string; n: number };
