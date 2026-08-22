@@ -8549,53 +8549,125 @@ export default function Home() {
       return bestPlay(g);
     }
 
-    /* ═══════ WHAT WE ACTUALLY POSTED, WHEN NO PICK FEED CARRIES THIS GAME ═══════
-       MEASURED ON PRODUCTION 2026-08-21: 70 of the 74 archived game sheets whose article
-       reports a posted pick printed "We priced every market — O/U 180.5 — and none of them
-       beat our number. The pass is the pick." — directly above the generator's own prose
-       reading "before tip-off we were on UNDER 180.5 at -110 … The DiamondEdge Pick came up
-       short." (?g=401857160, WNBA, ATL@LA 2026-08-20). nfl 22, nhl 22, nba 16, wnba 8,
-       mlb 3, soccer 3, spanning 2022-02-26 to 2026-08-21. The card called a pass on games
-       we bet, and graded, and said so four lines lower.
+    /* ═══════ WHAT WE ACTUALLY POSTED — AND ON WHICH MARKET ═══════
+       WHEN NO PICK FEED CARRIES THIS GAME, THE POSTED CALL IS STILL ON THE PAYLOAD.
+       The sheet resolves its call through displayPick → v4GameFor → the `picks_unified`
+       history, and that key is the MLB history: 683 rows, and not one WNBA / NHL / NBA /
+       NFL / soccer id among them. `picks_unified?game=<id>` answering null on those ids is
+       CORRECT — there is no row to serve. So every rung of that ladder misses on an
+       archived game, and this helper reads the decision off the SAME game object the
+       article is rendered from.
 
-       THE CAUSE IS A FEED THAT NEVER HELD THE GAME, NOT A FEED THAT FAILED. The sheet's
-       call resolves displayPick → v4GameFor → the `picks_unified` history, and that key is
-       the MLB history: measured, 669 games in `?lite=1`, 131 in `?board=1`, and not one
-       WNBA / NHL / NBA / NFL / soccer id among them. So `picks_unified?game=<id>` answering
-       `null` on those ids is CORRECT — there is no row to serve — and "make the endpoint
-       serve archived games" would have to invent the row it returns. `display_pick` and
-       `de_plays` are null on these payloads too, so every rung of the ladder above misses
-       and the pass fallback becomes the default verdict on a bet game.
+       THE DEFECT THIS REPLACES (b447bbb, measured on production 2026-08-21). The previous
+       version read `total_pick` UNCONDITIONALLY. It was right about `article.has_pick`
+       being the authority for WHETHER a pick was posted — and silent about WHICH market
+       was called, which is a separate question with its own served answer. Measured on the
+       live board and 56 archive days: of 711 game sheets whose article reports a posted
+       pick, 95 were SPREAD calls and 72 were MONEYLINE calls. On every one of them the old
+       helper quoted the totals block instead, three lines above the generator's own prose
+       naming the spread. /g/2025-01-05-401671841 read "OVER 37 at -110 — the call we
+       posted … the pick lost" over an article reading "we leaned EAG -2.5 at -115 … The
+       DiamondEdge Pick cashed": the wrong market, the wrong number, the wrong price and the
+       wrong RESULT, since the totals block missed and the spread we actually posted won.
+       /g/2025-01-06-401671843 printed a WIN ("UNDER 56.5 … the pick won") on a game whose
+       posted call (VIK +3.0) lost. That is not a display bug; it is the card inventing a
+       graded record.
 
-       THE PICK IS NOT MISSING. It is on the SAME game object the article is rendered from,
-       as `total_pick`, and this reads it there. Nothing is computed: the side, the line, the
-       price and the graded result are served fields printed as served.
+       WHICH MARKET IS THE GENERATOR'S OWN SENTENCE. Every article that posts a pick carries
+       `pick_headline` — "Pre-Game Pick: EAG -2.5", "Pre-Game Pick: OVER 8.5", "Pre-Game
+       Pick: NYY to win" — and `verdict`, whose first bold run is the same call with the
+       price it was posted at ("DiamondEdge called **EAG -2.5 (-115)**"). Measured across
+       the same 711: 711 of 711 carry the headline in that shape, and the call it names
+       resolves to a served block on the game — total_pick, spread_pick or ml_pick — whose
+       side and line AGREE with it, 711 of 711. Nothing here is computed or inferred from a
+       score: the generator says which market, and this looks up that market's served detail.
 
-       `article.has_pick` IS THE AUTHORITY AND `total_pick` IS NOT — this is the whole reason
-       the helper is shaped this way. Measured on the same payloads: 78 archived non-MLB
-       games carry a `total_pick.side` beneath an article that says "No DiamondEdge Pick here
-       — our number (5.8 goals) sits within…". On those the block is the model's number, not
-       a posted ticket, and rendering it as one would invent 78 picks — the exact mirror of
-       the defect being fixed. So the generator's own flag decides WHETHER a pick was posted
-       and `total_pick` only supplies the DETAIL of one that was. A ticket whose side or line
-       is unreadable returns null rather than a half-quoted call.
+       `article.has_pick` STILL DECIDES WHETHER, AND `total_pick` STILL DOES NOT. Measured on
+       the same payloads: 669 games carry a `total_pick.side` beneath an article reading "No
+       DiamondEdge Pick here — our number (5.8 goals) sits within…". On those the block is
+       the model's number, not a posted ticket, and rendering it as one would invent 669
+       picks — the exact mirror of the defect. So the flag gates the whole helper and a call
+       string that names no market, or names one with no agreeing served block, returns null
+       rather than a half-quoted or a guessed call.
 
-       MLB IS NOT READ HERE, BY CONSTRUCTION. Its freeze/selection path says the unified feed
-       is the only pick source and `total_pick` is a legacy mirror of it. Returning null on
-       MLB leaves that rail untouched; an MLB sheet that cannot resolve its call says so
-       plainly instead (see passBlock) rather than resolving one from a retired source. */
+       MLB IS READ HERE NOW, AND ITS FREEZE/SELECTION PATH IS STILL UNTOUCHED. The old
+       version returned null on MLB, which is what left /g/2026-08-19-824076 printing "We
+       priced every market — KC -1.5, O/U 8.5, KC -110 — and none of them beat our number.
+       The pass is the pick." over an article reading "DiamondEdge called **OVER (-108)** …
+       It **cashed**" — a graded win published as a pass, which is the class the owner named
+       ("the UX said NO BETS yesterday but the record said 4-1"). Nothing in displayPick,
+       v4GameFor, the freeze wall or the record ledgers is touched: this helper is only ever
+       reached when displayPick already resolved to nothing, and it READS the frozen
+       `display_pick` the MLB path itself published — side, line, price and grade as served.
+
+       THE PRICE IS THE ONE THE ARTICLE QUOTES. `fmtOdds` reads a bare number as decimal
+       odds below 100 and American at or beyond it, and the served blocks mix the two: game
+       824076's `display_pick` carries -108 (American, and what the prose prints) while its
+       `total_pick` carries 1.82 (decimal, which formats to -122). Rather than pick a
+       convention, the card prints the price the generator printed, and falls back to
+       `fmtOdds` of the served number only where the article states none. */
     function servedTicketOf(g: any) {
-      if (!g || String(g.sport || "").toLowerCase() === "mlb") return null;
-      const a = g.article;
+      const a = g && g.article;
       if (!a || typeof a !== "object" || a.has_pick !== true) return null;
-      const src = [g.total_pick, g.display_pick].find(
-        (b: any) => b && typeof b === "object" && String(b.side == null ? "" : b.side).trim() !== "");
-      if (!src) return null;
-      const dir = normalizeSide(src.side);
-      const line = src.line != null && isFinite(Number(src.line)) ? Number(src.line) : null;
-      if (!dir || line == null) return null;
-      const r = src.result && typeof src.result === "object" ? src.result : null;
-      const st = r ? String(r.status || "").toLowerCase() : "";
+      /* THE CALL, IN THE GENERATOR'S OWN WORDS — headline first, the verdict's bold run
+         second. Parentheses (the price) and markdown are stripped; nothing else is. */
+      const strip = (s: any) => String(s == null ? "" : s)
+        .replace(/\*\*/g, "").replace(/\([^)]*\)/g, "").replace(/\s+/g, " ").trim();
+      const hm = String(a.pick_headline || "").match(/^[^:]*\bPick\b[^:]*:\s*(.+)$/i);
+      const vm = String(a.verdict || "").match(/called\s+\*\*([^*]+)\*\*/i);
+      const call = strip(hm ? hm[1] : vm ? vm[1] : "");
+      if (!call) return null;
+      const C = call.toUpperCase().replace(/−/g, "-");
+      /* OVER/UNDER ⇒ the total. A signed number ⇒ the spread ("EAG -2.5", "VIK +3.0").
+         A bare team ⇒ the moneyline ("NYY to win"). Anything else names no market this
+         engine posts, and an unrecognised call resolves to nothing rather than a guess. */
+      const mk = /^(OVER|UNDER)\b/.test(C) ? "total"
+        : /[+-]\s*\d/.test(C) ? "spread"
+        : /^[A-Z0-9][A-Z0-9 .'&/]*$/.test(C) ? "moneyline" : null;
+      if (!mk) return null;
+      const artPx = (String(a.verdict || "").match(/called\s+\*\*[^*]*?\(([+-]?\d{2,4})\)\*\*/) || [])[1] || "";
+      const numOf = (s: any) => {
+        const m = String(s == null ? "" : s).replace(/−/g, "-").match(/[-+]?\d+(?:\.\d+)?/);
+        return m ? Number(m[0]) : null;
+      };
+      const tok = (s: any) => {
+        const m = String(s == null ? "" : s).trim().match(/^([A-Za-z][A-Za-z0-9.'&/]*)/);
+        return m ? m[1].toUpperCase() : "";
+      };
+      const callNum = numOf(C);
+      const callDir = (C.match(/^(OVER|UNDER)\b/) || [])[1] || "";
+      /* A BLOCK IS THE POSTED TICKET ONLY IF IT SAYS WHAT THE ARTICLE SAYS. Side always,
+         and the number too where both carry one — so a spread block that has since been
+         restated to a different hook cannot be quoted as the call that was posted. */
+      const agrees = (b: any) => {
+        const side = String((b && b.side) || "").trim();
+        if (!side) return false;
+        if (mk === "total") {
+          const d = (side.toUpperCase().match(/^(OVER|UNDER)\b/) || [])[1] || "";
+          if (!d || d !== callDir) return false;
+          const bn = b.line != null && isFinite(Number(b.line)) ? Number(b.line) : numOf(side);
+          return callNum == null || bn == null || Math.abs(bn - callNum) < 1e-9;
+        }
+        if (mk === "spread") {
+          if (tok(side) !== tok(C)) return false;
+          const bn = numOf(side) != null ? numOf(side) : (b.line != null ? Number(b.line) : null);
+          return callNum == null || bn == null || Math.abs(bn - callNum) < 1e-9;
+        }
+        return tok(side) === tok(C);
+      };
+      const cands: any[] = [];
+      const dp = g.display_pick;
+      if (dp && typeof dp === "object" && String(dp.market || "total").toLowerCase() === mk
+          && String(dp.action || "TAKE").toUpperCase() === "TAKE") cands.push(dp);
+      const own = mk === "total" ? g.total_pick : mk === "spread" ? g.spread_pick : g.ml_pick;
+      if (own && typeof own === "object") cands.push(own);
+      const de = g.de_plays && typeof g.de_plays === "object" ? g.de_plays[mk] : null;
+      if (de && typeof de === "object" && String(de.action || "").toUpperCase() === "TAKE") cands.push(de);
+      const ok = cands.filter(agrees);
+      if (!ok.length) return null;
+      // Two served blocks can hold the same call at two prices (the frozen ticket and the
+      // legacy mirror). The one the article quoted is the one that was posted.
+      const src: any = (artPx && ok.find((b: any) => b.price != null && fmtOdds(b.price) === artPx)) || ok[0];
       /* THE NUMBER AS SERVED, NOT AS ROUNDED. `lineStr` — the board's formatter — is
          one-decimal, and quarter lines are real on these boards: it renders a served
          206.25 as "206.2" and a served 3.25 as "3.2". Everywhere else that is a display
@@ -8605,12 +8677,38 @@ export default function Home() {
         const s = String(v);
         return s.indexOf(".") >= 0 ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
       };
+      let side = String(src.side).trim();
+      if (mk === "total") {
+        const ln = src.line != null && isFinite(Number(src.line)) ? Number(src.line) : callNum;
+        if (ln == null) return null;
+        side = `${callDir === "UNDER" ? "UNDER" : "OVER"} ${exact(ln)}`;
+      } else if (mk === "moneyline") {
+        side = side.toUpperCase();
+      }
+      /* THE SERVED GRADE, in the app's own three words and never re-derived from a score.
+         The frozen MLB ticket carries it as a bare string, the market blocks as an object;
+         both are read, neither is interpreted. */
+      const r = src.result;
+      const st = r && typeof r === "object" ? String(r.status || "").toLowerCase()
+        : typeof r === "string" ? r.toLowerCase() : "";
+      const grade = st === "hit" || st === "won" ? "won"
+        : st === "miss" || st === "lost" ? "lost"
+        : st === "push" || st === "pushed" ? "pushed" : "";
+      /* THE FINAL NUMBER IS A TOTALS FACT AND IS PRINTED ONLY THERE. `result.actual` is the
+         final total on a total, the winning MARGIN on a spread (7.0 on a game that ended
+         30-23) and a STRING on a moneyline ("home_win"). "The game finished on 7" beneath a
+         spread call is a sentence about nothing, so only the totals lane prints it. */
+      let actual = "";
+      if (mk === "total") {
+        const av = r && typeof r === "object" && r.actual != null ? r.actual : src.final_total;
+        if (av != null && isFinite(Number(av))) actual = exact(Number(av));
+      }
       return {
-        side: `${dir === "under" ? "UNDER" : "OVER"} ${exact(line)}`,
-        price: src.price != null && isFinite(Number(src.price)) ? src.price : null,
-        // the SERVED grade, in the app's own three words — never re-derived from a score
-        grade: st === "hit" ? "won" : st === "miss" ? "lost" : st === "push" ? "pushed" : "",
-        actual: r && r.actual != null && isFinite(Number(r.actual)) ? exact(Number(r.actual)) : "",
+        market: mk,
+        side,
+        price: artPx || (src.price != null && isFinite(Number(src.price)) ? fmtOdds(src.price) : ""),
+        grade,
+        actual,
       };
     }
 
@@ -14761,23 +14859,31 @@ export default function Home() {
               <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
               </div>`;
             }
-            /* ═══ THE POSTED CALL, READ OFF THE PAYLOAD THAT ACTUALLY CARRIES IT ═══
-               This is the fix for the 70 cards. When no pick feed covers this game but the
-               served article says a pick was posted, the ticket is on the game object beside
-               that article and servedTicketOf() reads it verbatim. The card then says what
-               was served — the same side, the same line, the same price and the same graded
-               result the prose below it reports — instead of falling through to a pass. */
+            /* ═══ THE POSTED CALL — THE RIGHT MARKET'S, READ OFF THE PAYLOAD ═══
+               When no pick feed covers this game but the served article says a pick was
+               posted, the ticket is on the game object beside that article, and
+               servedTicketOf() takes BOTH facts from the generator's own fields: that a call
+               exists (`article.has_pick`) and which market it was on (`pick_headline` /
+               `verdict`). The card then says what was served — the same market, the same
+               side, the same line, the same price and the same graded result the prose below
+               it reports — instead of quoting the totals block over a spread call, or falling
+               through to a pass. */
             const posted = servedTicketOf(g);
             if (posted) {
-              const px = posted.price != null ? ` at ${esc(fmtOdds(posted.price))}` : "";
-              /* The outcome sentence is the SERVED grade and the SERVED final total, or it is
-                 absent. An ungraded ticket gets the call and no verdict — this surface does
-                 not decide bets, it reports the decision that was published. */
+              const px = posted.price ? ` at ${esc(posted.price)}` : "";
+              // The market is NAMED where the side alone would not name it. "KC — the call
+              // we posted" reads as a spread or a total with the number dropped; "KC on the
+              // moneyline" is the call we actually made.
+              const mkw = posted.market === "moneyline" ? " on the moneyline" : "";
+              /* The outcome sentence is the SERVED grade and, on a total, the SERVED final
+                 number — or it is absent. An ungraded ticket gets the call and no verdict:
+                 this surface does not decide bets, it reports the decision that was
+                 published. */
               const outcome = posted.grade
-                ? ` ${posted.actual ? `The game finished on ${esc(posted.actual)} — t` : "T"}he pick ${esc(posted.grade)}.`
+                ? ` ${posted.market === "total" && posted.actual ? `The game finished on ${esc(posted.actual)} — t` : "T"}he pick ${esc(posted.grade)}.`
                 : "";
               return `<div class="callcard"><div class="cc-k">${pickLabel(g)}</div>
-              <p class="cc-passwhy"><b>${esc(posted.side)}</b>${px} — the call we posted on this game.${outcome}</p></div>`;
+              <p class="cc-passwhy"><b>${esc(posted.side)}</b>${mkw}${px} — the call we posted on this game.${outcome}</p></div>`;
             }
             /* ═══ A PASS IS ASSERTED ONLY WHERE A PASS WAS DECIDED ═══
                The sentence below is a VERDICT: "we priced every market and none beat our
@@ -14787,9 +14893,17 @@ export default function Home() {
                "O/U 180.5" was read off `total_pick`, the very object holding the UNDER 180.5
                we posted and lost. A pass is a real, gradeable call, and this may say we made
                one only where something served says we did: the article's own has_pick:false,
-               a pick object stamped PASS, the multisport tracker's "PASS" string, or the
-               desk's served pass reason. */
-            const passSaid = (() => {
+               a pick object stamped PASS, the multisport tracker's "PASS" string, the desk's
+               served pass reason, or the pass the game object itself publishes (below). */
+            /* AN ARTICLE THAT POSTS A PICK FORECLOSES THE PASS SENTENCE ENTIRELY. If we
+               reach here with has_pick:true, the call was posted and this pane could not
+               resolve WHICH market — a gap in what this surface can read, never evidence of
+               a pass. Saying "the pass is the pick" there is the original defect, and it is
+               unreachable now rather than merely unlikely: the branch below says the true
+               thing instead. */
+            const artSaysPick = !!(g && g.article && typeof g.article === "object"
+                                   && (g.article as any).has_pick === true);
+            const passSaid = !artSaysPick && (() => {
               const a: any = g && g.article;
               if (a && typeof a === "object" && a.has_pick === false) return true;
               const vg = v4GameFor(g);
@@ -14797,6 +14911,23 @@ export default function Home() {
               if (pk && typeof pk === "object" && String(pk.status || "").toUpperCase() === "PASS") return true;
               const msd = msDecisionOf(g);
               if (msd && msd.pick === "PASS") return true;
+              /* …AND THE PASS THE GAME OBJECT ITSELF CARRIES, which is what the previous
+                 revision lost. Gating the sentence on served evidence was right; the list of
+                 evidence it accepted was the four feed-level markers only, so a genuine
+                 posted pass whose feed row this pane could not reach rendered NO CARD AT
+                 ALL — a game we priced and declined, showing the reader an empty slot. The
+                 decision is also published on the game: `display_pick.action` is "PASS" on
+                 239 of the board's games and `de_plays` carries an explicit per-market
+                 "PASS" on 616 cells. Both are served decisions, so both are read. An empty
+                 card is reserved for a game where nothing served speaks at all. */
+              const dp: any = g && g.display_pick;
+              if (dp && typeof dp === "object" && String(dp.action || "").toUpperCase() === "PASS") return true;
+              if (typeof (g && g.pick) === "string" && String(g.pick).trim().toUpperCase() === "PASS") return true;
+              if (String((g && g.desk_status) || "").toUpperCase() === "PASS") return true;
+              const de: any = g && g.de_plays;
+              if (de && typeof de === "object" && MARKETS.some((mk: string) =>
+                    de[mk] && typeof de[mk] === "object"
+                    && String(de[mk].action || "").toUpperCase() === "PASS")) return true;
               return !!(passWhyOf(g) || passReasonProse(g));
             })();
             if (passSaid) {
@@ -14808,8 +14939,10 @@ export default function Home() {
               <p class="cc-passwhy">${why}</p></div>`;
             }
             /* A DECISION EXISTS AND THIS PANE COULD NOT RESOLVE IT — which is a different
-               fact from a pass and is said as one. Reached on MLB, whose ticket this surface
-               deliberately does not read out of the legacy mirror. */
+               fact from a pass and is said as one. Reached where the article posts a pick
+               whose market names nothing this engine serves, or whose market carries no
+               served block agreeing with it: a gap in what this surface can read, and the
+               only honest thing to print over one is that the call exists elsewhere. */
             if (g && g.article && typeof g.article === "object" && (g.article as any).has_pick === true) {
               return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
               <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
