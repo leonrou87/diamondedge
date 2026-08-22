@@ -8549,6 +8549,71 @@ export default function Home() {
       return bestPlay(g);
     }
 
+    /* ═══════ WHAT WE ACTUALLY POSTED, WHEN NO PICK FEED CARRIES THIS GAME ═══════
+       MEASURED ON PRODUCTION 2026-08-21: 70 of the 74 archived game sheets whose article
+       reports a posted pick printed "We priced every market — O/U 180.5 — and none of them
+       beat our number. The pass is the pick." — directly above the generator's own prose
+       reading "before tip-off we were on UNDER 180.5 at -110 … The DiamondEdge Pick came up
+       short." (?g=401857160, WNBA, ATL@LA 2026-08-20). nfl 22, nhl 22, nba 16, wnba 8,
+       mlb 3, soccer 3, spanning 2022-02-26 to 2026-08-21. The card called a pass on games
+       we bet, and graded, and said so four lines lower.
+
+       THE CAUSE IS A FEED THAT NEVER HELD THE GAME, NOT A FEED THAT FAILED. The sheet's
+       call resolves displayPick → v4GameFor → the `picks_unified` history, and that key is
+       the MLB history: measured, 669 games in `?lite=1`, 131 in `?board=1`, and not one
+       WNBA / NHL / NBA / NFL / soccer id among them. So `picks_unified?game=<id>` answering
+       `null` on those ids is CORRECT — there is no row to serve — and "make the endpoint
+       serve archived games" would have to invent the row it returns. `display_pick` and
+       `de_plays` are null on these payloads too, so every rung of the ladder above misses
+       and the pass fallback becomes the default verdict on a bet game.
+
+       THE PICK IS NOT MISSING. It is on the SAME game object the article is rendered from,
+       as `total_pick`, and this reads it there. Nothing is computed: the side, the line, the
+       price and the graded result are served fields printed as served.
+
+       `article.has_pick` IS THE AUTHORITY AND `total_pick` IS NOT — this is the whole reason
+       the helper is shaped this way. Measured on the same payloads: 78 archived non-MLB
+       games carry a `total_pick.side` beneath an article that says "No DiamondEdge Pick here
+       — our number (5.8 goals) sits within…". On those the block is the model's number, not
+       a posted ticket, and rendering it as one would invent 78 picks — the exact mirror of
+       the defect being fixed. So the generator's own flag decides WHETHER a pick was posted
+       and `total_pick` only supplies the DETAIL of one that was. A ticket whose side or line
+       is unreadable returns null rather than a half-quoted call.
+
+       MLB IS NOT READ HERE, BY CONSTRUCTION. Its freeze/selection path says the unified feed
+       is the only pick source and `total_pick` is a legacy mirror of it. Returning null on
+       MLB leaves that rail untouched; an MLB sheet that cannot resolve its call says so
+       plainly instead (see passBlock) rather than resolving one from a retired source. */
+    function servedTicketOf(g: any) {
+      if (!g || String(g.sport || "").toLowerCase() === "mlb") return null;
+      const a = g.article;
+      if (!a || typeof a !== "object" || a.has_pick !== true) return null;
+      const src = [g.total_pick, g.display_pick].find(
+        (b: any) => b && typeof b === "object" && String(b.side == null ? "" : b.side).trim() !== "");
+      if (!src) return null;
+      const dir = normalizeSide(src.side);
+      const line = src.line != null && isFinite(Number(src.line)) ? Number(src.line) : null;
+      if (!dir || line == null) return null;
+      const r = src.result && typeof src.result === "object" ? src.result : null;
+      const st = r ? String(r.status || "").toLowerCase() : "";
+      /* THE NUMBER AS SERVED, NOT AS ROUNDED. `lineStr` — the board's formatter — is
+         one-decimal, and quarter lines are real on these boards: it renders a served
+         206.25 as "206.2" and a served 3.25 as "3.2". Everywhere else that is a display
+         convention; on THIS card it is a misquote of the call, sitting inches above an
+         article that prints 206.25. So the served figure is printed as served. */
+      const exact = (v: number) => {
+        const s = String(v);
+        return s.indexOf(".") >= 0 ? s.replace(/0+$/, "").replace(/\.$/, "") : s;
+      };
+      return {
+        side: `${dir === "under" ? "UNDER" : "OVER"} ${exact(line)}`,
+        price: src.price != null && isFinite(Number(src.price)) ? src.price : null,
+        // the SERVED grade, in the app's own three words — never re-derived from a score
+        grade: st === "hit" ? "won" : st === "miss" ? "lost" : st === "push" ? "pushed" : "",
+        actual: r && r.actual != null && isFinite(Number(r.actual)) ? exact(Number(r.actual)) : "",
+      };
+    }
+
     const pickArrow = (pl: any) => {
       const s = String(pl.side || "").toLowerCase();
       return /(^|\s)over/.test(s) ? "▲" : /(^|\s)under/.test(s) ? "▼" : "►";
@@ -14696,12 +14761,64 @@ export default function Home() {
               <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
               </div>`;
             }
-            const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
-            const why = judged.length
-              ? `We priced every market — ${judged.join(", ")} — and none of them beat our number. The pass is the pick.`
-              : passWhy();
-            return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
-            <p class="cc-passwhy">${why}</p></div>`;
+            /* ═══ THE POSTED CALL, READ OFF THE PAYLOAD THAT ACTUALLY CARRIES IT ═══
+               This is the fix for the 70 cards. When no pick feed covers this game but the
+               served article says a pick was posted, the ticket is on the game object beside
+               that article and servedTicketOf() reads it verbatim. The card then says what
+               was served — the same side, the same line, the same price and the same graded
+               result the prose below it reports — instead of falling through to a pass. */
+            const posted = servedTicketOf(g);
+            if (posted) {
+              const px = posted.price != null ? ` at ${esc(fmtOdds(posted.price))}` : "";
+              /* The outcome sentence is the SERVED grade and the SERVED final total, or it is
+                 absent. An ungraded ticket gets the call and no verdict — this surface does
+                 not decide bets, it reports the decision that was published. */
+              const outcome = posted.grade
+                ? ` ${posted.actual ? `The game finished on ${esc(posted.actual)} — t` : "T"}he pick ${esc(posted.grade)}.`
+                : "";
+              return `<div class="callcard"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy"><b>${esc(posted.side)}</b>${px} — the call we posted on this game.${outcome}</p></div>`;
+            }
+            /* ═══ A PASS IS ASSERTED ONLY WHERE A PASS WAS DECIDED ═══
+               The sentence below is a VERDICT: "we priced every market and none beat our
+               number". It used to be reached whenever `judged.length` — that is, whenever a
+               LINE existed on the game — and a line existing is not a decision. That single
+               test is what printed a pass over every one of the 70 bet games: the WNBA card's
+               "O/U 180.5" was read off `total_pick`, the very object holding the UNDER 180.5
+               we posted and lost. A pass is a real, gradeable call, and this may say we made
+               one only where something served says we did: the article's own has_pick:false,
+               a pick object stamped PASS, the multisport tracker's "PASS" string, or the
+               desk's served pass reason. */
+            const passSaid = (() => {
+              const a: any = g && g.article;
+              if (a && typeof a === "object" && a.has_pick === false) return true;
+              const vg = v4GameFor(g);
+              const pk = vg && vg.pick;
+              if (pk && typeof pk === "object" && String(pk.status || "").toUpperCase() === "PASS") return true;
+              const msd = msDecisionOf(g);
+              if (msd && msd.pick === "PASS") return true;
+              return !!(passWhyOf(g) || passReasonProse(g));
+            })();
+            if (passSaid) {
+              const judged = MARKETS.map((mk) => vegasLine(g, mk)).filter(Boolean);
+              const why = judged.length
+                ? `We priced every market — ${judged.join(", ")} — and none of them beat our number. The pass is the pick.`
+                : passWhy();
+              return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy">${why}</p></div>`;
+            }
+            /* A DECISION EXISTS AND THIS PANE COULD NOT RESOLVE IT — which is a different
+               fact from a pass and is said as one. Reached on MLB, whose ticket this surface
+               deliberately does not read out of the legacy mirror. */
+            if (g && g.article && typeof g.article === "object" && (g.article as any).has_pick === true) {
+              return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
+              <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
+              </div>`;
+            }
+            /* NOTHING SERVED SAYS ANYTHING ABOUT THIS GAME, so the card says nothing. An
+               empty slot is the honest shape of "we do not know"; a sentence here would be
+               the client filling a gap in the data with a verdict, which is the bug. */
+            return "";
           })()
         : "";
 
