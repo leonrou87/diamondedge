@@ -222,8 +222,37 @@ const SERVED_KEYS = new Set<string>([
   // read by the client but not versioned in the manifest
   "pregame_picks_index",
 ]);
+/* THE de_ms_v1 LEAGUE ARCHIVE FAMILIES (2026-08-21).
+   The multisport engine publishes a bare board key AND one dated key per slate
+   date it carries — `ms_picks.run_sport` upserts `[sport] + [f"{sport}:{d}"
+   for d in keyed_dates]` on every cycle. Measured before this edit: ONE
+   cycle published 34 distinct dated league keys (nfl:2026-08-20 …
+   wnba:2026-08-30, epl:2026-08-21, mls:2026-08-19, ncaaf:2026-08-29), the
+   table holds the earlier days as well, and every one of them answered
+   `404 {"error":"unknown key"}` here — because the bare league keys were
+   added to MANIFEST_KEYS in
+   03a6fc3 while this list — the thing that authorizes the dated variants —
+   was never told the leagues existed. A past league day was unreadable
+   through this app's own front door.
+
+   WIDENED BY THE LIST'S OWN RULE, WHICH IS THE ONE STATED ABOVE: a dated
+   variant is admitted when it is "the same surface" as an already-authorized
+   base key, because enumerating a season of dates is a list nobody maintains.
+   `ncaaf:2026-08-29` is the NCAAF board on 2026-08-29 — the same schema, the
+   same redactor (desk_policy.redact_tracker_card), the same gate — so it is
+   the same surface as `ncaaf`.
+
+   AND IT IS DERIVED, NOT COPIED. The `.filter` is the authorization: a league
+   family only exists here if its BASE key is already in SERVED_KEYS. Drop a
+   league from the manifest and its archive disappears with it; add the eighth
+   league to the manifest and adding it here is still a deliberate, visible
+   act. This is a strictly narrower widening than "allow any base key's dated
+   variant" — which would re-open the generic-proxy hole the block above was
+   written to close. */
+const LEAGUE_FAMILIES = ["nfl", "nba", "nhl", "wnba", "mls", "epl", "ncaaf"]
+  .filter((k) => SERVED_KEYS.has(k));
 const DATED_FAMILIES = ["pregame_picks", "picks_unified", "picks_unified_live",
-  "news_feed", "history"];
+  "news_feed", "history", ...LEAGUE_FAMILIES];
 function keyIsServed(key: string): boolean {
   if (SERVED_KEYS.has(key)) return true;
   const i = key.indexOf(":");

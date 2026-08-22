@@ -1,5 +1,5 @@
 {
- "generated_utc": "2026-08-21T23:53:03Z",
+ "generated_utc": "2026-08-22T00:34:55Z",
  "by_game": {
   "822861": {
    "away": {
@@ -2012,7 +2012,8 @@
       "res": "L"
      }
     ],
-    "team": "LAA"
+    "team": "LAA",
+    "actual_starter": true
    },
    "home": {
     "id": 669022,
@@ -2129,7 +2130,8 @@
       "res": "L"
      }
     ],
-    "team": "TEX"
+    "team": "TEX",
+    "actual_starter": true
    }
   },
   "823101": {
@@ -3700,7 +3702,8 @@
       "res": "ND"
      }
     ],
-    "team": "DET"
+    "team": "DET",
+    "actual_starter": true
    },
    "home": {
     "id": 702070,
@@ -3817,7 +3820,8 @@
       "res": "L"
      }
     ],
-    "team": "KC"
+    "team": "KC",
+    "actual_starter": true
    }
   },
   "824152": {
@@ -3936,7 +3940,8 @@
       "res": "W"
      }
     ],
-    "team": "ATH"
+    "team": "ATH",
+    "actual_starter": true
    },
    "home": {
     "id": 669713,
@@ -4001,7 +4006,8 @@
       "res": "W"
      }
     ],
-    "team": "HOU"
+    "team": "HOU",
+    "actual_starter": true
    }
   },
   "824317": {
@@ -4317,7 +4323,8 @@
       "res": "L"
      }
     ],
-    "team": "NYM"
+    "team": "NYM",
+    "actual_starter": true
    },
    "home": {
     "id": 680732,
@@ -4434,7 +4441,8 @@
       "res": "ND"
      }
     ],
-    "team": "CHW"
+    "team": "CHW",
+    "actual_starter": true
    }
   },
   "824721": {
