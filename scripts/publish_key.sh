@@ -248,7 +248,9 @@ fi
 python3 - "$FILE" "$TMP" "$KEY" "$STAMPTIME" <<'PY'
 import datetime, json, os, sys
 sys.path.insert(0, "/Users/leonrou/Desktop/sports-betting-platform")
+sys.path.insert(0, "/Users/leonrou/Desktop/diamondedge/scripts")
 from v4.serve import snapshot_gate as _GATE
+import slim_publish as _SLIM
 src, out, key, stamptime = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 payload = json.load(open(src))
 if stamptime == "1":
@@ -258,6 +260,41 @@ if stamptime == "1":
     payload["generated_utc"] = mt.isoformat()
 now = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 _GATE.gate_to_file(key, payload, out, updated_at=now)
+
+# ── SLIM, AND COMPACT, THE BODY THAT IS ABOUT TO BE WRITTEN ─────────────────
+# See scripts/slim_publish.py for the drop set and the evidence behind every
+# entry. Two independent savings, both invisible to every reader:
+#
+#   * SLIM removes keys no surface reads (and exact duplicates of keys that
+#     are read). -4,090,231 B on picks_unified, measured 2026-08-23.
+#   * COMPACT drops the ", " / ": " that `json.dumps` puts between tokens by
+#     default. The gate writes the body with default separators, so 883,569 B
+#     of the row was whitespace — bytes Postgres parses, TOASTs and WALs on
+#     every upsert. JSON whitespace is not data; nothing can read it.
+#
+# It runs AFTER the gate on purpose. The gate is the only writer of the upsert
+# body and it decides what may be published; a pass that can only REMOVE keys
+# cannot widen that decision, and `verify_subset` proves on every run that this
+# one only removed. If either postcondition fails, this script dies here and
+# the previous row stands — a stale key, never a wrong one.
+_rows = json.load(open(out))
+_before = _rows[0].get("payload")
+if isinstance(_before, dict):
+    _after, _removed = _SLIM.slim(_before, key)
+    _SLIM.verify_subset(_before, _after)
+    _SLIM.assert_picks_intact(_before, _after)
+    _rows[0]["payload"] = _after
+    _nb = len(json.dumps(_before, separators=(",", ":")))
+    _na = len(json.dumps(_after, separators=(",", ":")))
+    if _nb != _na:
+        print(f"[slim] {key}: {_nb:,} -> {_na:,} B "
+              f"(-{_nb - _na:,} B, -{100.0 * (_nb - _na) / _nb:.1f}%) "
+              f"across {len(_removed)} paths", file=sys.stderr)
+_full = os.path.getsize(out)
+with open(out, "w") as _f:
+    json.dump(_rows, _f, separators=(",", ":"), default=str)
+print(f"[body] {key}: {_full:,} -> {os.path.getsize(out):,} B on the wire",
+      file=sys.stderr)
 PY
 
 # ── the upsert ──────────────────────────────────────────────────────────────
@@ -270,6 +307,18 @@ PY
 # an intermittent failure is the early warning.
 # gzip is NOT used: PostgREST does not negotiate a compressed request body,
 # and the timeout is DB-side work on the JSONB, not transfer time.
+#
+# THE FIX THE COMMENT ABOVE ASKED FOR IS NOW IN PLACE, AND IS STILL NOT ENOUGH
+# ON ITS OWN (2026-08-23). `service_role` has `rolconfig = null`, so it inherits
+# `authenticator`'s `statement_timeout = 8s`, and picks_unified's upsert peaked
+# at 7,141 ms — an 859 ms margin that tipped over daily (57014 every day since
+# 08-13; 31 of them on 08-23, eight consecutive failed ticks 00:33–02:31, the
+# published history 7.7 h stale). The slim+compact pass above takes the wire
+# body from 14,662,234 B to 9,688,506 B, -33.9%, which multiplies the margin by
+# ~3.9x. It does NOT bound the write: the document gains ~388 KB every night,
+# so this buys weeks, not a guarantee. The two durable fixes are the owner's
+# one-line `alter role service_role set statement_timeout` (theirs to make) and
+# splitting the row so a single statement writes a bounded slice of history.
 HTTP=""
 for ATTEMPT in 1 2 3; do
   HTTP=$(curl -s -o "$RESP" -w "%{http_code}" \
