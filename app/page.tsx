@@ -8691,6 +8691,25 @@ export default function Home() {
     function servedTicketOf(g: any) {
       const a = g && g.article;
       if (!a || typeof a !== "object" || a.has_pick !== true) return null;
+      /* ═══ THE BOARD OUTRANKS THE ARTICLE ABOUT WHETHER WE BET ═══
+         `article.has_pick` is the pregame generator's flag, and until 2026-08-23
+         that generator resolved "did we bet?" from `display_pick`/`de_plays` —
+         the retired value-plays engine — not from the pick the board served. On
+         MLB the two disagreed on 170 archived game-days, and 20 of them are this
+         direction: the board served a PASS, the article says a call was posted,
+         and this helper turned that into "**OVER 8** at -115 — the call we
+         posted on this game. The pick lost." on a game that appears in no
+         record's denominator. The backend now reads the served board, but the
+         dated `pregame_picks:<date>` archives are write-once and keep the wrong
+         flag, so this rung refuses it where the board itself contradicts it.
+
+         SCOPED TO WHAT THE BOARD ACTUALLY COVERS. `picks_unified` is the MLB
+         history and carries no WNBA / NHL / NBA / NFL / soccer rows, so a miss
+         there is silence, not a denial — only an explicit PASS on a row this
+         game HAS is allowed to veto, and every other sport is untouched. */
+      const _vg = v4GameFor(g);
+      if (_vg && _vg.pick && typeof _vg.pick === "object"
+          && String(_vg.pick.status || "").toUpperCase() === "PASS") return null;
       /* THE CALL, IN THE GENERATOR'S OWN WORDS — headline first, the verdict's bold run
          second. Parentheses (the price) and markdown are stripped; nothing else is. */
       const strip = (s: any) => String(s == null ? "" : s)
@@ -15254,9 +15273,20 @@ export default function Home() {
                                    && (g.article as any).has_pick === true);
             const passSaid = !artSaysPick && (() => {
               const a: any = g && g.article;
-              if (a && typeof a === "object" && a.has_pick === false) return true;
               const vg = v4GameFor(g);
               const pk = vg && vg.pick;
+              /* THE BOARD IS ASKED FIRST, AND ITS PICK IS A VETO. This list used
+                 to open on `article.has_pick === false`, which on MLB is the
+                 pregame generator's flag and was wrong on 150 archived
+                 game-days in exactly this direction — a served, graded bet under
+                 an article reading "so we passed". The sheet does not reach here
+                 on those today (the board's own ticket resolves first, so `lead`
+                 is set), but the ordering is the bug and it is the ordering that
+                 is fixed: a row that says PICK forecloses the pass sentence, and
+                 only then is the article's flag consulted. */
+              if (pk && typeof pk === "object"
+                  && String(pk.status || "").toUpperCase() === "PICK") return false;
+              if (a && typeof a === "object" && a.has_pick === false) return true;
               if (pk && typeof pk === "object" && String(pk.status || "").toUpperCase() === "PASS") return true;
               const msd = msDecisionOf(g);
               if (msd && msd.pick === "PASS") return true;

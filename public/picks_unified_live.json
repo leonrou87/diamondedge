@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-23T20:58:05Z",
+  "generated_utc": "2026-08-23T21:28:20Z",
   "analyst_desk_spec": {
     "activation_date": "2026-07-30",
     "order": [
@@ -1764,24 +1764,24 @@
       "what": "every pick DiamondEdge served, since 2026-07-01",
       "policy_id": "adaptive_desk_display_v1",
       "start": "2026-07-01",
-      "n": 276,
-      "win": 138,
+      "n": 277,
+      "win": 139,
       "loss": 127,
       "push": 11,
-      "record": "138-127-11",
-      "decided": 265,
-      "hit_rate": 0.5208,
-      "units": 8.36,
+      "record": "139-127-11",
+      "decided": 266,
+      "hit_rate": 0.5226,
+      "units": 9.38,
       "units_weighted": {
-        "units": 17.428,
-        "staked": 402.0,
-        "roi": 0.0434,
+        "units": 18.448,
+        "staked": 403.0,
+        "roi": 0.0458,
         "n_offladder_flat_1u": 0
       },
-      "roi": 0.0315,
+      "roi": 0.0353,
       "hit_rate_ci": [
-        0.4814,
-        0.5598
+        0.4833,
+        0.5615
       ],
       "hit_rate_ci_level": 0.8,
       "n_days": 41,
@@ -1802,14 +1802,14 @@
         },
         {
           "month": "2026-08",
-          "n": 162,
-          "win": 79,
+          "n": 163,
+          "win": 80,
           "loss": 75,
           "push": 8,
-          "record": "79-75-8",
-          "hit_rate": 0.513,
-          "units": 1.83,
-          "roi": 0.0119
+          "record": "80-75-8",
+          "hit_rate": 0.5161,
+          "units": 2.85,
+          "roi": 0.0184
         }
       ],
       "by_engine": {
@@ -1889,24 +1889,24 @@
           "through": "2026-08-08"
         },
         "nightly_engine": {
-          "n": 121,
-          "win": 61,
+          "n": 122,
+          "win": 62,
           "loss": 57,
           "push": 3,
-          "record": "61-57-3",
-          "decided": 118,
-          "hit_rate": 0.5169,
-          "units": 2.461,
+          "record": "62-57-3",
+          "decided": 119,
+          "hit_rate": 0.521,
+          "units": 3.481,
           "units_weighted": {
-            "units": 2.535,
-            "staked": 115.0,
-            "roi": 0.022,
+            "units": 3.555,
+            "staked": 116.0,
+            "roi": 0.0306,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.0209,
+          "roi": 0.0293,
           "hit_rate_ci": [
-            0.4582,
-            0.5753
+            0.4624,
+            0.579
           ],
           "hit_rate_ci_level": 0.8,
           "n_days": 15,
@@ -3745,14 +3745,14 @@
       },
       {
         "date": "2026-08-23",
-        "n": 4,
-        "win": 2,
+        "n": 5,
+        "win": 3,
         "loss": 2,
         "push": 0,
-        "record": "2-2-0",
-        "hit_rate": 0.5,
-        "units": 0.04,
-        "roi": 0.01,
+        "record": "3-2-0",
+        "hit_rate": 0.6,
+        "units": 1.06,
+        "roi": 0.212,
         "strategy": {
           "rule_key": "forge:w17:bdc0022f65",
           "label": "The rule that won the search",
@@ -3889,24 +3889,24 @@
         }
       },
       "untiered": {
-        "n": 273,
-        "win": 136,
+        "n": 274,
+        "win": 137,
         "loss": 126,
         "push": 11,
-        "record": "136-126-11",
-        "decided": 262,
-        "hit_rate": 0.5191,
-        "units": 7.455,
+        "record": "137-126-11",
+        "decided": 263,
+        "hit_rate": 0.5209,
+        "units": 8.475,
         "units_weighted": {
-          "units": 16.523,
-          "staked": 399.0,
-          "roi": 0.0414,
+          "units": 17.543,
+          "staked": 400.0,
+          "roi": 0.0439,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0285,
+        "roi": 0.0322,
         "hit_rate_ci": [
-          0.4795,
-          0.5584
+          0.4814,
+          0.5601
         ],
         "hit_rate_ci_level": 0.8,
         "n_days": 41,
@@ -3915,9 +3915,9 @@
         "label": "No committee vote on record",
         "why": "desk-sourced and legacy picks carry no vote split, so they carry no tier. They count in record.headline exactly like every other pick."
       },
-      "n_headline": 276,
+      "n_headline": 277,
       "n_tiered": 3,
-      "n_untiered": 273,
+      "n_untiered": 274,
       "sums_to_headline": true,
       "rail": "strong + standard + lean + untiered == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "engine_shadow_ledger": {
@@ -3941,24 +3941,24 @@
           },
           "standard": {
             "win": 19,
-            "loss": 9,
+            "loss": 10,
             "push": 0,
-            "n": 28,
-            "record": "19-9-0",
-            "units_flat_-110": 8.273,
-            "hit_rate": 0.6786,
+            "n": 29,
+            "record": "19-10-0",
+            "units_flat_-110": 7.273,
+            "hit_rate": 0.6552,
             "label": "Standard",
             "blurb": "At least a quarter of the committee backed this side.",
             "rank": 2
           },
           "lean": {
             "win": 76,
-            "loss": 94,
+            "loss": 95,
             "push": 7,
-            "n": 177,
-            "record": "76-94-7",
-            "units_flat_-110": -24.908,
-            "hit_rate": 0.4471,
+            "n": 178,
+            "record": "76-95-7",
+            "units_flat_-110": -25.908,
+            "hit_rate": 0.4444,
             "label": "Lean",
             "blurb": "The side won a mostly-abstaining room. It counts in the record like every other pick.",
             "rank": 1
@@ -3975,8 +3975,8 @@
           "why": "rows written before the vote counts existed on the board; they count in `record` and are never given a tier they cannot support"
         },
         "sums_to_record": true,
-        "n_graded_total": 225,
-        "n_tiered": 225,
+        "n_graded_total": 227,
+        "n_tiered": 227,
         "n_untiered": 0,
         "thresholds": {
           "policy_version": "pick_strength_v1",
@@ -4153,26 +4153,26 @@
           ],
           "label": "30-39",
           "is_high_band": false,
-          "n": 25,
-          "win": 15,
+          "n": 26,
+          "win": 16,
           "loss": 10,
           "push": 0,
-          "record": "15-10-0",
-          "decided": 25,
-          "hit_rate": 0.6,
+          "record": "16-10-0",
+          "decided": 26,
+          "hit_rate": 0.6154,
           "hit_rate_ci": [
-            0.4074,
-            0.766
+            0.4253,
+            0.7757
           ],
           "hit_rate_ci_level": 0.95,
-          "units": 4.822,
+          "units": 5.842,
           "units_weighted": {
-            "units": 4.396,
-            "staked": 23.5,
-            "roi": 0.1871,
+            "units": 5.416,
+            "staked": 24.5,
+            "roi": 0.2211,
             "n_offladder_flat_1u": 0
           },
-          "roi": 0.1929,
+          "roi": 0.2247,
           "n_days": 4,
           "first": "2026-08-08",
           "through": "2026-08-23"
@@ -4392,27 +4392,27 @@
         "through": "2026-08-07"
       },
       "below_high_band": {
-        "n": 123,
-        "win": 62,
+        "n": 124,
+        "win": 63,
         "loss": 58,
         "push": 3,
-        "record": "62-58-3",
-        "decided": 120,
-        "hit_rate": 0.5167,
+        "record": "63-58-3",
+        "decided": 121,
+        "hit_rate": 0.5207,
         "hit_rate_ci": [
-          0.4281,
-          0.6042
+          0.4324,
+          0.6077
         ],
         "hit_rate_ci_level": 0.95,
         "label": "under 90",
-        "units": 2.413,
+        "units": 3.433,
         "units_weighted": {
-          "units": 2.487,
-          "staked": 117.0,
-          "roi": 0.0213,
+          "units": 3.507,
+          "staked": 118.0,
+          "roi": 0.0297,
           "n_offladder_flat_1u": 0
         },
-        "roi": 0.0201,
+        "roi": 0.0284,
         "n_days": 16,
         "first": "2026-08-07",
         "through": "2026-08-23"
@@ -4420,13 +4420,13 @@
       "verdict": {
         "high_band_min": 90,
         "n_decided_high": 1,
-        "n_decided_rest": 120,
+        "n_decided_rest": 121,
         "hit_rate_high": 1.0,
-        "hit_rate_rest": 0.5167,
-        "difference": 0.4833,
+        "hit_rate_rest": 0.5207,
+        "difference": 0.4793,
         "difference_ci": [
-          -0.315,
-          0.5719
+          -0.3189,
+          0.5676
         ],
         "difference_ci_level": 0.95,
         "p_value": 1.0,
@@ -4435,7 +4435,7 @@
         "distinguishable_from_noise": false,
         "status": "open_question",
         "is_a_finding": false,
-        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 120 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.315 to +0.572 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+        "claim": "NOT ENOUGH PICKS TO TELL. 1 decided pick at 90+ against 121 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.319 to +0.568 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
         "n_needed_per_arm_for_observed_gap": null,
         "n_needed_per_arm_for_meaningful_gap": 392,
         "meaningful_gap": [
@@ -4472,13 +4472,13 @@
         "first": "2026-07-02",
         "through": "2026-08-08"
       },
-      "n_total": 276,
-      "n_scored": 124,
+      "n_total": 277,
+      "n_scored": 125,
       "n_unscored": 152,
       "sums_to_total": true,
       "rail": "every decile + unscored == record.headline.n. Recomputed every build; a false here is a fragmented record.",
       "headline_is_the_record": true,
-      "n_headline": 276,
+      "n_headline": 277,
       "sums_to_headline": true,
       "history_limit": {
         "reconstructible_from": "2026-08-03",
@@ -4563,19 +4563,19 @@
             ],
             "label": "30-39",
             "is_high_band": false,
-            "n": 52,
+            "n": 53,
             "win": 24,
-            "loss": 25,
+            "loss": 26,
             "push": 3,
-            "record": "24-25-3",
-            "decided": 49,
-            "hit_rate": 0.4898,
+            "record": "24-26-3",
+            "decided": 50,
+            "hit_rate": 0.48,
             "hit_rate_ci": [
-              0.3558,
-              0.6253
+              0.348,
+              0.6149
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": -3.182
+            "units_flat_-110": -4.182
           },
           {
             "band": [
@@ -4668,19 +4668,19 @@
             ],
             "label": "80-89",
             "is_high_band": false,
-            "n": 35,
+            "n": 36,
             "win": 23,
-            "loss": 11,
+            "loss": 12,
             "push": 1,
-            "record": "23-11-1",
-            "decided": 34,
-            "hit_rate": 0.6765,
+            "record": "23-12-1",
+            "decided": 35,
+            "hit_rate": 0.6571,
             "hit_rate_ci": [
-              0.5084,
-              0.8087
+              0.4915,
+              0.7917
             ],
             "hit_rate_ci_level": 0.95,
-            "units_flat_-110": 9.909
+            "units_flat_-110": 8.909
           },
           {
             "band": [
@@ -4722,31 +4722,31 @@
           "units_flat_-110": -1.545
         },
         "below_high_band": {
-          "n": 212,
+          "n": 214,
           "win": 99,
-          "loss": 105,
+          "loss": 107,
           "push": 8,
-          "record": "99-105-8",
-          "decided": 204,
-          "hit_rate": 0.4853,
+          "record": "99-107-8",
+          "decided": 206,
+          "hit_rate": 0.4806,
           "hit_rate_ci": [
-            0.4176,
-            0.5535
+            0.4133,
+            0.5485
           ],
           "hit_rate_ci_level": 0.95,
           "label": "under 90",
-          "units_flat_-110": -14.999
+          "units_flat_-110": -16.999
         },
         "verdict": {
           "high_band_min": 90,
           "n_decided_high": 13,
-          "n_decided_rest": 204,
+          "n_decided_rest": 206,
           "hit_rate_high": 0.4615,
-          "hit_rate_rest": 0.4853,
-          "difference": -0.0238,
+          "hit_rate_rest": 0.4806,
+          "difference": -0.019,
           "difference_ci": [
-            -0.2631,
-            0.2324
+            -0.2583,
+            0.237
           ],
           "difference_ci_level": 0.95,
           "p_value": 1.0,
@@ -4755,8 +4755,8 @@
           "distinguishable_from_noise": false,
           "status": "open_question",
           "is_a_finding": false,
-          "claim": "NOT ENOUGH PICKS TO TELL. 13 decided picks at 90+ against 204 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.263 to +0.232 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
-          "n_needed_per_arm_for_observed_gap": 6934,
+          "claim": "NOT ENOUGH PICKS TO TELL. 13 decided picks at 90+ against 206 below it is far too little to separate a real difference from a run of luck (Fisher exact p = 1.0), and the interval on the gap runs from -0.258 to +0.237 \u2014 wide enough to contain the high band being worse. Answering it properly needs roughly 392 decided picks in EACH cut.",
+          "n_needed_per_arm_for_observed_gap": 10784,
           "n_needed_per_arm_for_meaningful_gap": 392,
           "meaningful_gap": [
             0.55,
@@ -4840,11 +4840,11 @@
         },
         "basis": "committee_vote",
         "basis_note": "every row here is scored from the committee vote the board froze before first pitch. No engine pick is scored any other way, so the cut is one kind of evidence throughout \u2014 the two bases `pick_confidence` defines are never mixed inside one table.",
-        "n_total": 225,
-        "n_scored": 225,
+        "n_total": 227,
+        "n_scored": 227,
         "n_unscored": 0,
         "sums_to_total": true,
-        "n_graded_total": 225
+        "n_graded_total": 227
       }
     },
     "streaks": {
@@ -4856,7 +4856,7 @@
         },
         "best_win_streak": 8,
         "best_loss_streak": 8,
-        "n_decided": 265
+        "n_decided": 266
       },
       "by_analyst": {
         "vega": {
@@ -4866,34 +4866,34 @@
           },
           "best_win_streak": 9,
           "best_loss_streak": 13,
-          "n_decided": 623
+          "n_decided": 625
         },
         "atlas": {
           "current": {
             "type": "win",
-            "length": 6
+            "length": 2
           },
           "best_win_streak": 8,
           "best_loss_streak": 11,
-          "n_decided": 623
+          "n_decided": 625
         },
         "nova": {
           "current": {
             "type": "win",
-            "length": 1
+            "length": 2
           },
           "best_win_streak": 13,
           "best_loss_streak": 10,
-          "n_decided": 623
+          "n_decided": 625
         },
         "scout": {
           "current": {
             "type": "win",
-            "length": 1
+            "length": 2
           },
           "best_win_streak": 10,
           "best_loss_streak": 10,
-          "n_decided": 623
+          "n_decided": 625
         }
       },
       "analyst_order": [
@@ -4910,7 +4910,7 @@
       "rule": "a totals bet is DECIDED the instant the runs scored exceed the line it was served at: the over has won and the under has lost, and runs never come off the board. Only the over-CLINCH can be known early \u2014 so an under IS graded early, as a LOSS, and what can never be known before the final is an under WINNING.",
       "confirmation": "a verdict is written only after 2 separate reads of the feed show the line passed, with no runs coming off the board between them. One read is evidence, not a verdict; a run count that goes backwards is proof one read was false and nothing is written.",
       "corrections": "the ledger is never rewritten, but the PUBLISHED record prefers the settled final wherever a final disagrees with an early verdict, and marks the row. A correction is visible, never silent.",
-      "n_decided_early": 49,
+      "n_decided_early": 50,
       "n_decided_early_by_date": {
         "2026-08-09": 5,
         "2026-08-10": 5,
@@ -4924,13 +4924,13 @@
         "2026-08-20": 3,
         "2026-08-21": 3,
         "2026-08-22": 1,
-        "2026-08-23": 2
+        "2026-08-23": 3
       },
       "names_no_sides": "deliberately no per-game side, line or result here: a bet can die while its game is still being played, and its card is still locked for a signed-out reader. The counts move the record honestly without handing anyone the pick.",
       "write_once": "an early grade is written once, with the runs and the clock reading at the instant the bet died, and that LEDGER ROW is never rewritten \u2014 it is the honest record of what a reader was shown. It does not outrank the settled final: where a final disagrees, the final is what the record publishes and the row is marked corrected. See `corrections`.",
       "reconciliation": {
-        "n_decided": 49,
-        "agree": 48,
+        "n_decided": 50,
+        "agree": 49,
         "pending_final": 1,
         "n_disagreements": 0,
         "note": "an early verdict and the final verdict must be identical; a disagreement is a bug in the predicate, never a reason to restate a written row.",
@@ -5771,38 +5771,38 @@
         "what": "The champion engine's own totals play \u2014 its frozen pipeline plus the +EV gate at the real per-side price. It only speaks on games where its trigger fires; on every other game it has no view at all.",
         "is_headline": false,
         "activation_date": "2026-07-02",
-        "n": 36,
-        "win": 11,
+        "n": 37,
+        "win": 12,
         "loss": 23,
         "push": 2,
-        "roi": -0.3568,
-        "hit_rate": 0.3235,
-        "units_flat": -12.13,
+        "roi": -0.318,
+        "hit_rate": 0.3429,
+        "units_flat": -11.13,
         "units_weighted": {
-          "units": -22.829,
-          "staked": 62.5,
-          "roi": -0.3653,
+          "units": -20.829,
+          "staked": 64.5,
+          "roi": -0.3229,
           "n_offladder_flat_1u": 0
         },
         "first_graded_date": "2026-07-02",
-        "last_graded_date": "2026-08-22",
+        "last_graded_date": "2026-08-23",
         "evidence_split": {
           "forward_paper_live": {
-            "n": 3,
-            "win": 2,
+            "n": 4,
+            "win": 3,
             "loss": 1,
             "push": 0,
-            "roi": 0.2899,
-            "hit_rate": 0.6667,
-            "units_flat": 0.87,
+            "roi": 0.4674,
+            "hit_rate": 0.75,
+            "units_flat": 1.87,
             "units_weighted": {
-              "units": 1.739,
-              "staked": 4.0,
-              "roi": 0.4348,
+              "units": 3.739,
+              "staked": 6.0,
+              "roi": 0.6232,
               "n_offladder_flat_1u": 0
             },
             "first_graded_date": "2026-07-12",
-            "last_graded_date": "2026-07-12",
+            "last_graded_date": "2026-08-23",
             "kind": "live",
             "what": "logged forward in the champion's paper ledger before first pitch"
           },
@@ -5907,21 +5907,21 @@
           }
         ],
         "combined_view": {
-          "n": 111,
-          "win": 52,
+          "n": 112,
+          "win": 53,
           "loss": 56,
           "push": 3,
-          "roi": -0.0712,
-          "hit_rate": 0.4815,
-          "units_flat": -7.686,
+          "roi": -0.0613,
+          "hit_rate": 0.4862,
+          "units_flat": -6.686,
           "units_weighted": {
-            "units": -16.172,
-            "staked": 199.5,
-            "roi": -0.0811,
+            "units": -14.172,
+            "staked": 201.5,
+            "roi": -0.0703,
             "n_offladder_flat_1u": 0
           },
           "first_graded_date": "2026-03-30",
-          "last_graded_date": "2026-08-22",
+          "last_graded_date": "2026-08-23",
           "label": "PUBLISHED COMBINED (live + reconstructed/backtest) \u2014 shown only because the older blocks report it. This is NOT a live record; do not quote it as one.",
           "published_as": "record.by_source.champion (and the champion's own headline)"
         },
@@ -6238,29 +6238,29 @@
           "channel": "market structure",
           "formula": "logit(p_over) = logit(p_market) + -0.0542 +0.0000*z[line_move] +0.0000*z[move_pace] -0.0030*z[time_since_move] +0.1270*z[book_disagreement] -0.0494*z[price_dispersion] +0.0169*z[sharp_gap] +0.0263*z[n_books] -0.0664*z[stale_gap]   ;   side = over if p_over > p_market else under",
           "record_start": "2026-07-01",
-          "n": 643,
-          "win": 308,
-          "loss": 315,
+          "n": 645,
+          "win": 309,
+          "loss": 316,
           "push": 20,
           "hit_rate": 0.4944,
-          "decided": 623,
+          "decided": 625,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4553,
-            0.5336
+            0.4554,
+            0.5335
           ],
-          "last10": "L-L-W-L-L-W-W-W-L-L",
+          "last10": "W-L-L-W-W-W-L-W-L-L",
           "first_date": "2026-07-01",
           "last_date": "2026-08-23",
           "n_reconstructed_oos": 331,
-          "n_live": 312,
-          "own_side_over_rate": 0.6579,
+          "n_live": 314,
+          "own_side_over_rate": 0.6589,
           "mean_abs_edge_vs_market": 0.0161,
           "model_sha": "1dd2f8b721cf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 312 were served live; the arithmetic is identical either way because the model is identical either way. This is the price analyst's own ledger, graded separately from the product pick."
+          "basis": "The price analyst's OWN reads over its OWN feature slice (THE PRICE), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 314 were served live; the arithmetic is identical either way because the model is identical either way. This is the price analyst's own ledger, graded separately from the product pick."
         },
         "atlas": {
           "key": "atlas",
@@ -6275,29 +6275,29 @@
           "channel": "environment",
           "formula": "delta_runs = (+0.2723*z[park_run_factor] +0.2801*z[park_altitude] -0.1607*z[park_roof] +0.0000*z[is_night] +0.0970*z[ump_runs] -0.0321*z[ump_strikeouts] +0.0000*z[ump_walks]) - -0.0044   ;   p_over = Phi(delta / 4.537)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 643,
-          "win": 302,
-          "loss": 321,
+          "n": 645,
+          "win": 303,
+          "loss": 322,
           "push": 20,
           "hit_rate": 0.4848,
-          "decided": 623,
+          "decided": 625,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4457,
+            0.4458,
             0.524
           ],
-          "last10": "W-L-W-L-W-W-W-W-W-W",
+          "last10": "W-L-W-W-W-W-W-L-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-23",
           "n_reconstructed_oos": 331,
-          "n_live": 312,
-          "own_side_over_rate": 0.5039,
+          "n_live": 314,
+          "own_side_over_rate": 0.5023,
           "mean_abs_edge_vs_market": 0.0303,
           "model_sha": "f3e65644bedf",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 312 were served live; the arithmetic is identical either way because the model is identical either way. This is the conditions analyst's own ledger, graded separately from the product pick."
+          "basis": "The conditions analyst's OWN reads over its OWN feature slice (THE CONDITIONS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 314 were served live; the arithmetic is identical either way because the model is identical either way. This is the conditions analyst's own ledger, graded separately from the product pick."
         },
         "nova": {
           "key": "nova",
@@ -6312,29 +6312,29 @@
           "channel": "run production",
           "formula": "delta_runs = (+0.0000*z[bats_vs_hand] +0.0000*z[bats_top5_vs_hand] +0.0000*z[bats_woba] +0.1977*z[bats_top5_woba] +0.2454*z[bats_power] +0.0000*z[bats_onbase] +0.0000*z[bats_scoring_form] +0.0000*z[bats_strikeouts] -0.0379*z[bats_lineups_known]) - 0.0156   ;   p_over = Phi(delta / 4.549)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 643,
-          "win": 310,
-          "loss": 313,
+          "n": 645,
+          "win": 311,
+          "loss": 314,
           "push": 20,
           "hit_rate": 0.4976,
-          "decided": 623,
+          "decided": 625,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
             0.4585,
             0.5367
           ],
-          "last10": "L-L-L-L-W-L-W-L-L-W",
+          "last10": "L-L-W-L-W-L-L-L-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-23",
           "n_reconstructed_oos": 331,
-          "n_live": 312,
-          "own_side_over_rate": 0.4883,
+          "n_live": 314,
+          "own_side_over_rate": 0.4868,
           "mean_abs_edge_vs_market": 0.0217,
           "model_sha": "a9eb4f9ea26f",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 312 were served live; the arithmetic is identical either way because the model is identical either way. This is the hitting analyst's own ledger, graded separately from the product pick."
+          "basis": "The hitting analyst's OWN reads over its OWN feature slice (THE BATS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 314 were served live; the arithmetic is identical either way because the model is identical either way. This is the hitting analyst's own ledger, graded separately from the product pick."
         },
         "scout": {
           "key": "scout",
@@ -6349,34 +6349,34 @@
           "channel": "run prevention",
           "formula": "delta_runs = (+0.0000*z[sp_fip] +0.1631*z[sp_contact_quality] +0.0324*z[sp_worst_contact_quality] +0.1385*z[sp_recent_form] +0.0000*z[sp_worst_recent_form] -0.0752*z[sp_length] -0.1031*z[sp_groundballs] -0.0427*z[sp_rest] +0.2010*z[pen_era] +0.0000*z[pen_worst_era] +0.0000*z[pen_workload] +0.0000*z[pen_worst_workload] +0.0000*z[pen_back_to_back] +0.0000*z[pen_closer_available]) - 0.0316   ;   p_over = Phi(delta / 4.546)   ;   side = over if delta > 0 else under   ;   projected total shown = posted line + delta   [context-free absolute projection, diagnostic only: mu_absolute = 8.9160 + the same linear term]",
           "record_start": "2026-07-01",
-          "n": 643,
-          "win": 317,
-          "loss": 306,
+          "n": 645,
+          "win": 318,
+          "loss": 307,
           "push": 20,
           "hit_rate": 0.5088,
-          "decided": 623,
+          "decided": 625,
           "is_betting_record": false,
           "record_kind": "diagnostic_read_record",
           "hit_ci95": [
-            0.4696,
-            0.5479
+            0.4697,
+            0.5478
           ],
-          "last10": "L-W-W-W-W-W-L-L-L-W",
+          "last10": "W-W-W-W-L-L-L-L-W-W",
           "first_date": "2026-07-01",
           "last_date": "2026-08-23",
           "n_reconstructed_oos": 331,
-          "n_live": 312,
-          "own_side_over_rate": 0.4292,
-          "mean_abs_edge_vs_market": 0.0255,
+          "n_live": 314,
+          "own_side_over_rate": 0.4279,
+          "mean_abs_edge_vs_market": 0.0256,
           "model_sha": "f9162dde6e92",
           "trained_through": "2026-06-30",
           "one_row_per_game": true,
-          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 312 were served live; the arithmetic is identical either way because the model is identical either way. This is the pitching analyst's own ledger, graded separately from the product pick."
+          "basis": "The pitching analyst's OWN reads over its OWN feature slice (THE ARMS), one row per game at T-3h, from 2026-07-01. The model was fitted strictly on data through 2026-06-30, so every row here is out of sample. 331 of these rows were RECONSTRUCTED on 2026-07-31 (the analysts did not exist on the day the game was played) and 314 were served live; the arithmetic is identical either way because the model is identical either way. This is the pitching analyst's own ledger, graded separately from the product pick."
         }
       },
       "record_start": "2026-07-01",
       "trained_through": "2026-06-30",
-      "updated": "2026-08-23T20:49:37Z",
+      "updated": "2026-08-23T21:22:26Z",
       "note": "THE ANALYST SCOREBOARD, REBUILT 2026-07-31. Four analysts, four DISJOINT feature slices, one record each from 2026-07-01. There is no staked-versus-lean split any more: every analyst is scored the same way, on its own reads, one row per game, and the sample size is printed beside the rate. Records are never summed across analysts \u2014 the same game appears on all four desks. Nothing here is a bet, nothing here sizes a bet, and nothing here touches the served product pick or the champion product record.",
       "honest_note": "A RECORD WITH A PROVEN FENCE. The four models were fitted on 2025-01-01 -> 2026-06-30 and the record starts the day after, so every graded row is genuinely out of sample \u2014 the leakage audit proves the fence four ways. The four read DISJOINT feature slices and their sides agree only about as often as chance: four independent reads on every game, which is exactly what makes their disagreement worth rendering. The sample size is printed beside every rate, and the record deepens nightly."
     },
@@ -9092,7 +9092,7 @@
     },
     "analyst_profiles": {
       "status": "reset_by_rearchitecture",
-      "updated": "2026-08-23T20:58:08Z",
+      "updated": "2026-08-23T21:28:38Z",
       "order": [
         "vega",
         "atlas",
@@ -10671,14 +10671,14 @@
             "The price analyst \u00b7 The Price",
             "The conditions analyst \u00b7 The Conditions"
           ],
-          "n_disagreements": 319,
+          "n_disagreements": 321,
           "wins": {
-            "vega": 158,
-            "atlas": 152
+            "vega": 159,
+            "atlas": 153
           },
           "pushes": 9,
-          "n_both_graded": 643,
-          "line": "When the price analyst and the conditions analyst disagree: The price analyst 158, the conditions analyst 152"
+          "n_both_graded": 645,
+          "line": "When the price analyst and the conditions analyst disagree: The price analyst 159, the conditions analyst 153"
         },
         {
           "pair": [
@@ -10689,14 +10689,14 @@
             "The price analyst \u00b7 The Price",
             "The hitting analyst \u00b7 The Bats"
           ],
-          "n_disagreements": 337,
+          "n_disagreements": 339,
           "wins": {
-            "vega": 163,
-            "nova": 165
+            "vega": 164,
+            "nova": 166
           },
           "pushes": 9,
-          "n_both_graded": 643,
-          "line": "When the price analyst and the hitting analyst disagree: The price analyst 163, the hitting analyst 165"
+          "n_both_graded": 645,
+          "line": "When the price analyst and the hitting analyst disagree: The price analyst 164, the hitting analyst 166"
         },
         {
           "pair": [
@@ -10707,14 +10707,14 @@
             "The price analyst \u00b7 The Price",
             "The pitching analyst \u00b7 The Arms"
           ],
-          "n_disagreements": 345,
+          "n_disagreements": 347,
           "wins": {
-            "vega": 163,
-            "scout": 172
+            "vega": 164,
+            "scout": 173
           },
           "pushes": 10,
-          "n_both_graded": 643,
-          "line": "When the price analyst and the pitching analyst disagree: The price analyst 163, the pitching analyst 172"
+          "n_both_graded": 645,
+          "line": "When the price analyst and the pitching analyst disagree: The price analyst 164, the pitching analyst 173"
         },
         {
           "pair": [
@@ -10731,7 +10731,7 @@
             "nova": 140
           },
           "pushes": 6,
-          "n_both_graded": 643,
+          "n_both_graded": 645,
           "line": "When the conditions analyst and the hitting analyst disagree: The conditions analyst 132, the hitting analyst 140"
         },
         {
@@ -10749,7 +10749,7 @@
             "scout": 138
           },
           "pushes": 11,
-          "n_both_graded": 643,
+          "n_both_graded": 645,
           "line": "When the conditions analyst and the pitching analyst disagree: The conditions analyst 123, the pitching analyst 138"
         },
         {
@@ -10767,7 +10767,7 @@
             "scout": 143
           },
           "pushes": 9,
-          "n_both_graded": 643,
+          "n_both_graded": 645,
           "line": "When the hitting analyst and the pitching analyst disagree: The hitting analyst 136, the pitching analyst 143"
         }
       ],
@@ -10779,45 +10779,45 @@
         "vega": {
           "key": "vega",
           "name": "VEGA \u00b7 The Price",
-          "n": 82,
-          "win": 39,
-          "loss": 40,
+          "n": 84,
+          "win": 40,
+          "loss": 41,
           "push": 3,
-          "hit_rate": 0.4937,
-          "line": "39-40-3",
+          "hit_rate": 0.4938,
+          "line": "40-41-3",
           "is_betting_record": false
         },
         "atlas": {
           "key": "atlas",
           "name": "ATLAS \u00b7 The Conditions",
-          "n": 82,
-          "win": 49,
-          "loss": 30,
+          "n": 84,
+          "win": 50,
+          "loss": 31,
           "push": 3,
-          "hit_rate": 0.6203,
-          "line": "49-30-3",
+          "hit_rate": 0.6173,
+          "line": "50-31-3",
           "is_betting_record": false
         },
         "nova": {
           "key": "nova",
           "name": "NOVA \u00b7 The Bats",
-          "n": 82,
-          "win": 35,
-          "loss": 44,
+          "n": 84,
+          "win": 36,
+          "loss": 45,
           "push": 3,
-          "hit_rate": 0.443,
-          "line": "35-44-3",
+          "hit_rate": 0.4444,
+          "line": "36-45-3",
           "is_betting_record": false
         },
         "scout": {
           "key": "scout",
           "name": "SCOUT \u00b7 The Arms",
-          "n": 82,
-          "win": 42,
-          "loss": 37,
+          "n": 84,
+          "win": 43,
+          "loss": 38,
           "push": 3,
-          "hit_rate": 0.5316,
-          "line": "42-37-3",
+          "hit_rate": 0.5309,
+          "line": "43-38-3",
           "is_betting_record": false
         }
       },
@@ -17119,7 +17119,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-23T20:58:05Z",
+          "asof_utc": "2026-08-23T21:22:31Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -18762,7 +18762,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-23T20:58:05Z",
+          "asof_utc": "2026-08-23T21:22:31Z",
           "state": "CALL_AND_PLAY",
           "side": "over",
           "conviction": "SLIGHT",
@@ -20367,7 +20367,7 @@
           "wall": "T-3h",
           "all_voices_at_final_wall": true,
           "provisional": false,
-          "asof_utc": "2026-08-23T20:58:05Z",
+          "asof_utc": "2026-08-23T21:22:31Z",
           "state": "CALL_AND_PLAY",
           "side": "under",
           "conviction": "SLIGHT",
@@ -22264,9 +22264,9 @@
           "identity": "matchup_facts/1.3",
           "paragraphs": [
             "The Tigers are trying to avoid the sweep at Kauffman Stadium on Sunday, having lost the first 2 games of the series. Jacob Waguespack gets the ball for the Tigers. Daniel Lynch IV goes the other way for the Royals, and he gave up 1 run on 2 hits over 4 innings last time out in a 4-3 win against the Athletics on Tuesday.",
-            "The Royals are 57-74 and have won 7 in a row; the Tigers are 61-68 and have lost 4 in a row. The Royals have scored 4.6 runs a game over their last fifteen, the Tigers 4.8. They have split the 12 meetings between them this season."
+            "The Royals have scored 4.6 runs a game over their last fifteen, the Tigers 4.8. They have split the 12 meetings between them this season."
           ],
-          "text": "The Tigers are trying to avoid the sweep at Kauffman Stadium on Sunday, having lost the first 2 games of the series. Jacob Waguespack gets the ball for the Tigers. Daniel Lynch IV goes the other way for the Royals, and he gave up 1 run on 2 hits over 4 innings last time out in a 4-3 win against the Athletics on Tuesday.\n\nThe Royals are 57-74 and have won 7 in a row; the Tigers are 61-68 and have lost 4 in a row. The Royals have scored 4.6 runs a game over their last fifteen, the Tigers 4.8. They have split the 12 meetings between them this season.",
+          "text": "The Tigers are trying to avoid the sweep at Kauffman Stadium on Sunday, having lost the first 2 games of the series. Jacob Waguespack gets the ball for the Tigers. Daniel Lynch IV goes the other way for the Royals, and he gave up 1 run on 2 hits over 4 innings last time out in a 4-3 win against the Athletics on Tuesday.\n\nThe Royals have scored 4.6 runs a game over their last fifteen, the Tigers 4.8. They have split the 12 meetings between them this season.",
           "blurb": {
             "text": "The Tigers are trying to avoid the sweep at Kauffman Stadium on Sunday, having lost the first 2 games of the series. The Royals have scored 4.6 runs a game over their last fifteen, the Tigers 4.8.",
             "record_line": "Over the 17 nights that chose it (Aug 6 to Aug 22) this rule went 126-55-7.",
@@ -22582,13 +22582,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the ballpark itself this is under 8.5 at 51%. Air, dimensions and how the yard has actually been playing.",
-          "take_kind": "standard",
-          "live_p_over": 1.0,
-          "live_state_note": "Bot 8th, 16 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-23T20:40:51Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -23693,8 +23687,8 @@
           "take": "Bats and arms both travel; the ballpark does not. 0.94 runs of environment says under at 9, and I'll stand there alone.",
           "take_kind": "dissent",
           "live_p_over": 1.0,
-          "live_state_note": "Top 7th, 12 runs in \u2014 the over's already home; nothing left to price.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_state_note": "Top 9th, 13 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -24172,7 +24166,7 @@
         "star_tier": "Rule pick \u2014 the day's rule called this side",
         "price": 102.0,
         "suggested_units": 1.0,
-        "result": null,
+        "result": "win",
         "locked": true,
         "locked_at_utc": "2026-08-23T10:32:30Z",
         "timestamp": "2026-08-23T10:32:30Z",
@@ -24437,9 +24431,9 @@
               "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.",
               "We are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.",
               "A few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.",
-              "The White Sox are 67-62 and are 5-5 over their last ten; the Mets are 59-71 and are 6-4 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season."
+              "The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season."
             ],
-            "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.\n\nWe are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nA few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.\n\nThe White Sox are 67-62 and are 5-5 over their last ten; the Mets are 59-71 and are 6-4 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season.",
+            "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.\n\nWe are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nA few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.\n\nThe White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season.",
             "blurb": {
               "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. The posted total is 0.9 runs higher than what this ballpark has typically supported. We are on the under here.",
               "record_line": "Over the 17 nights that chose it (Aug 6 to Aug 22) this rule went 126-55-7.",
@@ -24462,9 +24456,9 @@
             "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.",
             "We are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.",
             "A few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.",
-            "The White Sox are 67-62 and are 5-5 over their last ten; the Mets are 59-71 and are 6-4 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season."
+            "The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season."
           ],
-          "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.\n\nWe are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nA few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.\n\nThe White Sox are 67-62 and are 5-5 over their last ten; the Mets are 59-71 and are 6-4 over their last ten. The White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season.",
+          "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. Nolan McLean (3-3 with a 2.40 ERA over his last 7 starts) goes for the Mets. McLean went 6 innings last time out, giving up 1 run on 6 hits with 4 walks and 3 strikeouts in a 2-1 win against the Padres on Monday. Newcomb threw 2 shutout innings last time out, giving up no hits and 2 walks with no strikeouts in a 3-0 win at Chicago on Wednesday.\n\nWe are on the under here. The total sits at 8 now, down from the 8.5 it opened at. The ballpark here has been playing about 5% below league-average scoring over the last three years.\n\nA few other things line up with it: the White Sox went to 3 relievers yesterday and first pitch is at 72 degrees. McLean takes the ball on 6 days' rest and the posted total is 0.9 runs higher than what this ballpark has typically supported.\n\nThe White Sox have scored 5.1 runs a game over their last fifteen, the Mets 3.5. They have split the 2 meetings between them this season.",
           "blurb": {
             "text": "Left-hander Sean Newcomb takes the ball for the White Sox at Rate Field on Sunday, against the visiting Mets, with the series level at 1-1 and this the decider. The posted total is 0.9 runs higher than what this ballpark has typically supported. We are on the under here.",
             "record_line": "Over the 17 nights that chose it (Aug 6 to Aug 22) this rule went 126-55-7.",
@@ -24560,7 +24554,7 @@
           "price": 102.0,
           "stars": 3,
           "score": 3.0,
-          "result": null,
+          "result": "win",
           "lead_time": "readiness",
           "locked": true,
           "expanded_band": false,
@@ -24671,6 +24665,53 @@
           "sim_n_sims": 20000
         }
       ],
+      "scout": {
+        "status": "LEAN",
+        "side": "under",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "p_over": 0.494,
+        "p_over_market": 0.51,
+        "scout_edge": -0.016,
+        "conviction": 0.506,
+        "price": 100.0,
+        "best_book": "lowvig",
+        "stars": null,
+        "score": null,
+        "n_train": 11358,
+        "train_max_date": "2026-08-22",
+        "raw_inputs": {
+          "sp_home_era_std": 0.0,
+          "sp_away_era_std": 3.7762,
+          "bat_home_avg_r30": 0.2481,
+          "bat_away_avg_r30": 0.2332,
+          "pen_home_era_std": 3.2709,
+          "pen_away_era_std": 4.0414,
+          "enr_park_run_factor_3y": 0.9547,
+          "wx_temp_f": 71.42
+        },
+        "result": null,
+        "locked": true,
+        "locked_at_utc": "2026-08-23T18:38:48Z",
+        "lead_time": "T-1h",
+        "mode": "transparent_voice",
+        "activation_date": "2026-07-30",
+        "is_new_stream": true,
+        "new_tag": "FUNDAMENTALS MODEL \u2014 tracking, not bets",
+        "is_bet": false,
+        "suggested_units": null,
+        "note": "simple-8 fundamentals model \u2014 a classic eight-stat read, tracked against the market",
+        "date": "2026-08-23",
+        "game_id": "2026-08-23-New York Mets-Chicago White Sox-824558",
+        "walls_priced": [
+          "T-12h",
+          "T-6h",
+          "T-3h",
+          "T-1h"
+        ],
+        "is_the_scout_analyst": false,
+        "not_an_analyst_note": "This is the simple-8 fundamentals STREAM's own lean for this game, with its own ledger and its own activation date. It is NOT the the pitching analyst analyst's read. Since 2026-07-31 the the pitching analyst analyst reads THE ARMS \u2014 the two starters and the bullpens behind them \u2014 over a disjoint feature slice, and its read is at games[].analysts[key=scout] / games[].analysts_v2. The shared name is history: The analyst used to be this stream."
+      },
       "pregame_line": {
         "total": 8.0,
         "total_price_over": -110.0,
@@ -24785,13 +24826,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the conditions I read, it is under 8 at 53%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 9th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -24921,11 +24956,126 @@
         "wall_note": "Every voice here is at T-3h, the last wall before first pitch."
       },
       "diamondedge": {
+        "status": "PICK",
+        "side": "under",
+        "line": 8.0,
+        "vegas_line": 8.0,
+        "stars": 3,
+        "score": 3.0,
+        "price": 102.0,
+        "suggested_units": 1.0,
+        "result": "win",
+        "locked": true,
+        "lead_time": "readiness",
+        "source": "strategy_forge",
+        "expanded_band": false,
+        "consensus_state": "MAJORITY",
         "action": "PLAY",
+        "action_before_pattern": "PLAY",
+        "action_basis": "served bet + star tier (AVOID means, and only ever means, that no bet was served)",
         "desk_agreement": "ALIGNED",
         "is_bet": true,
+        "desk_call": {
+          "stream": "desk_call",
+          "activation_date": "2026-08-01",
+          "n_voices": 4,
+          "n_seats": 4,
+          "vote": {
+            "over": 1,
+            "under": 3,
+            "no_read": 0
+          },
+          "consensus_state": "MAJORITY",
+          "wall": "T-3h",
+          "all_voices_at_final_wall": true,
+          "provisional": false,
+          "asof_utc": "2026-08-23T21:22:31Z",
+          "state": "CALL_AND_PLAY",
+          "side": "under",
+          "conviction": "SLIGHT",
+          "call": "SLIGHT UNDER",
+          "desk_p_over": 0.4987,
+          "desk_edge": -0.0013,
+          "confidence": 0.0013,
+          "line": 8.0,
+          "argument": "3 of 4 analysts on the under (the conditions analyst, the hitting analyst, the pitching analyst); the desk's own number is 49.9% over against a 8 board.",
+          "headline": "The desk calls the under 8 \u2014 and we're betting it.",
+          "we_are_betting": true,
+          "bet_action": "PLAY",
+          "why_no_bet": null,
+          "call_agrees_with_bet": true,
+          "vote_and_probability_disagree": false,
+          "is_bet": false,
+          "staked": false,
+          "stake_units": null,
+          "suggested_units": null,
+          "playable": false,
+          "take": false,
+          "pick_side": null,
+          "stars": null,
+          "ev": null,
+          "score": null,
+          "is_pick": false,
+          "counts_in_product_record": false,
+          "graded_product_is": "games[].pick",
+          "note": "A CALL IS NOT A BET. This is the desk's directional view on the game \u2014 what it actually thinks \u2014 built from the four analysts' own reads, equal-weighted. It is NEVER staked, it NEVER enters games[].pick, it is never counted in the product record, and it cannot be sized. Whether we are betting this game is a separate question with a separate answer, at `we_are_betting` / `bet_action`, decided by the price gate alone and unchanged by anything here. The graded product remains games[].pick and only games[].pick; the desk's calls are graded in their own ledger, separately, from 2026-08-01."
+        },
+        "pattern_downgraded": false,
+        "confidence_rank": 3,
         "rationale_line": "We're on the under 8.0 at +102 (3\u2605) and the desk is with it \u2014 three of the four analysts with a read like the under.",
         "adaptive_strategy": null,
+        "pattern": {
+          "era": "live_era",
+          "bucket": "by_family",
+          "key": "MAJORITY_3-1",
+          "family": "MAJORITY_3-1",
+          "call": "under",
+          "n": 174,
+          "hit_rate": 0.5115,
+          "hit_ci95": [
+            0.4347,
+            0.5879
+          ],
+          "fade_hit_rate": 0.4885,
+          "p_two_sided": 0.820171,
+          "ci_excludes_50": false,
+          "underperforms": false,
+          "significant": false,
+          "best_powered_of": 2,
+          "ci_clause": "95% CI 43%-59%, even with the market",
+          "line": "When the desk splits 3-1, the side they called has landed 51% of the time (n=174, live; 95% CI 43%-59%, even with the market)."
+        },
+        "pattern_line": null,
+        "synthesis_config_version": "v2_live_patterns",
+        "spread_call": {
+          "side": "home",
+          "side_team": "Chicago White Sox",
+          "line": 1.5,
+          "home_line": 1.5,
+          "rationale_line": "Both margin producers like the home side of the run line \u2014 the run-line stream's direction and the simulated margin agree.",
+          "voices": {
+            "run_line_stream": {
+              "side": "home",
+              "basis": "run-line lean stream (residual engine direction)"
+            },
+            "margin_simulator": {
+              "side": "home",
+              "p_cover": 0.7295,
+              "basis": "simulator joint margin distribution"
+            }
+          },
+          "is_bet": false,
+          "voices_are_not_analysts": true,
+          "note": "displayed prediction synthesized from the two MARGIN PRODUCERS \u2014 the run-line lean stream and the simulator's joint margin. Neither is one of the four analysts: the v2 stream is totals-only and no analyst produces a run-line call, so these voices are named for what they are. The run-line lean stream keeps grading unchanged in its own ledger, and the margin engine's betting-certification status is irrelevant for display."
+        },
+        "predicted_score": {
+          "away": 3,
+          "home": 4,
+          "source": "ATLAS",
+          "p_home_win": 0.6167,
+          "wall": "T-12h",
+          "note": "per-team MEDIAN runs from the simulator's joint distribution (ties broken toward the winner per P(home win)). Display prediction only \u2014 graded nowhere."
+        },
         "chief": {
           "scope": "pregame",
           "ou_call": {
@@ -25245,8 +25395,388 @@
           "synthesis_config_version": "v2_live_patterns",
           "note": "THE CHIEF (Leon, 2026-07-30; SEMANTICS REWRITTEN 2026-07-31): DiamondEdge's own PREGAME synthesis \u2014 the O/U call, the run-line call and the predicted final score, all against the LOCKED pregame line, with a rationale grounded in the MEASURED tables. THE COHERENCE RULE (the 2026-07-31 fix): when the engine SERVED A BET, the chief's O/U call IS that bet \u2014 same side, same number \u2014 and the action can never be AVOID. AVOID means, and only ever means, that no bet was served. The desk's disagreement with a served bet is real and is stated (desk_agreement + the rationale line), but it is stated as CONTEXT, never as 'we're passing' on a bet we are actually making. The chief remains PRESENTATION and ROUTING ONLY: the measured pattern table can change the language and move a displayed action DOWN one rung, never up, a PASS can never become a PLAY, and on a served bet the ladder bottoms out at LEAN. Betting stays with the +EV gate and the star system, exactly as before. predicted_score and desk_combined are display predictions, graded nowhere.",
           "adaptive_strategy": null
-        }
+        },
+        "note": "CONTINUITY: the underlying DiamondEdge pick machinery is UNCHANGED and its record continues unbroken \u2014 write-once walls, the +EV gate, stars, calibration and grading all run exactly as before, and `pick` is still the served object. The desk's ACTION is presentation logic layered on top. COHERENCE (2026-07-31 \u2014 the defect this replaced): the action used to be a four-way VOTE, so a card could serve a real staked bet and, in the same breath, tell the reader the desk was passing on it. It did exactly that on both served bets of 2026-07-31. AVOID now means, and only ever means, THAT NO BET WAS SERVED (pick.status != PICK); a served bet displays as PLAY or LEAN by its star tier, and the desk's disagreement \u2014 which is real and is worth reading \u2014 is carried in `desk_agreement` (ALIGNED|MIXED|AGAINST|PENDING) and said out loud in the rationale as CONTEXT, never as a veto. The rail is unchanged in the direction that matters: the synthesis can never manufacture a bet, a PASS can never become a PLAY, and no served pick was created, altered, re-graded or removed by any of this. synthesis_config_version stamps the measured config in force: v1 (2026-07-30, the competition workflow's verifier-upheld artifact, v4/models/analyst_desk/synthesis_config_v1.json) is explicitly PRESENTATION/ROUTING only \u2014 its own measurement holds every consensus state to the family-wide bar, and none has cleared it, so betting confidence remains solely the champion EV gate + star system. A stricter coupling (the synthesis actually gating which picks are served) would require a future config that measures and declares exactly that."
       },
+      "analysts_v2": [
+        {
+          "analyst": "vega",
+          "short": "VEGA",
+          "pick_side": "over",
+          "p_over": 0.5454,
+          "our_prob": 0.5454,
+          "p_mkt_over": 0.5108,
+          "edge_vs_market": 0.0346,
+          "delta_runs": null,
+          "conviction_runs": null,
+          "mu_shown": null,
+          "mu_absolute": null,
+          "center_used": null,
+          "market_line": 8.0,
+          "model_kind": "pricer",
+          "basis": "live",
+          "is_bet": false,
+          "top_drivers": [
+            {
+              "lever": "book_disagreement",
+              "runs": 0.2891,
+              "z": 2.2765,
+              "beta": 0.126991
+            },
+            {
+              "lever": "stale_gap",
+              "runs": -0.127,
+              "z": 1.9124,
+              "beta": -0.066403
+            },
+            {
+              "lever": "n_books",
+              "runs": 0.1054,
+              "z": 4.0,
+              "beta": 0.026343
+            }
+          ],
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "wall_timeline": {
+            "walls": [
+              {
+                "wall": "T-12h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4886,
+                "market_line": 8.0,
+                "n_levers_present": 8,
+                "n_levers_total": 8
+              },
+              {
+                "wall": "T-6h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.5015,
+                "market_line": 8.0,
+                "n_levers_present": 8,
+                "n_levers_total": 8
+              },
+              {
+                "wall": "T-3h",
+                "has_read": true,
+                "side": "over",
+                "p_over": 0.5454,
+                "market_line": 8.0,
+                "n_levers_present": 8,
+                "n_levers_total": 8
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "over",
+                "p_over": 0.5517,
+                "market_line": 8.0,
+                "n_levers_present": 8,
+                "n_levers_total": 8
+              }
+            ],
+            "first_wall_with_a_read": "T-12h",
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
+            "changed_side_across_walls": true,
+            "no_read": null
+          }
+        },
+        {
+          "analyst": "atlas",
+          "short": "ATLAS",
+          "pick_side": "under",
+          "p_over": 0.4731,
+          "our_prob": 0.5269,
+          "p_mkt_over": 0.5108,
+          "edge_vs_market": -0.0377,
+          "delta_runs": -0.3324,
+          "conviction_runs": 0.3324,
+          "mu_shown": 7.67,
+          "mu_absolute": 8.54,
+          "center_used": -0.023424,
+          "market_line": 8.0,
+          "model_kind": "projector",
+          "basis": "live",
+          "is_bet": false,
+          "top_drivers": [
+            {
+              "lever": "park_run_factor",
+              "runs": -0.4631,
+              "z": -1.7006,
+              "beta": 0.272312
+            },
+            {
+              "lever": "park_altitude",
+              "runs": 0.0888,
+              "z": 0.3171,
+              "beta": 0.280061
+            },
+            {
+              "lever": "park_roof",
+              "runs": -0.0,
+              "z": 0.0,
+              "beta": -0.160743
+            }
+          ],
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "wall_timeline": {
+            "walls": [
+              {
+                "wall": "T-12h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4681,
+                "delta_runs": -0.4018,
+                "conviction_runs": 0.4018,
+                "market_line": 8.0,
+                "umpire_assigned": false,
+                "n_levers_present": 4,
+                "n_levers_total": 7
+              },
+              {
+                "wall": "T-6h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4716,
+                "delta_runs": -0.3538,
+                "conviction_runs": 0.3538,
+                "market_line": 8.0,
+                "umpire_assigned": false,
+                "n_levers_present": 4,
+                "n_levers_total": 7
+              },
+              {
+                "wall": "T-3h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4731,
+                "delta_runs": -0.3324,
+                "conviction_runs": 0.3324,
+                "market_line": 8.0,
+                "umpire_assigned": false,
+                "n_levers_present": 4,
+                "n_levers_total": 7
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4966,
+                "delta_runs": -0.0383,
+                "conviction_runs": 0.0383,
+                "market_line": 8.0,
+                "umpire_assigned": true,
+                "n_levers_present": 7,
+                "n_levers_total": 7
+              }
+            ],
+            "first_wall_with_a_read": "T-12h",
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
+            "changed_side_across_walls": false,
+            "no_read": null
+          }
+        },
+        {
+          "analyst": "nova",
+          "short": "NOVA",
+          "pick_side": "under",
+          "p_over": 0.4974,
+          "our_prob": 0.5026,
+          "p_mkt_over": 0.5108,
+          "edge_vs_market": -0.0134,
+          "delta_runs": -0.0307,
+          "conviction_runs": 0.0307,
+          "mu_shown": 7.97,
+          "mu_absolute": 9.08,
+          "center_used": 0.195873,
+          "market_line": 8.0,
+          "model_kind": "projector",
+          "basis": "live",
+          "is_bet": false,
+          "top_drivers": [
+            {
+              "lever": "bats_power",
+              "runs": 0.2485,
+              "z": 1.013,
+              "beta": 0.24535
+            },
+            {
+              "lever": "bats_top5_woba",
+              "runs": -0.0874,
+              "z": -0.4421,
+              "beta": 0.197667
+            },
+            {
+              "lever": "bats_woba",
+              "runs": -0.0,
+              "z": -0.3426,
+              "beta": 0.0
+            }
+          ],
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "wall_timeline": {
+            "walls": [
+              {
+                "wall": "T-12h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4947,
+                "delta_runs": -0.0604,
+                "conviction_runs": 0.0604,
+                "market_line": 8.0,
+                "lineup_posted": false,
+                "n_levers_present": 6,
+                "n_levers_total": 6
+              },
+              {
+                "wall": "T-6h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4941,
+                "delta_runs": -0.0669,
+                "conviction_runs": 0.0669,
+                "market_line": 8.0,
+                "lineup_posted": false,
+                "n_levers_present": 6,
+                "n_levers_total": 6
+              },
+              {
+                "wall": "T-3h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4974,
+                "delta_runs": -0.0307,
+                "conviction_runs": 0.0307,
+                "market_line": 8.0,
+                "lineup_posted": false,
+                "n_levers_present": 6,
+                "n_levers_total": 9
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.498,
+                "delta_runs": -0.0235,
+                "conviction_runs": 0.0235,
+                "market_line": 8.0,
+                "lineup_posted": true,
+                "n_levers_present": 6,
+                "n_levers_total": 9
+              }
+            ],
+            "first_wall_with_a_read": "T-12h",
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
+            "changed_side_across_walls": false,
+            "no_read": null
+          }
+        },
+        {
+          "analyst": "scout",
+          "short": "SCOUT",
+          "pick_side": "under",
+          "p_over": 0.4789,
+          "our_prob": 0.5211,
+          "p_mkt_over": 0.5108,
+          "edge_vs_market": -0.0319,
+          "delta_runs": -0.2403,
+          "conviction_runs": 0.2403,
+          "mu_shown": 7.76,
+          "mu_absolute": 8.59,
+          "center_used": -0.088218,
+          "market_line": 8.0,
+          "model_kind": "projector",
+          "basis": "live",
+          "is_bet": false,
+          "top_drivers": [
+            {
+              "lever": "sp_recent_form",
+              "runs": -0.1776,
+              "z": -1.2821,
+              "beta": 0.138549
+            },
+            {
+              "lever": "sp_rest",
+              "runs": -0.1707,
+              "z": 4.0,
+              "beta": -0.042673
+            },
+            {
+              "lever": "sp_length",
+              "runs": 0.121,
+              "z": -1.6094,
+              "beta": -0.075169
+            }
+          ],
+          "read_wall": "T-3h",
+          "is_final_wall": true,
+          "wall_timeline": {
+            "walls": [
+              {
+                "wall": "T-12h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4826,
+                "delta_runs": -0.2,
+                "conviction_runs": 0.2,
+                "market_line": 8.0,
+                "starters_announced": true,
+                "n_levers_present": 14,
+                "n_levers_total": 14
+              },
+              {
+                "wall": "T-6h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4802,
+                "delta_runs": -0.2256,
+                "conviction_runs": 0.2256,
+                "market_line": 8.0,
+                "starters_announced": true,
+                "n_levers_present": 14,
+                "n_levers_total": 14
+              },
+              {
+                "wall": "T-3h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.4789,
+                "delta_runs": -0.2403,
+                "conviction_runs": 0.2403,
+                "market_line": 8.0,
+                "starters_announced": true,
+                "n_levers_present": 14,
+                "n_levers_total": 14
+              },
+              {
+                "wall": "T-1h",
+                "has_read": true,
+                "side": "under",
+                "p_over": 0.479,
+                "delta_runs": -0.2399,
+                "conviction_runs": 0.2399,
+                "market_line": 8.0,
+                "starters_announced": true,
+                "n_levers_present": 14,
+                "n_levers_total": 14
+              }
+            ],
+            "first_wall_with_a_read": "T-12h",
+            "latest_wall": "T-1h",
+            "n_walls_read": 4,
+            "changed_side_across_walls": false,
+            "no_read": null
+          }
+        }
+      ],
+      "live_progress": null,
       "weather": {
         "status": "ACTIVE",
         "temp_f": 72,
@@ -25265,7 +25795,8 @@
         "forecast_retrieved_utc": "2026-08-23T14:48:25Z",
         "source": "forecast",
         "as_of_basis": "Every value is the T-3h forecast \u2014 retrieved before the wall the pick is made at, never an observation from during the game."
-      }
+      },
+      "premium_public": "settled"
     },
     {
       "game_id": "2026-08-23-Los Angeles Angels-Texas Rangers-822856",
@@ -25898,13 +26429,7 @@
           "no_read_reason_code": null,
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the conditions I read, it is under 8 at 52%.",
-          "take_kind": "standard",
-          "live_p_over": null,
-          "live_state_note": "Bot 7th \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
-          "live_display_only": true,
-          "live_source": "live_atlas",
-          "live_is_this_analysts_read": false
+          "take_kind": "standard"
         },
         {
           "key": "nova",
@@ -26998,9 +27523,9 @@
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "On the conditions I read, it is over 11 at 65%.",
           "take_kind": "standard",
-          "live_p_over": 0.8983,
-          "live_state_note": "Top 4th, 7 runs in \u2014 my number's moved to 90% over.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_p_over": null,
+          "live_state_note": "Top 6th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -28082,9 +28607,9 @@
           "wall_note": "Read at T-3h, the last wall before first pitch and the one this analyst's record is kept at \u2014 its most informed call on this game.",
           "take": "I grade the place and the umpire and nothing else. On those alone: over 8.5, 50%.",
           "take_kind": "standard",
-          "live_p_over": 0.9002,
-          "live_state_note": "Top 5th, 8 runs in \u2014 my number's moved to 90% over.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_p_over": 1.0,
+          "live_state_note": "Bot 7th, 9 runs in \u2014 the over's already home; nothing left to price.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -29190,8 +29715,8 @@
           "take": "On the ballpark itself this is under 7.5 at 56%. Air, dimensions and how the yard has actually been playing.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_state_note": "Bot 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -30280,8 +30805,8 @@
           "take": "On the conditions I read, it is under 8.5 at 52%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 3rd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_state_note": "Bot 5th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -31393,8 +31918,8 @@
           "take": "On the conditions I read, it is under 8.5 at 50%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_state_note": "Bot 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -32371,8 +32896,8 @@
           "take": "I grade the place and the umpire and nothing else. On those alone: over 8.5, 52%.",
           "take_kind": "standard",
           "live_p_over": null,
-          "live_state_note": "Top 2nd \u2014 this state sits outside my certified range, so no number. Watching.",
-          "as_of": "2026-08-23T20:40:51Z",
+          "live_state_note": "Top 4th \u2014 this state sits outside my certified range, so no number. Watching.",
+          "as_of": "2026-08-23T21:22:00Z",
           "live_display_only": true,
           "live_source": "live_atlas",
           "live_is_this_analysts_read": false
@@ -33347,7 +33872,7 @@
         "run_line_price_home": 184.0,
         "run_line_price_away": -205.0,
         "book": "matchbook",
-        "captured_at": "2026-08-23T20:40:50Z",
+        "captured_at": "2026-08-23T21:21:58Z",
         "wall": "T-3h",
         "locked_at": null,
         "game_pk": 823745,
@@ -33366,8 +33891,8 @@
       "line_now": {
         "total": 7.5,
         "pregame_total_compared": 7.5,
-        "total_price_over": -105.0,
-        "total_price_under": -104.0,
+        "total_price_over": -109.0,
+        "total_price_under": -101.0,
         "book": null,
         "comparison_basis": "book_consensus_median",
         "same_basis": true,
@@ -33376,11 +33901,11 @@
           "pregame_total": 7.5,
           "total": 7.5,
           "move": 0.0,
-          "total_price_over": -105.0,
-          "total_price_under": -104.0
+          "total_price_over": -109.0,
+          "total_price_under": -101.0
         },
-        "n_books": 23,
-        "as_of": "2026-08-23T20:56:19Z",
+        "n_books": 24,
+        "as_of": "2026-08-23T21:18:32Z",
         "source": "odds_snapshots_pregame_totals",
         "market": "full_game_total",
         "moved_vs_pregame": false,
