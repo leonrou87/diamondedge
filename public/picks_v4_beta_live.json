@@ -1,5 +1,5 @@
 {
-  "generated_utc": "2026-08-23T16:36:17Z",
+  "generated_utc": "2026-08-23T20:00:33Z",
   "games": [
     {
       "game_id": "2026-08-23-St. Louis Cardinals-Philadelphia Phillies-823421",
@@ -11,7 +11,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -42,7 +43,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-6h",
@@ -71,7 +74,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-3h",
@@ -100,10 +105,49 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "our_prob": 0.5054,
+          "ev": -0.0086,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T17:57:58Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Tampa Bay Rays-Baltimore Orioles-824799",
@@ -115,7 +159,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -146,7 +191,9 @@
           "best_book": "betrivers",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-6h",
@@ -175,7 +222,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-3h",
@@ -204,10 +253,49 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.525,
+          "ev": -0.012,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "matchbook",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T17:57:58Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Toronto Blue Jays-New York Yankees-823507",
@@ -219,7 +307,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -250,7 +339,9 @@
           "best_book": "williamhill",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-6h",
@@ -279,7 +370,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-3h",
@@ -308,10 +401,49 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "our_prob": 0.502,
+          "ev": -0.0137,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T17:57:58Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Washington Nationals-Miami Marlins-823827",
@@ -323,7 +455,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -354,7 +487,9 @@
           "best_book": "williamhill",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-6h",
@@ -383,7 +518,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         },
         {
           "lead_time": "T-3h",
@@ -412,10 +549,49 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.4946,
+          "ev": 0.0189,
+          "tier": "Lean",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "junk_cell",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T17:57:58Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T17:57:58Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Athletics-Houston Astros-824150",
@@ -427,7 +603,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -458,7 +635,9 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-6h",
@@ -487,7 +666,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-3h",
@@ -516,10 +697,49 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 9.0,
+          "our_prob": 0.494,
+          "ev": -0.0071,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 9.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T18:38:48Z",
+        "label": "Locked at T-1h \u00b7 O/U 9.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Detroit Tigers-Kansas City Royals-824071",
@@ -531,7 +751,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -562,7 +783,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-6h",
@@ -591,7 +814,9 @@
           "best_book": "betrivers",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-3h",
@@ -620,10 +845,49 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.51,
+          "ev": -0.0134,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T18:38:48Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-New York Mets-Chicago White Sox-824558",
@@ -635,7 +899,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -666,7 +931,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-6h",
@@ -695,7 +962,9 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-3h",
@@ -724,10 +993,49 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "our_prob": 0.5236,
+          "ev": -0.0004,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T18:38:48Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Los Angeles Angels-Texas Rangers-822856",
@@ -739,7 +1047,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -770,7 +1079,9 @@
           "best_book": "betmgm",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-6h",
@@ -799,7 +1110,9 @@
           "best_book": "everygame",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         },
         {
           "lead_time": "T-3h",
@@ -828,10 +1141,49 @@
           "best_book": "everygame",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.0,
+          "our_prob": 0.4846,
+          "ev": -0.0211,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "pinnacle",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T18:38:48Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T18:38:48Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Cleveland Guardians-Colorado Rockies-824315",
@@ -844,7 +1196,8 @@
         "T-24h",
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -875,7 +1228,9 @@
           "best_book": "lowvig",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         },
         {
           "lead_time": "T-12h",
@@ -904,7 +1259,9 @@
           "best_book": "betrivers",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         },
         {
           "lead_time": "T-6h",
@@ -933,7 +1290,9 @@
           "best_book": "pinnacle",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         },
         {
           "lead_time": "T-3h",
@@ -962,10 +1321,49 @@
           "best_book": "mybookieag",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 11.0,
+          "our_prob": 0.4865,
+          "ev": -0.0026,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 11.0
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "lowvig",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T19:19:23Z",
+        "label": "Locked at T-1h \u00b7 O/U 11.0",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-San Francisco Giants-Boston Red Sox-824720",
@@ -977,7 +1375,8 @@
       "walls_populated": [
         "T-12h",
         "T-6h",
-        "T-3h"
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1007,7 +1406,9 @@
           },
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         },
         {
           "lead_time": "T-6h",
@@ -1036,7 +1437,9 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         },
         {
           "lead_time": "T-3h",
@@ -1065,10 +1468,49 @@
           "best_book": "onexbet",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
-          "pass_why": "ev_gate"
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5017,
+          "ev": -0.0113,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate",
+          "locked": true,
+          "locked_at_utc": "2026-08-23T19:19:23Z"
         }
       ],
-      "locked": false
+      "locked": true,
+      "locked_at": {
+        "wall": "T-1h",
+        "utc": "2026-08-23T19:19:23Z",
+        "label": "Locked at T-1h \u00b7 O/U 8.5",
+        "note": "game started \u2014 every wall row is frozen at its last pre-start state (line/side/price/stars); grading uses exactly this locked state, nothing re-evaluates"
+      }
     },
     {
       "game_id": "2026-08-23-Chicago Cubs-Seattle Mariners-823099",
@@ -1080,7 +1522,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1170,6 +1614,64 @@
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "our_prob": 0.4861,
+          "ev": 0.0033,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "our_prob": 0.4807,
+          "ev": 0.0138,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -1184,7 +1686,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1274,6 +1778,64 @@
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5204,
+          "ev": 0.0023,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5267,
+          "ev": -0.0107,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -1288,7 +1850,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1378,6 +1942,64 @@
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5207,
+          "ev": 0.0165,
+          "tier": "Lean",
+          "star_tier": "Pass (junk cell \u2014 degenerately one-sided on the latest walk)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": true,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "betus",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "junk_cell"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5103,
+          "ev": -0.0037,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -1392,7 +2014,9 @@
       "walls_populated": [
         "T-24h",
         "T-12h",
-        "T-6h"
+        "T-6h",
+        "T-3h",
+        "T-1h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1482,6 +2106,64 @@
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
           "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-3h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.526,
+          "ev": 0.005,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 407,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-1h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 8.5,
+          "our_prob": 0.5229,
+          "ev": -0.0171,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "under",
+            "line": 8.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 389,
+            "one_sided": true
+          },
+          "best_book": "onexbet",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
         }
       ],
       "locked": false
@@ -1495,7 +2177,8 @@
       "first_pitch_utc": "2026-08-23T23:10:00+00:00",
       "walls_populated": [
         "T-24h",
-        "T-12h"
+        "T-12h",
+        "T-6h"
       ],
       "walls_pending_note": "walls not listed have not arrived yet, or the market was not open at that wall (market_open gate) \u2014 a row appears when its wall arrives",
       "grid": [
@@ -1553,6 +2236,35 @@
             "one_sided": false
           },
           "best_book": "everygame",
+          "price_convention": "best_at_pick_line_live_v3",
+          "pick_side": null,
+          "pass_why": "ev_gate"
+        },
+        {
+          "lead_time": "T-6h",
+          "bet_type": "total",
+          "scope": "full_game",
+          "model": "residual_total_v1",
+          "market_line": 7.5,
+          "our_prob": 0.5051,
+          "ev": -0.0139,
+          "tier": "PASS",
+          "star_tier": "Pass (-EV / no real price)",
+          "stars": 1,
+          "playable": false,
+          "lean": {
+            "side": "over",
+            "line": 7.5
+          },
+          "take": false,
+          "result": null,
+          "evidence": {
+            "cell_cleared_baselines": false,
+            "bh_significant": false,
+            "cell_n": 453,
+            "one_sided": true
+          },
+          "best_book": "matchbook",
           "price_convention": "best_at_pick_line_live_v3",
           "pick_side": null,
           "pass_why": "ev_gate"
