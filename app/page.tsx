@@ -8688,28 +8688,42 @@ export default function Home() {
        `total_pick` carries 1.82 (decimal, which formats to -122). Rather than pick a
        convention, the card prints the price the generator printed, and falls back to
        `fmtOdds` of the served number only where the article states none. */
+    /* ═══ THE BOARD OUTRANKS THE ARTICLE ABOUT WHETHER WE BET ═══
+       `article.has_pick` is the pregame generator's flag, and until 2026-08-23
+       that generator resolved "did we bet?" from `display_pick`/`de_plays` — the
+       retired value-plays engine — not from the pick the board served. On MLB
+       the two disagreed on 170 archived game-days, 20 of them in the direction
+       that reads worst: the board served a PASS, the article says a call was
+       posted, and `servedTicketOf` turned that into "**OVER 8** at -115 — the
+       call we posted on this game. The pick lost." on a game that appears in no
+       record's denominator. The backend now reads the served board, but the
+       dated `pregame_picks:<date>` archives are write-once and keep the wrong
+       flag, so the client refuses it wherever the board contradicts it.
+
+       ONE PREDICATE FOR ALL THREE ARMS, which is the point of extracting it.
+       The pick pane makes three separate claims off `has_pick` — the ticket, the
+       "a pass was decided" sentence, and the "we have a call this pane could not
+       load" fallback — and vetoing only the first just moves the false statement
+       down the ladder (measured: game 824317 stopped printing a ticket and
+       started printing "We have a call on this game", equally untrue). All three
+       ask this.
+
+       SCOPED TO WHAT THE BOARD ACTUALLY COVERS. `picks_unified` is the MLB
+       history and carries no WNBA / NHL / NBA / NFL / soccer rows, so a miss is
+       SILENCE, not a denial — null means "the board says nothing here" and every
+       other sport keeps its existing behaviour untouched. */
+    function boardCallStatus(g: any): "PICK" | "PASS" | null {
+      const vg = v4GameFor(g);
+      const pk = vg && vg.pick;
+      if (!pk || typeof pk !== "object") return null;
+      const s = String(pk.status || "").toUpperCase();
+      return s === "PICK" || s === "PASS" ? s : null;
+    }
+
     function servedTicketOf(g: any) {
       const a = g && g.article;
       if (!a || typeof a !== "object" || a.has_pick !== true) return null;
-      /* ═══ THE BOARD OUTRANKS THE ARTICLE ABOUT WHETHER WE BET ═══
-         `article.has_pick` is the pregame generator's flag, and until 2026-08-23
-         that generator resolved "did we bet?" from `display_pick`/`de_plays` —
-         the retired value-plays engine — not from the pick the board served. On
-         MLB the two disagreed on 170 archived game-days, and 20 of them are this
-         direction: the board served a PASS, the article says a call was posted,
-         and this helper turned that into "**OVER 8** at -115 — the call we
-         posted on this game. The pick lost." on a game that appears in no
-         record's denominator. The backend now reads the served board, but the
-         dated `pregame_picks:<date>` archives are write-once and keep the wrong
-         flag, so this rung refuses it where the board itself contradicts it.
-
-         SCOPED TO WHAT THE BOARD ACTUALLY COVERS. `picks_unified` is the MLB
-         history and carries no WNBA / NHL / NBA / NFL / soccer rows, so a miss
-         there is silence, not a denial — only an explicit PASS on a row this
-         game HAS is allowed to veto, and every other sport is untouched. */
-      const _vg = v4GameFor(g);
-      if (_vg && _vg.pick && typeof _vg.pick === "object"
-          && String(_vg.pick.status || "").toUpperCase() === "PASS") return null;
+      if (boardCallStatus(g) === "PASS") return null;
       /* THE CALL, IN THE GENERATOR'S OWN WORDS — headline first, the verdict's bold run
          second. Parentheses (the price) and markdown are stripped; nothing else is. */
       const strip = (s: any) => String(s == null ? "" : s)
@@ -15269,8 +15283,13 @@ export default function Home() {
                a pass. Saying "the pass is the pick" there is the original defect, and it is
                unreachable now rather than merely unlikely: the branch below says the true
                thing instead. */
-            const artSaysPick = !!(g && g.article && typeof g.article === "object"
-                                   && (g.article as any).has_pick === true);
+            /* …UNLESS THE BOARD SAYS WE PASSED. An article flag the served board
+               contradicts foreclosed the pass sentence AND then fell through to
+               "we have a call this pane could not load" — two ways of saying we
+               bet a game we did not. See `boardCallStatus`. */
+            const artSaysPick = boardCallStatus(g) !== "PASS"
+                                && !!(g && g.article && typeof g.article === "object"
+                                      && (g.article as any).has_pick === true);
             const passSaid = !artSaysPick && (() => {
               const a: any = g && g.article;
               const vg = v4GameFor(g);
@@ -15322,7 +15341,7 @@ export default function Home() {
                whose market names nothing this engine serves, or whose market carries no
                served block agreeing with it: a gap in what this surface can read, and the
                only honest thing to print over one is that the call exists elsewhere. */
-            if (g && g.article && typeof g.article === "object" && (g.article as any).has_pick === true) {
+            if (artSaysPick) {
               return `<div class="callcard pass"><div class="cc-k">${pickLabel(g)}</div>
               <p class="cc-passwhy">We have a call on this game — this pane just could not load it. It is on the board with the rest of the day's picks, free like everything else.</p>
               </div>`;
