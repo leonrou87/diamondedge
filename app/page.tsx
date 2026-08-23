@@ -10172,7 +10172,22 @@ export default function Home() {
       /* msData is keyed by TAB, and the soccer tab holds the `mls` payload. */
       const d = msData[s] || (s === "mls" ? msData["soccer"] : null);
       const rec = d && d.record;
-      const b = rec ? Number(rec.wall_bucket_minutes) : NaN;
+      if (!rec) return null;
+      let b = Number(rec.wall_bucket_minutes);
+      /* THE PROSE IS THE FALLBACK, AND IT IS A REAL ONE. `wall_note` — the
+         engine's own sentence — has been served since 2026-08-21; the
+         structured `wall_bucket_minutes` beside it lands only when the
+         long-running mspicks daemon next restarts. Rather than leave this
+         whole fix inert until that happens, the width is read out of the
+         sentence the engine already publishes ("floored onto 120-minute
+         blocks"), which ms_picks.wall_note_for writes from the SAME registry
+         value. Structured field first, always; this branch can be deleted the
+         day every board carries it. A note we cannot parse yields null, which
+         is the pre-2026-08-23 behaviour — never a guessed number. */
+      if (!isFinite(b) || b <= 0) {
+        const m = /floored onto (\d+)-minute blocks/.exec(String(rec.wall_note || ""));
+        b = m ? Number(m[1]) : NaN;
+      }
       if (!isFinite(b) || b <= 0) return null;
       const h = Number(rec.wall_hours);
       return { bucketMin: b, hours: isFinite(h) && h > 0 ? h : 3 };
