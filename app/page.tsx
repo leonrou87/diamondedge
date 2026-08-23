@@ -10145,6 +10145,60 @@ export default function Home() {
       const v = Number(s && bs[s] != null ? bs[s] : c.wall_hours);
       return isFinite(v) && v > 0 ? v : null;
     }
+    /* ═════════ A FLOORED WALL IS A RANGE, AND A SCALAR CANNOT SAY SO ═════════
+       `contractWallHours` returns ONE number, and every sentence and every
+       chip below was built on the assumption that one number is the whole
+       truth. For NCAAF it is not. That league hangs a slate across ~14 hours,
+       so its pick wall is FLOORED onto a 2-hour grid (multisport/leagues.py
+       `wall_bucket_minutes`, read by BOTH the picks engine and the odds
+       collector): a game is decided between T-3h and T-5h before its own
+       kickoff — earlier than the wall, never later.
+
+       WHAT THAT COST, MEASURED ON THE REAL 2026-08-29 OPENER before it ran:
+       UNC@TCU (16:00Z) freezes at 12:00Z, T-4h. SAC@EMU freezes at T-4.5h.
+       All three copy surfaces would have said "about three hours", and the
+       chip would have read PICKS POST 6:00 AM PT over a pick already on the
+       board at 5:00 AM — the same "contradicting it in the same box" failure
+       the T-16h note above was written to kill, on a different league.
+
+       THE GRID IS SERVED, NOT GUESSED: `record.wall_bucket_minutes` and
+       `record.wall_hours` ride the tracker payload beside the prose
+       `record.wall_note` the engine already publishes (ms_picks.build_record;
+       `record` ships whole, so no allowlist moved). No grid served => every
+       league behaves byte-for-byte as it did, which is every league but one. */
+    function msWallGrid(sport?: any): { bucketMin: number; hours: number } | null {
+      const s = String(sport || "").toLowerCase();
+      if (!s) return null;
+      /* msData is keyed by TAB, and the soccer tab holds the `mls` payload. */
+      const d = msData[s] || (s === "mls" ? msData["soccer"] : null);
+      const rec = d && d.record;
+      const b = rec ? Number(rec.wall_bucket_minutes) : NaN;
+      if (!isFinite(b) || b <= 0) return null;
+      const h = Number(rec.wall_hours);
+      return { bucketMin: b, hours: isFinite(h) && h > 0 ? h : 3 };
+    }
+    /* The instant this game's pick actually freezes — the EXACT arithmetic of
+       ms_picks.wall_for: floor the epoch onto the grid, so the block is the
+       one the engine froze at and not one derived in the reader's zone.
+       Flooring only ever moves the instant EARLIER, so a chip built on this
+       can never promise a pick later than it lands. */
+    function msFloorWall(wallTs: number, sport?: any): number {
+      const g = msWallGrid(sport);
+      if (!g || !isFinite(wallTs)) return wallTs;
+      const s = g.bucketMin * 60 * 1000;
+      return Math.floor(wallTs / s) * s;
+    }
+    /* The stretch before the start, in the words a sentence can use. A league
+       on an exact wall keeps the phrasing it has always had; a bucketed one
+       states the RANGE, because "about three hours" is simply not true of it. */
+    const _WH_WORDS: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
+    const _fmtH = (h: number) => (Math.round(h * 10) / 10).toString();
+    function wallStretchPhrase(sport: any, wh: number | null): string | null {
+      if (wh == null) return null;
+      const g = msWallGrid(sport);
+      if (g) return `between ${_fmtH(wh)} and ${_fmtH(wh + g.bucketMin / 60)} hours`;
+      return `about ${_WH_WORDS[wh] || `${wh} hours`}`;
+    }
     const FREEZE_PT = { h: 3, m: 10 };   // the fallback only — postContract() is the source
     // The UTC instant of `h:m America/Los_Angeles` on dateISO — DST-correct without a tz
     // library: guess at PDT, format the guess back into PT, and shift by the difference.
@@ -10172,7 +10226,13 @@ export default function Home() {
          night game. A pick posts at the later of the two. */
       const wh = contractWallHours(d, g && g.sport);
       const ts = g ? firstPitchTs(g) : null;
-      if (ts != null && wh != null && isFinite(post) && ts - wh * 3600 * 1000 > post) post = ts - wh * 3600 * 1000;
+      /* …and on a league whose wall is FLOORED onto a grid, the game's wall is
+         the floored instant, not `start - wh`. Un-floored, this chip promised
+         NCAAF picks up to two hours after they actually post. */
+      if (ts != null && wh != null && isFinite(post)) {
+        const gw = msFloorWall(ts - wh * 3600 * 1000, g && g.sport);
+        if (gw > post) post = gw;
+      }
       const time = isFinite(post)
         ? `${new Date(post).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`
         : "3:10 AM PT";
@@ -10191,7 +10251,7 @@ export default function Home() {
         const ts = firstPitchTs(g);
         const msWall = contractWallHours(gameDateISO(g), g.sport);
         if (ts != null && msWall != null) {
-          const w = new Date(ts - msWall * 3600 * 1000);
+          const w = new Date(msFloorWall(ts - msWall * 3600 * 1000, g.sport));
           if (!isNaN(w.getTime()))
             return `${w.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: "America/Los_Angeles" })} PT`;
         }
@@ -10295,9 +10355,12 @@ export default function Home() {
          SERVED contract (contractWallHours) — when no contract has landed the sentence
          says less, never a guessed number. */
       const _wh = contractWallHours(d || undefined, g && g.sport);
-      const _whW: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
       const _noun = WALL_NOUN[String((g && g.sport) || "").toLowerCase()] || "start";
-      const vary = _wh != null ? ` Times vary because each game's pick posts about ${_whW[_wh] || `${_wh} hours`} before that game's own ${_noun}.` : "";
+      /* The stretch is a RANGE on a bucketed league — wallStretchPhrase carries
+         the qualifier ("about three hours" / "between 3 and 5 hours") so this
+         sentence never asserts a single figure the league does not honour. */
+      const _stretch = wallStretchPhrase(g && g.sport, _wh);
+      const vary = _stretch ? ` Times vary because each game's pick posts ${_stretch} before that game's own ${_noun}.` : "";
       if (!d) return `${msLead}Our picks for this game post by ${t}.${vary}`;
       const when = d === todayISO() ? "today" : d === shiftDate(todayISO(), 1) ? "tomorrow"
         : new Date(d + "T12:00:00").toLocaleDateString("en-US", { weekday: "long" });
@@ -11962,8 +12025,14 @@ export default function Home() {
          with no contract we say the shape of the promise and not a figure we cannot stand
          behind. */
       const msWallH = contractWallHours(undefined, msKey(league));
-      const wallSentence = msWallH != null
-        ? `every pick freezes at its own wall, about ${msWallH} hour${msWallH === 1 ? "" : "s"} before the game starts, and grades here in the open`
+      /* …AND FOR A LEAGUE WHOSE WALL IS FLOORED, "about 3 hours" IS FALSE
+         (NCAAF readiness, 2026-08-23). `record.wall_note` — the honest
+         sentence — has been served on this very block since 2026-08-21 and
+         this strip printed the scalar over the top of it. The phrase now
+         comes off the same served grid, so the strip and the note agree. */
+      const wallStretch = wallStretchPhrase(league, msWallH);
+      const wallSentence = wallStretch != null
+        ? `every pick freezes at its own wall, ${wallStretch} before the game starts, and grades here in the open`
         : `every pick freezes at its own wall, before the game starts, and grades here in the open`;
       /* ── THE "NEW ERA" SUB-ROW IS GONE (owner order, 2026-08-18) ──
          From 2026-08-17 to 2026-08-18 this strip carried a second, dashed-off line —
@@ -12204,10 +12273,13 @@ export default function Home() {
          served contract; with no contract the sentence keeps the shape of the promise and
          drops the figure, because a wrong number is worse than no number. */
       const wh = contractWallHours(noteDay, g0 && g0.sport);
-      const whWords: any = { 1: "an hour", 3: "three hours", 6: "six hours", 12: "twelve hours", 16: "sixteen hours", 24: "a day" };
-      const when = wh == null ? `at its own wall, before its ${esc(noun)}`
-        : wh >= 12 ? `the night before — about ${whWords[wh] || `${wh} hours`} ahead of its own ${esc(noun)}`
-        : `about ${whWords[wh] || `${wh} hours`} before its own ${esc(noun)}`;
+      const whGrid = msWallGrid(g0 && g0.sport);
+      const whPhrase = wallStretchPhrase(g0 && g0.sport, wh);
+      /* A bucketed league never takes the "night before" branch: its wall is
+         floored EARLIER than T-wh, so the range is the only true statement. */
+      const when = whPhrase == null ? `at its own wall, before its ${esc(noun)}`
+        : (!whGrid && wh != null && wh >= 12) ? `the night before — ${whPhrase} ahead of its own ${esc(noun)}`
+        : `${whPhrase} before its own ${esc(noun)}`;
       const body = `<div class="fn-body"><b>The schedule for ${esc(dispDate)}</b><span>Each game's pick posts ${when}.</span></div>`;
       return `<div class="future-note${full ? " full" : ""}"><span class="fn-ic">◆</span>${body}${countdown}</div>`;
     }
