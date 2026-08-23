@@ -10652,24 +10652,179 @@ export default function Home() {
        its own line. This is the same public per-day facts, listed together on the surfaces
        whose subject is "the day", not "the league".
 
-       THE SERVED-DATA LIMIT, stated rather than papered over: a tracker payload carries
-       only a rolling card window (platform multisport/picks/ms_picks.py, WINDOW_BACK_D=3
-       days back), so a league's graded picks older than that window are in no public
-       payload and cannot appear here. Days beyond the window keep their MLB-only row —
-       that is a gap in the served data, never a claim the league did not play. */
+       ═══ WHY THE ARCHIVE WAS STILL MLB-ONLY ON EVERY OLDER DAY (2026-08-23) ═══
+       The 2026-08-18 pass above reads the league TRACKER boards (`msData`, key `<sport>`),
+       and those carry only a rolling card window — platform multisport/picks/ms_picks.py,
+       WINDOW_BACK_D=3 days back. So the owner's bug survived it: open any day older than
+       three days and the list was MLB again. Measured on the live boards 2026-08-23, the
+       window is even thinner than "3 days" suggests, because a card leaves it as soon as
+       the schedule rolls forward: `nfl` carried graded cards for ONE date, `wnba` two,
+       `mls` one, `epl` none. The archive had essentially no multisport history at all.
+
+       WIDENING THE ENGINE'S WINDOW WAS THE WRONG FIX, AND MEASURING IT SAID SO. The engine
+       ALREADY publishes a dated key per league per date — ms_picks.py writes
+       `{"key": f"{sport}:{d}"}` for every date on its board, the whole payload under each.
+       When a date leaves the window its key simply STOPS BEING REWRITTEN and keeps its last
+       body, fully graded, forever. Verified off the live wire: `nfl:2026-08-15` still serves
+       its 7 cards frozen at 2026-08-19T03:56:44Z, `wnba:2026-08-18` 4 cards, `mls:2026-08-19`
+       15. Coverage runs back to each league's first covered day (wnba/mls 2026-08-08, nfl
+       2026-08-13, epl 2026-08-21). The history was already public, already paid for, and
+       nothing on the front end was asking for it.
+
+       WHAT A DAY COSTS, MEASURED. The dated keys serve `s-maxage=86400, swr=604800`, so a
+       frozen day costs about one origin read a day no matter how many readers open it, and
+       ~5 KB on the wire compressed (33.6 KB of JSON; a date a league never covered answers
+       `null`, ~0.3 KB). A 126-key sweep of 7 leagues x 18 days moved 149.5 KB in total.
+       The rejected alternative — widening WINDOW_BACK_D so the live boards carried the
+       history — was ~12x the origin bytes for the same reader outcome.
+
+       SO: THE DAY IS FANNED OUT, LAZILY, WHEN THE READER OPENS IT. `ensureMsDay()` asks
+       `<sport>:<date>` for every league that could have played that date, through the same
+       `snap()` every other read uses, so it rides the edge cache; no new API surface exists
+       and none is needed (the route's DATED_FAMILIES already serves these keys). Each league
+       is independent: `null` means that league did not cover the day and contributes exactly
+       nothing — not an error, not an empty card. Only a genuine FETCH FAILURE is recorded as
+       one, and it is said out loud on the day rather than silently shortening it.
+
+       WHAT IS STILL NOT BLENDED: nothing. dayRecordMap(), the MLB headline, the cumulative
+       units curve and every league record row are untouched, each ledger its own line. The
+       result is the served `result` string, the call is the served `pick` string, and no W-L
+       is ever computed from a game's score on this side of the wire. */
+    let msDay: any = {};            // `<lg>|<date>` -> { cards, at, frozen, state }
+    let msDayInflight: any = {};
+    /* OBSERVABILITY RIDES WITH IT. Every fan-out is counted, so "how many extra requests
+       does opening a day cost" is a question the running app can answer rather than one
+       that needs a rebuild. `served` = a key with cards for the day, `empty` = the honest
+       `null` for a league that did not play it, `failed` = a read that actually broke. */
+    const msDayFanout = { days: 0, asked: 0, served: 0, empty: 0, failed: 0 };
+    try { (window as any).__deArchiveFanout = msDayFanout; } catch {}
+    const msDayId = (lg: string, d: string) => `${lg}|${d}`;
+    /* A DATE STOPS MOVING ONCE IT LEAVES THE ENGINE'S WINDOW (WINDOW_BACK_D=3, plus a day
+       of slack for the overnight grade pass that runs at ~04:00Z). Inside that, the key is
+       still being rewritten and is re-asked on the same 5-minute cadence as the live board;
+       outside it, the answer is kept for the session — INCLUDING the `null`, which is just
+       as frozen as a payload and just as expensive to re-ask for. */
+    const msDayFrozen = (dateISO: string) => dateISO < shiftDate(todayISO(), -4);
+    /* WHICH LEAGUES ARE WORTH ASKING FOR THIS DATE — off served facts, never a hunch. A
+       league's own record block carries `started`, the day its public ledger opened, and no
+       dated key can exist before it. That is the only prune: everything else is asked, and a
+       league that did not play answers `null` for ~0.3 KB. Deliberately NOT pruned by
+       `is_offseason`, which describes the league TODAY and would hide the archive of a
+       league that is out of season now but played the day being opened. */
+    function msDayLeagues(dateISO: string): string[] {
+      return (Array.from(MS_TABS) as string[]).filter((lg) => {
+        const d = msData[lg];
+        if (!d) return true;   // board not loaded yet — ask; the key itself is the answer
+        const started = String(((d.record || {}) as any).started || "").slice(0, 10);
+        return !(/^\d{4}-\d{2}-\d{2}$/.test(started) && dateISO < started);
+      });
+    }
+    function loadMsDay(lg: string, dateISO: string) {
+      const id = msDayId(lg, dateISO);
+      const held = msDay[id];
+      if (held && (held.frozen || Date.now() - held.at < 5 * 60 * 1000)) return Promise.resolve(held);
+      if (msDayInflight[id]) return msDayInflight[id];
+      msDayFanout.asked++;
+      msDayInflight[id] = (async () => {
+        let d: any = null, broke = false;
+        try { d = await snap(`${msKey(lg)}:${dateISO}`, 8000); }
+        catch (e) { broke = true; try { console.warn(`[archive] ${msKey(lg)}:${dateISO} did not load`, e); } catch {} }
+        msDayInflight[id] = null;
+        if (broke) { msDayFanout.failed++; return (msDay[id] = { cards: [], at: Date.now(), frozen: false, state: "fail" }); }
+        // the same guard loadMsSport uses: a payload that does not say it is this sport is
+        // not this sport's day, whatever the key said
+        const ok = d && String(d.sport || "").toLowerCase() === msKey(lg);
+        const cards = ok ? (((d.games || []) as any[]).filter((c: any) =>
+          c && String(c.date || "").slice(0, 10) === dateISO)) : [];
+        if (cards.length) msDayFanout.served++; else msDayFanout.empty++;
+        return (msDay[id] = { cards, at: Date.now(), frozen: msDayFrozen(dateISO), state: ok ? "ok" : "none" });
+      })();
+      return msDayInflight[id];
+    }
+    /* THE ONE ENTRY POINT. Resolves to whether anything the surfaces DRAW changed, so a
+       caller can repaint only when there is something new to paint. Today is never fanned
+       out: today's cards are on the live boards, which are already loaded and fresher.
+
+       THE SIGNATURE IS EVERY WORD THE DAY CAN SAY, NOT JUST ITS CARDS. Two bugs, both found
+       by testing rather than by reading:
+         · A day where every league answered "I did not play this" adds no cards, so a
+           card-count comparison called that "no change" — and the day sat under "Checking
+           the other leagues…" forever, which is the one sentence that must never outlive the
+           check it describes. Answering nothing IS the answer, so `checked` is in the sig.
+         · A day where a league's read genuinely FAILED adds no cards AND leaves `checked`
+           false, so that compared equal too — and the day silently kept its old line instead
+           of naming the league that did not load. The failure set is in the sig.
+       `fanned` is in it as well, so the very first open always repaints out of the
+       "loads when this day is opened" copy, whatever the answer turns out to be. */
+    const msDaySig = (d: string) =>
+      `${msCardsFor(d).length}|${msDayChecked(d)}|${msDayFailures(d).join(",")}|${!!msDayFannedOut[d]}`;
+    const msDayFannedOut: any = {};
+    function ensureMsDay(dateISO: string) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateISO) || dateISO >= todayISO()) return Promise.resolve(false);
+      const lgs = msDayLeagues(dateISO);
+      if (!lgs.length) return Promise.resolve(false);
+      const before = msDaySig(dateISO);
+      if (!msDayFannedOut[dateISO]) { msDayFannedOut[dateISO] = 1; msDayFanout.days++; }
+      return Promise.allSettled(lgs.map((lg) => loadMsDay(lg, dateISO)))
+        .then(() => msDaySig(dateISO) !== before);
+    }
+    /* HAS THIS DAY ACTUALLY BEEN ASKED? The pills lean on this, and it is the whole reason
+       they can be honest: a day nobody has opened is not a day with no other leagues, and
+       the two must never render the same. */
+    function msDayChecked(dateISO: string) {
+      const lgs = msDayLeagues(dateISO);
+      if (!lgs.length) return true;
+      return lgs.every((lg) => { const h = msDay[msDayId(lg, dateISO)]; return !!h && h.state !== "fail"; });
+    }
+    // the leagues whose read for this day actually broke — named, so a short day says why
+    function msDayFailures(dateISO: string) {
+      return msDayLeagues(dateISO).filter((lg) => {
+        const h = msDay[msDayId(lg, dateISO)];
+        return !!h && h.state === "fail";
+      });
+    }
+    const MS_GRADED = ["WIN", "LOSS", "PUSH", "VOID"];
+    /* ONE DAY'S OTHER-LEAGUE CARDS, FROM BOTH SERVED COPIES. The live board and the dated
+       key can both carry the same game; the live board is the CURRENT publish, so where they
+       overlap its copy is the fresher of two served copies of one fact and it wins. Nothing
+       is merged field-by-field and nothing is recomputed — one whole served card is chosen.
+       A `PASS` card (served `result: "NO_BET"`) is a decision, not a pick, and is no more
+       listed here than a passed MLB game is. */
+    function msCardsFor(dateISO: string) {
+      const seen: any = {}, out: any[] = [];
+      const take = (lg: string, c: any) => {
+        const res = String((c && c.result) || "").toUpperCase();
+        if (MS_GRADED.indexOf(res) < 0) return;
+        const id = `${lg}|${c.game_id != null ? c.game_id : `${c.away_team}@${c.home_team}`}`;
+        if (seen[id]) return;
+        seen[id] = 1;
+        out.push({ lg, day: dateISO, res, card: c });
+      };
+      (Array.from(MS_TABS) as string[]).forEach((lg) => {
+        (((msData[lg] && msData[lg].games) || []) as any[]).forEach((c: any) => {
+          if (String((c && c.date) || "").slice(0, 10) === dateISO) take(lg, c);
+        });
+      });
+      (Array.from(MS_TABS) as string[]).forEach((lg) => {
+        const h = msDay[msDayId(lg, dateISO)];
+        (((h && h.cards) || []) as any[]).forEach((c: any) => take(lg, c));
+      });
+      return out;
+    }
     function msGradedCards() {
-      const out: any[] = [];
+      const days: any = {};
       MS_TABS.forEach((lg: string) => {
         try { loadMsSport(lg); } catch {}   // fire-and-forget; answered from cache once landed
         const d = msData[lg];
         (((d && d.games) || []) as any[]).forEach((c: any) => {
-          const res = String((c && c.result) || "").toUpperCase();
-          if (res !== "WIN" && res !== "LOSS" && res !== "PUSH" && res !== "VOID") return;
-          const day = String(c.date || "").slice(0, 10);
-          if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) return;
-          out.push({ lg, day, res, card: c });
+          const day = String((c && c.date) || "").slice(0, 10);
+          if (/^\d{4}-\d{2}-\d{2}$/.test(day)) days[day] = 1;
         });
       });
+      // every day the fan-out has already brought back, whether or not it had cards
+      Object.keys(msDay).forEach((id) => { days[id.slice(id.indexOf("|") + 1)] = 1; });
+      const out: any[] = [];
+      Object.keys(days).forEach((day) => { msCardsFor(day).forEach((x) => out.push(x)); });
       return out;
     }
     function msDayRecords() {
@@ -12667,6 +12822,9 @@ export default function Home() {
       // EVERY LEAGUE'S GRADED PICKS on the pills (owner order, 2026-08-18) — the merged
       // day map; leagues still loading patch in below without moving the reader's scroll.
       let rmap = (() => { try { return dayRecordMapAll(); } catch { return {} as any; } })();
+      // the signature counts the fan-out store too: a day that came back with NO other-league
+      // picks changes nothing in the record map but everything about the dotted mark
+      let rmapSig = JSON.stringify(rmap) + "|" + Object.keys(msDay).length;
       const gameDays: any = {};
       (((indexData && (indexData.dates || indexData.keyed_dates)) || []) as any[]).forEach((d: any) => {
         const k = String(d || "").slice(0, 10);
@@ -12687,6 +12845,14 @@ export default function Home() {
         }
       }
       const DOW = ["S", "M", "T", "W", "T", "F", "S"];
+      /* A PILL THAT HAS ONLY BEEN ASKED ABOUT MLB SAYS SO. The other leagues' days are
+         fetched when a day is opened in the Desk archive (see openArchiveDay), so a pill
+         the reader has never opened is a claim about the MLB ledger and nothing else. It
+         carries a dotted rule and says which it is in its label; once the day has been
+         asked, the mark drops and the pill is the whole day. msDayChecked() returns true
+         for every date before any league's ledger opened, so the deep MLB history — which
+         no other league could have played — is never marked. */
+      let anyPartial = false;
       const monthHtml = (mk: string) => {
         const Y = Number(mk.slice(0, 4)), M = Number(mk.slice(5, 7));
         const first = new Date(Y, M - 1, 1);
@@ -12705,11 +12871,13 @@ export default function Home() {
           // the Desk calendar; see dayTone's note). A push-only day tones flat.
           const tone = !hasRec ? "" : r.units != null ? (r.units > 1e-9 ? "up" : r.units < -1e-9 ? "down" : "flat") : (r.w > r.l ? "up" : r.l > r.w ? "down" : "flat");
           const cls = ["cp-cell", inRange ? "" : "off", iso === curDate ? "on" : "", iso === today ? "is-today" : "", iso > today ? "future" : ""].filter(Boolean).join(" ");
+          const part = hasRec && iso < today && !msDayChecked(iso);
+          if (part) anyPartial = true;
           const said = [new Date(iso + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" }),
-            hasRec ? `record ${r.w} and ${r.l}` : gameDays[iso] ? "games on the board" : ""].filter(Boolean).join(" — ");
+            hasRec ? `record ${r.w} and ${r.l}${part ? ", MLB ledger only so far" : dayLeaguesTxt(r)}` : gameDays[iso] ? "games on the board" : ""].filter(Boolean).join(" — ");
           cells += `<button type="button" class="${cls}" data-cd="${iso}"${inRange ? "" : " disabled"} aria-label="${esc(said)}"${iso === curDate ? ` aria-current="date"` : ""}>
             <b>${d}</b>
-            ${hasRec ? `<i class="cp-wl ${tone}">${r.w}–${r.l}</i>` : gameDays[iso] && iso <= hardMax ? `<i class="cp-dot" aria-hidden="true">◆</i>` : `<i class="cp-nil" aria-hidden="true"></i>`}
+            ${hasRec ? `<i class="cp-wl ${tone}${part ? " part" : ""}">${r.w}–${r.l}</i>` : gameDays[iso] && iso <= hardMax ? `<i class="cp-dot" aria-hidden="true">◆</i>` : `<i class="cp-nil" aria-hidden="true"></i>`}
           </button>`;
         }
         if (!any) return "";
@@ -12720,6 +12888,8 @@ export default function Home() {
           <div class="cp-grid">${cells}</div>
         </section>`;
       };
+      // months first — the legend only offers to explain the dotted mark if one was drawn
+      const monthsHtml = months.map(monthHtml).join("");
       const html = `
         <div class="gamepage calpage" id="gamepage" role="dialog" aria-modal="true" aria-label="Pick a date">
           <div class="gp-head">
@@ -12732,8 +12902,9 @@ export default function Home() {
             <div class="cp-legend">
               <span><i class="cp-dot">◆</i> games on the board</span>
               <span><i class="cp-wl up">W–L</i> the graded record, that night</span>
+              ${anyPartial ? `<span><i class="cp-wl up part">W–L</i> MLB ledger only so far — the other leagues load when the day is opened on the Desk</span>` : ""}
             </div>
-            ${months.map(monthHtml).join("")}
+            ${monthsHtml}
           </div>
         </div>`;
       let layer = $("sheet-layer");
@@ -12766,20 +12937,29 @@ export default function Home() {
          is kept, and a failed fetch simply leaves the MLB-only pills standing. */
       Promise.allSettled(Array.from(MS_TABS as any).map((lg: any) => loadMsSport(lg))).then(() => {
         try {
-          const b = $("gp-body");
-          const pg = $("gamepage");
-          if (!b || !pg || !pg.classList.contains("calpage")) return;
-          const rmap2 = dayRecordMapAll();
-          if (JSON.stringify(rmap2) === JSON.stringify(rmap)) return;
-          rmap = rmap2;
-          const keep = b.scrollTop;
-          b.querySelectorAll(".cp-month").forEach((m: any) => {
-            const fresh = monthHtml(String(m.dataset.cm || ""));
-            if (fresh) m.outerHTML = fresh;
-          });
-          b.scrollTop = keep;
+          repaintMonths();
         } catch {}
       }).catch(() => {});
+      /* THE PILLS FOLLOW THE ARCHIVE. Whichever surface asked for a day's leagues, this
+         grid reads the SAME store, so a pill and the day list it describes are one fact.
+         Registered while this page is open; the guard above (is the calendar still up?)
+         is what makes a stale registration harmless. */
+      function repaintMonths() {
+        const b = $("gp-body");
+        const pg = $("gamepage");
+        if (!b || !pg || !pg.classList.contains("calpage")) return;
+        const rmap2 = dayRecordMapAll();
+        const sig = JSON.stringify(rmap2) + "|" + Object.keys(msDay).length;
+        if (sig === rmapSig) return;
+        rmapSig = sig; rmap = rmap2;
+        const keep = b.scrollTop;
+        b.querySelectorAll(".cp-month").forEach((m: any) => {
+          const fresh = monthHtml(String(m.dataset.cm || ""));
+          if (fresh) m.outerHTML = fresh;
+        });
+        b.scrollTop = keep;
+      }
+      calRepaint = () => { try { repaintMonths(); } catch {} };
     }
 
     function bindCards() {
@@ -16627,6 +16807,11 @@ export default function Home() {
     // most recent first, each day's picks with side/line/stars + W/L/P chips + the
     // day record. Reuses by_date_record + the history games; compact and scannable.
     let ppShown = 10;
+    /* WHICH DAYS THE READER HAS OPEN. A day's rows arrive AFTER it is opened (its leagues
+       are fanned out on the toggle), so the section has to be able to re-render itself
+       without collapsing what the reader is reading. The open set lives out here, the
+       renderer honours it, and repaint is therefore free. */
+    const ppOpenDays: any = {};
     function pastPicksSection(d: any) {
       const games = ((d && d.games) || []) as any[];
       // HONEST DAY NOTES (2026-07-27): the payload flags every empty or thin
@@ -16642,11 +16827,13 @@ export default function Home() {
         if (st !== "PICK" && st !== "VOID") return;
         (byDate[g.date] = byDate[g.date] || []).push(g);
       });
-      /* EVERY LEAGUE, SAME ARCHIVE (owner order, 2026-08-18). The NFL/WNBA/MLS trackers'
-         graded cards join their days — result exactly as served, the call off the served
-         pick string, each row wearing its league tag. Their payloads carry only a rolling
-         card window (see msGradedCards), so older multisport days are absent from the wire
-         and simply keep their MLB rows: a data gap, never a restated record. */
+      /* EVERY LEAGUE, ALL THE WAY BACK (owner order 2026-08-18, finished 2026-08-23). Each
+         league's graded cards join their day — result exactly as served, the call off the
+         served pick string, each row wearing its league tag. A day's leagues are fetched
+         from their own dated keys WHEN THE DAY IS OPENED (see ensureMsDay and the toggle in
+         wireHistoryRows); until then a day shows whatever the live boards' rolling window
+         already holds, which for older days is nothing. That is why the summary line says
+         which leagues it is speaking for. */
       const msByDate: any = {};
       msGradedCards().forEach((x: any) => {
         (msByDate[x.day] = msByDate[x.day] || []).push(x);
@@ -16668,10 +16855,16 @@ export default function Home() {
         const note = dayNotes[k];
         const noteTag = note ? (note.records_incomplete ? "records incomplete" : note.kind === "no_games_scheduled" ? "no games" : "small slate") : "";
         const msList = (msByDate[k] || []) as any[];
-        // a flagged day with NO picks in any league renders as an honest note row — a gap
-        // in the archive is stated out loud, never left as a silent hole
+        /* A flagged day with NO picks in any league renders as an honest note — a gap in the
+           archive is stated out loud, never left as a silent hole. IT IS STILL A <details>
+           (2026-08-23): "MLB published nothing" is not "nobody played", and until this day's
+           leagues have been asked the claim is only about MLB. Opening it runs the same
+           fan-out every other day runs, and if another league did publish that day the block
+           re-renders with its rows. A <div> here was a door the reader could not open. */
         if (!byDate[k] && !msList.length) {
-          return `<div class="pp-day pp-noteonly"><div class="pp-notehead"><span class="pp-date">${esc(dd)}</span><span class="pp-wl dim">${esc(noteTag || "no picks")}</span></div><div class="pp-notetext">${esc((note && note.note) || "No picks this day.")}</div></div>`;
+          const asked = msDayChecked(k);
+          return `<details class="pp-day pp-noteonly" data-ppday="${esc(k)}"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span><span class="pp-wl dim">${esc(noteTag || "no picks")}</span><span class="pp-n">${asked ? "no picks, any league" : "MLB only so far"}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows"><div class="pp-notetext inday">${esc((note && note.note) || "No MLB picks this day.")}</div><div class="pp-scope"><span class="pps-lgs">—</span>${asked ? `<em>No league published a pick this day.</em>`
+            : `<em class="pps-wait">${msDayFannedOut[k] ? "Checking the other leagues for this day…" : "The other leagues load when this day is opened."}</em>`}</div></div></details>`;
         }
         const noteLine = note ? `<div class="pp-notetext inday">${esc(note.note)}</div>` : "";
         const wl = r.n ? wlTxt(r) : "";
@@ -16711,10 +16904,51 @@ export default function Home() {
         const nV = list.filter((g: any) => String((g.pick || {}).status || "").toUpperCase() === "VOID").length
           + msList.filter((x: any) => x.res === "VOID").length;
         const nP = list.length + msList.length - nV;
-        return `<details class="pp-day"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${dayToneCls(r)}"${dayLeaguesTxt(r) ? ` title="${esc(wl + dayLeaguesTxt(r))}"` : ""}>${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}"${dayLeaguesTxt(r) ? ` title="Return on the MLB picks — the other leagues' ledgers publish no prices or units"` : ""}>${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}${msRows}</div></details>`;
+        /* ═══ THE DAY SAYS WHICH LEAGUES IT IS SPEAKING FOR, AND BREAKS ITSELF DOWN ═══
+           This is the line that keeps the archive from lying by omission, and it is the
+           whole reason the fan-out is allowed to be lazy. A day the reader has not opened
+           has not been asked, so it lists the leagues it CAN see and says the rest are still
+           to come; an opened day lists exactly the leagues that answered.
+
+           IT CARRIES THE SPLIT ON SCREEN, NOT IN A TOOLTIP (2026-08-23). The summary pill on
+           a mixed day is one number over several ledgers, and the only thing that made it
+           decomposable was `title` — which does not exist on a phone, where this archive is
+           mostly read. So a mixed day prints "MLB 6–8 · NFL 2–2 · WNBA 2–0" under its rows,
+           from the same served results the rows themselves render. Nothing here is a league
+           RECORD: dayRecordMap(), the headline, the units curve and every league record row
+           are untouched and each stays its own line. This is one day, decomposed, so that a
+           combined count can never stand on its own and read as a shared ledger.
+
+           AND IT NAMES THE UNIT. MLB grades in units and publishes prices; the de_ms_v1
+           ledgers publish neither, anywhere. So a mixed day's ROI is marked MLB in the
+           summary rather than left to read as the whole day's return. */
+        const lgsHere: string[] = [];
+        if (list.length) lgsHere.push("MLB");
+        msList.forEach((x: any) => {
+          const lab = x.lg === "soccer" ? "MLS" : (SPORT_LABEL[x.lg] || String(x.lg).toUpperCase());
+          if (lgsHere.indexOf(lab) < 0) lgsHere.push(lab);
+        });
+        const mixed = lgsHere.length > 1;
+        const checked = msDayChecked(k);
+        const failed = msDayFailures(k).map((lg) => (lg === "soccer" ? "MLS" : (SPORT_LABEL[lg] || String(lg).toUpperCase())));
+        // a league whose only row that day was a VOID has no line in the split and shows as
+        // its bare name — a void counts nowhere, here as everywhere
+        const lgsTxt = lgsHere.map((lab) => {
+          const e = r.leagues && r.leagues[lab];
+          return e ? `${lab} ${e.w}–${e.l}${e.p ? `–${e.p}` : ""}` : lab;
+        }).join(" · ");
+        const scope = `<div class="pp-scope"><span class="pps-lgs">${esc(lgsTxt || "—")}</span>${
+          !checked ? `<em class="pps-wait">${failed.length
+            ? `${esc(failed.join(", "))} didn’t load for this day — the rest is complete.`
+            : msDayFannedOut[k] ? "Checking the other leagues for this day…"
+            : "The other leagues load when this day is opened."}</em>`
+          : !mixed ? `<em>No other league published a pick this day.</em>`
+          : roi ? `<em>Units and ROI are the MLB ledger’s — the other leagues publish no prices or units.</em>` : ""
+        }</div>`;
+        return `<details class="pp-day" data-ppday="${esc(k)}"${open ? " open" : ""}><summary><span class="pp-date">${esc(dd)}</span>${wl ? `<span class="pp-wl ${dayToneCls(r)}"${dayLeaguesTxt(r) ? ` title="${esc(wl + dayLeaguesTxt(r))}"` : ""}>${wl}</span>` : `<span class="pp-wl dim">grading</span>`}${roi ? `<span class="pp-roi ${r.roi >= 0 ? "pos" : "neg"}"${mixed ? ` title="Return on the MLB picks — the other leagues' ledgers publish no prices or units"` : ""}>${mixed ? `<i>MLB</i> ` : ""}${roi}</span>` : ""}<span class="pp-n">${nP} pick${nP === 1 ? "" : "s"}${nV ? ` · ${nV} void` : ""}${noteTag ? ` · ${esc(noteTag)}` : ""}</span><span class="pp-caret" aria-hidden="true">›</span></summary><div class="pp-rows">${noteLine}${rows}${msRows}${scope}</div></details>`;
       };
-      return `<div class="ixc pastpicks"><div class="ixc-h">Every pick, day by day</div><div class="ixc-sub">The call we published, and how it finished. Most recent first.</div>
-        ${shown.map((k, i) => dayBlock(k, i === 0)).join("")}
+      return `<div class="ixc pastpicks"><div class="ixc-h">Every pick, day by day</div><div class="ixc-sub">The call we published, and how it finished — every league that played, most recent first. Open a day to load the other leagues’ picks for it.</div>
+        ${shown.map((k, i) => dayBlock(k, ppOpenDays[k] !== undefined ? !!ppOpenDays[k] : i === 0)).join("")}
         ${dates.length > ppShown ? `<button class="pp-more" id="pp-more">Show more days (${dates.length - ppShown} left)</button>` : ""}
       </div>`;
     }
@@ -16767,11 +17001,39 @@ export default function Home() {
       }
       toast("That game page isn't available yet");
     }
+    /* ═══ OPENING A DAY IS WHAT PAYS FOR IT (2026-08-23) ═══
+       The archive can render months of days; fanning every one of them out to seven league
+       keys on first paint would be a hundred-odd requests for rows nobody has asked to see.
+       So the fan-out is bound to the <details> toggle: a day costs its leagues only when the
+       reader opens it, and then only once — `loadMsDay` holds a frozen day for the session
+       and a live one for five minutes, so re-opening the same day is free.
+
+       WHOEVER REPAINTS THE DAY REPAINTS ITS PILL. The section is re-rendered whole (the open
+       set lives in ppOpenDays, so nothing collapses) and the Desk map and the calendar grid
+       are re-rendered with it, because all three read the same store. That is what makes it
+       impossible for a day's summary to say one thing while its rows say another — the
+       contradiction this surface has been burned by twice. */
+    let archiveRepaint: (() => void) | null = null;
+    let calRepaint: ((dateISO: string) => void) | null = null;
+    function openArchiveDay(k: string) {
+      if (!k) return;
+      ensureMsDay(k).then((changed: boolean) => {
+        if (!changed) return;
+        try { archiveRepaint && archiveRepaint(); } catch {}
+        try { calRepaint && calRepaint(k); } catch {}
+      }).catch(() => {});
+    }
     function wireHistoryRows(container?: any) {
       const b = container || $("gp-body"); if (!b) return;
       b.querySelectorAll(".pp-row[data-ppgid]").forEach((r: any) => (r.onclick = () => {
         openArchiveGame(r.dataset.ppgid, r.dataset.ppdate);
       }));
+      b.querySelectorAll("details.pp-day[data-ppday]").forEach((el: any) => {
+        const k = String(el.dataset.ppday || "");
+        el.ontoggle = () => { ppOpenDays[k] = !!el.open; if (el.open) openArchiveDay(k); };
+        // the day that renders already open (the most recent one) never fires a toggle
+        if (el.open) { ppOpenDays[k] = true; openArchiveDay(k); }
+      });
     }
 
     const findGameLive = (gid: any) => {
@@ -21691,10 +21953,14 @@ export default function Home() {
       const map = dayRecordMapAll();
       const days: string[] = [];
       for (let i = 13; i >= 0; i--) days.push(shiftDate(todayISO(), -i));
+      // `part` = this day's other leagues have not been asked for yet, so the cell is a
+      // claim about the MLB ledger and says so (the archive below asks, on open)
+      const today = todayISO();
       return days.map((k) => {
         const r = map[k];
-        return r ? { k, n: r.n, w: r.w, l: r.l, p: r.p, units: r.units, leagues: r.leagues }
-                 : { k, n: 0, w: 0, l: 0, p: 0, units: null as any };
+        const part = k < today && !msDayChecked(k);
+        return r ? { k, n: r.n, w: r.w, l: r.l, p: r.p, units: r.units, leagues: r.leagues, part: part && r.n > 0 }
+                 : { k, n: 0, w: 0, l: 0, p: 0, units: null as any, part: false };
       });
     }
     /* ═══════════════ THE RECORD, AT FOUR TIME SCALES ═══════════════
@@ -21986,8 +22252,10 @@ export default function Home() {
         const u = Number(r.units || 0);
         const tone = dayTone(r);
         const wl = r.n ? wlTxt(r) : "";
-        return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl}${dayLeaguesTxt(r)}${r.units != null ? ` · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : ""}` : " · no picks"}">
-          <b class="cal-d">${esc(dnum)}</b>${wl ? `<i class="cal-wl">${esc(wl)}</i>` : `<i class="cal-wl dim">·</i>`}
+        // a cell whose other leagues have not been asked for wears a dotted rule and says
+        // which ledger it is speaking for — see dailyRecordRows' `part`
+        return `<span class="cal-cell ${tone}${isToday ? " is-today" : ""}" title="${esc(r.k)}${r.n ? ` · ${wl}${(r as any).part ? " · MLB ledger only so far — open the day below to add the other leagues" : dayLeaguesTxt(r)}${r.units != null ? ` · ${u >= 0 ? "+" : ""}${u.toFixed(2)}u` : ""}` : " · no picks"}">
+          <b class="cal-d">${esc(dnum)}</b>${wl ? `<i class="cal-wl${(r as any).part ? " part" : ""}">${esc(wl)}</i>` : `<i class="cal-wl dim">·</i>`}
         </span>`;
       }).join("");
       return `<div class="dp-cal"><div class="cal-dows" aria-hidden="true">${head}</div><div class="cal-grid" role="img" aria-label="Daily record calendar for the last fourteen days: ${esc(rows.map((r) => `${r.k} ${r.n ? `${r.w}-${r.l}` : "no picks"}`).join(", "))}">${blanks}${cells}</div></div>`;
@@ -22014,7 +22282,11 @@ export default function Home() {
         </div>` : ""}
         <div class="dp-14h">
           <span class="dp-14k">The last 14 days</span>
-          <span class="dp-14sum"><b>${wlTxt({ w: tw, l: tl })}</b><i class="${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net.toFixed(1)}u</i></span>
+          ${/* THE FORTNIGHT TOTAL IS THE SUM OF THE CELLS UNDER IT, so it carries the same
+                mark they do: while any day in it has only been asked about MLB, so has the
+                total. It is the number that would otherwise creep upward as days are opened
+                with nothing on screen explaining why. */""}
+          <span class="dp-14sum"><b${rows.some((r: any) => r.part) ? ` class="part" title="MLB ledger only on some of these days — the other leagues load as each day is opened below"` : ""}>${wlTxt({ w: tw, l: tl })}</b><i class="${net >= 0 ? "pos" : "neg"}">${net >= 0 ? "+" : ""}${net.toFixed(1)}u</i></span>
         </div>
         ${deskCalendar(d)}
       </div>`;
@@ -22309,14 +22581,17 @@ export default function Home() {
         if (sec) { sec.innerHTML = pastPicksSection(betaData); wireHistoryRows(sec); bindArchiveMore(); }
       }, { optional: "only rendered while there are more days to show" });
       bindArchiveMore();
-      wireHistoryRows($("desk-archive"));
-      /* THE OTHER LEAGUES' GRADED CARDS land after first paint (their tracker payloads
-         load lazily) — patch the fortnight map and the day-by-day archive in place when
-         they do, once, without moving the reader (owner order, 2026-08-18: the day-by-day
-         surfaces carry every league's graded picks). A failed fetch changes nothing. */
-      Promise.allSettled(Array.from(MS_TABS as any).map((lg: any) => loadMsSport(lg))).then(() => {
+      /* THE ARCHIVE AND THE FORTNIGHT MAP REPAINT TOGETHER, ALWAYS. A day's leagues land
+         after the reader opens it, and the map cell for that day is drawn from the same
+         store as the day's rows — so if only one of them redrew, the Desk would show a cell
+         reading one record directly above a list reading another. One function redraws both,
+         and openArchiveDay is its only caller besides the boot fan-out below. Scroll is held
+         because the day the reader is looking at grows downward from where they are. */
+      const repaintDeskArchive = () => {
         try {
           if (tab !== "desk") return;
+          const sc = v.closest(".view") || v;
+          const keep = sc && sc.scrollTop;
           const w14 = v.querySelector(".dp-14");
           if (w14) {
             const fresh = deskLast14Widget(betaData);
@@ -22327,8 +22602,16 @@ export default function Home() {
             const fresh = pastPicksSection(betaData);
             if (fresh && fresh !== sec.innerHTML) { sec.innerHTML = fresh; wireHistoryRows(sec); bindArchiveMore(); }
           }
+          if (sc && keep != null) sc.scrollTop = keep;
         } catch {}
-      }).catch(() => {});
+      };
+      archiveRepaint = repaintDeskArchive;
+      wireHistoryRows($("desk-archive"));
+      /* THE LEAGUE BOARDS land after first paint (their tracker payloads load lazily) —
+         patch the fortnight map and the day-by-day archive in place when they do, once,
+         without moving the reader. A failed fetch changes nothing. */
+      Promise.allSettled(Array.from(MS_TABS as any).map((lg: any) => loadMsSport(lg)))
+        .then(repaintDeskArchive).catch(() => {});
       bindClick("dp-toresearch", () => switchTab("research"));
       // THE IN-TEXT RESEARCH LINKS. Deep-linked: each one opens its own paper, not the tab.
       // Anchor + role=button ⇒ the keyboard contract is ours to honour, so Enter and Space
