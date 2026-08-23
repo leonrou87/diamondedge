@@ -901,6 +901,48 @@ export default function Home() {
        a snap failure as "keep what we hold" or "fall back to the bundled file", and
        the direct reads this suppresses could not have succeeded. */
     let originCapped = false;
+    /* ═══ AND THE SAME MISTAKE, ON THE OUTAGE THAT ACTUALLY HAPPENED ═══
+       2026-08-23, written out of the 2026-08-21 Supabase platform incident.
+       Everything above is about 402 — the failure that was FORECAST. The one
+       that arrived was different: for ~82 minutes the origin answered
+       Cloudflare 521/525 and read-timed-out, and none of the machinery above
+       noticed, because none of it is about 402 in the sense that matters. It is
+       about THE ORIGIN BEING THE THING THAT IS BROKEN.
+
+       What a reader got: /api/snap answered 502 with `x-snap-err: snap 521`,
+       `snapProxyFailed()` fired, and every subsequent read in that session fell
+       through to `snapDirect` — twelve full-price, uncached, CORS-preflighted
+       reads aimed straight at an origin that had just refused the server. Not
+       one of them could have succeeded. They were spent at the exact moment the
+       project could least afford them, and the reader waited out twelve network
+       timeouts to be told the same thing the first 502 already said.
+
+       THE DISTINCTION THAT MAKES THIS SAFE. `x-snap-err` carries the status the
+       ROUTE got from the ORIGIN (see the route's catch block). So a 502 with an
+       upstream 5xx in that header is evidence about Supabase, and direct is
+       futile. A 502 with no such header — a broken deploy of the proxy, a
+       function that crashed — is evidence about the ROUTE, and direct genuinely
+       rescues it. Only the first kind sets this flag; the second keeps the
+       existing `snapProxyOk` cooldown untouched, which is the outage direct
+       exists for.
+
+       TIME-BOXED, UNLIKE `originCapped`. A cap is a fact about the billing
+       period and is remembered for the session. A platform incident ends —
+       this one ended in 82 minutes with no deploy and no intervention — so the
+       flag expires and the session tries again. 60 s, the same cooldown
+       `snapProxyOk` already uses, so the two clear together and a recovered
+       origin is picked up on the next poll rather than on a reload. */
+    let originSickUntil = 0;
+    const ORIGIN_SICK_MS = 60_000;
+    /* The upstream statuses that mean "the origin, not the route": Cloudflare's
+       52x family (521 and 525 are the two this incident produced), the gateway
+       5xx PostgREST returns when it cannot reach Postgres (503 "delayed connect
+       error: 111", ~77 of them in the log history), and the two phrases the
+       route now uses when the origin stopped answering at all. 402 is handled
+       above and deliberately not repeated here — it is remembered longer. */
+    const ORIGIN_SICK_RE = /\bsnap 5\d\d\b|\bversion 5\d\d\b|\bgame 5\d\d\b|origin timeout|origin unreachable/i;
+    function originSick() { return Date.now() < originSickUntil; }
+    function originUnusable() { return originCapped || originSick(); }
     function snapProxyUsable() {
       if (snapProxyOk) return true;
       if (Date.now() < snapProxyRetryAt) return false;
@@ -919,6 +961,16 @@ export default function Home() {
          origin cannot drain the budget that a genuinely-broken-proxy outage needs. */
       if (originCapped) {
         throw new Error(`snap ${k}: origin over egress cap (402) — direct read suppressed`);
+      }
+      /* Same question, the transient version. See `originSickUntil`: while the
+         origin is the thing that is down, a direct read is a second copy of the
+         failure with a CORS preflight in front of it. Checked before the budget
+         for the same reason the cap check is — an origin outage must not drain
+         the budget a broken-proxy outage needs. */
+      if (originSick()) {
+        const e: any = new Error(`snap ${k}: origin unhealthy — direct read suppressed`);
+        e.originSick = true;
+        throw e;
       }
       if (snapDirectSpent >= SNAP_DIRECT_BUDGET) {
         throw new Error("snap: direct-read budget exhausted — keeping what we hold");
@@ -1103,13 +1155,27 @@ export default function Home() {
                ever been seen. Measured against a mock 402 origin: 10+ direct
                full-price origin reads in a single page load, every one of them
                guaranteed to fail. The flag is what makes the throw stick. */
-            if (/\b402\b/.test(String(r.headers.get("x-snap-err") || ""))) {
+            const why = String(r.headers.get("x-snap-err") || "");
+            if (/\b402\b/.test(why)) {
               originCapped = true;
               throw new Error(`snap ${k}: origin over egress cap (402)`);
+            }
+            /* THE ROUTE REACHED THE ORIGIN AND THE ORIGIN FAILED (2026-08-23).
+               See `originSickUntil`. Note what this does NOT catch: a 502 with
+               an empty or unrecognised x-snap-err falls past it to
+               `snapProxyFailed()` and the direct path below, exactly as before.
+               A route that is broken on its own account is still worth going
+               around. */
+            if (ORIGIN_SICK_RE.test(why)) {
+              originSickUntil = Date.now() + ORIGIN_SICK_MS;
+              const e: any = new Error(`snap ${k}: origin unhealthy (${why.slice(0, 40)})`);
+              e.originSick = true;
+              throw e;
             }
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
             if (/\b402\b/.test(String((e as any) && (e as any).message || ""))) throw e;
+            if ((e as any) && (e as any).originSick) throw e;
             snapProxyFailed();
           }
         }
@@ -1152,6 +1218,16 @@ export default function Home() {
             const r = await fetch(`/api/snap/${encodeURIComponent(k)}?v=1`, { ...(ac ? { signal: ac.signal } : {}) });
             if (r.ok) { const j = await r.json(); return String((j && j.v) || ""); }
             snapProxyFailed();
+            /* THE LAST LEG THAT COULD STILL WALK INTO IT. This probe's fallback
+               (below) is its own fetch at the origin, outside SNAP_DIRECT_BUDGET,
+               on a 4-minute timer. `originUnusable()` closes it — but only once
+               something has SET the flag, and on a session whose first failure
+               happens to be this probe rather than a payload read, nothing had.
+               The route says `version 5xx` here for the same reason it says
+               `snap 5xx` there; read it in the same place. */
+            if (ORIGIN_SICK_RE.test(String(r.headers.get("x-snap-err") || ""))) {
+              originSickUntil = Date.now() + ORIGIN_SICK_MS;
+            }
           } catch (e) {
             if (ac && ac.signal.aborted) throw e;
             snapProxyFailed();
@@ -1168,7 +1244,13 @@ export default function Home() {
            have outlived the page load. `originCapped` closes it, and "" is exactly
            the answer this function documents for "I do not know", which makes the
            caller fetch the payload through the proxy instead of assuming unchanged. */
-        if (originCapped) return "";
+        /* `originUnusable`, not `originCapped`: the 2026-08-21 incident put the
+           origin beyond reach for 82 minutes without ever involving 402, and
+           this is the leg on the forever timer — `pollPregame` runs it every 4
+           minutes, per open tab, outside every budget. The same argument that
+           closed it for a cap closes it for an outage; the difference is only
+           how long it stays closed. */
+        if (originUnusable()) return "";
         const q = `${SUPA}/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(k)}`
           + `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`;
         const r = await fetch(q, { headers: { apikey: KEY, Authorization: `Bearer ${KEY}` }, ...(ac ? { signal: ac.signal } : {}) });

@@ -88,6 +88,11 @@ export type Manifest = { v: Record<string, string>; newest: string; n: number };
    a sub-kilobyte row rather than an unbounded number of reads of a megabyte one. */
 export const MANIFEST_SAFETY_NET_S = 30;
 
+/* How long this read may take before it is a failure rather than a wait. See
+   the block at the fetch below for why a manifest hang is the most expensive
+   hang in the system. */
+export const MANIFEST_TIMEOUT_MS = 8_000;
+
 export async function readManifest(): Promise<Manifest> {
   /* `pu` — the payload's OWN updated_at, which is not the same thing as the
      column of the same name and is the difference between the live feeds being
@@ -115,11 +120,38 @@ export async function readManifest(): Promise<Manifest> {
         // mentions gzip at all gets gzip.
         "Accept-Encoding": "br",
       },
+      /* ═══ THE HANG THAT WOULD HAVE TAKEN EVERY ROUTE WITH IT (2026-08-23) ═══
+         This read had no deadline, and it is the one read the whole app waits
+         behind: /api/snap calls `currentVersion` — this function — BEFORE it
+         does anything else, so an origin that accepts the connection and then
+         never answers did not fail the manifest, it froze every payload route
+         on the instance too, for as long as the platform allowed. The
+         2026-08-21 incident is exactly that failure mode (Cloudflare 521/525
+         plus 19 outright read timeouts on the write path), and the fallback
+         built for it — `manifestWithFallback` right below — only runs once the
+         fetch REJECTS. Something has to make it reject.
+
+         8 s, not the 12 s /api/snap gives a payload read: this selects five
+         stamp columns across ~21 keys, ~1.7 KB on the wire, no detoast. An
+         origin that cannot answer that in eight seconds is not slow, it is
+         gone, and the last known good manifest is the better answer. */
+      signal: AbortSignal.timeout(MANIFEST_TIMEOUT_MS),
       cache: "no-store", // `cachedManifest` is the cache; this must not double-cache
     },
   );
   if (!r.ok) throw new Error(`manifest ${r.status}`);
-  const rows = await r.json();
+  let rows: any;
+  try {
+    // The deadline stays armed while the body streams; a stall here is a
+    // failure, not a wait, and `manifestWithFallback` is what catches it.
+    rows = await r.json();
+  } catch (e) {
+    const name = (e as any)?.name || "";
+    if (name === "TimeoutError" || name === "AbortError") {
+      throw new Error(`manifest origin timeout after ${MANIFEST_TIMEOUT_MS}ms`);
+    }
+    throw e;
+  }
   const v: Record<string, string> = {};
   let newest = "";
   for (const row of rows || []) {

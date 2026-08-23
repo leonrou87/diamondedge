@@ -385,6 +385,57 @@ const VERSION_SAFETY_NET_S = 30;
    hat: a permanent, unrevokable lie in every POP and every browser that saw it. */
 const IMMUTABLE_S = 31536000;
 
+/* ═══ AN ORIGIN READ MUST BE ALLOWED TO FAIL. IT WAS NOT. ═══
+
+   2026-08-23, written out of the 2026-08-21 platform incident. For ~82 minutes
+   Supabase answered Cloudflare 521/525 and, on the write path, simply did not
+   answer at all (19 read timeouts in `sync_daemon.log`, 02:25–03:45Z). Every
+   `fetch` in this file was issued with NO timeout of its own, so a hung origin
+   was not an error here — it was a wait. The only ceiling was `maxDuration = 60`
+   below, i.e. the whole route's budget, reached one minute at a time.
+
+   THAT IS THE WRONG SHAPE OF FAILURE, and specifically it is worse than the
+   error it was avoiding. This route's entire degrade ladder — `supaRetry`, then
+   `lkg`, then an honest 502 — lives DOWNSTREAM of the fetch returning. A fetch
+   that never returns reaches none of it: the reader gets no stale board, no
+   `x-snap-stale`, no error they can act on, just a spinner until the gateway
+   gives up. And because the project runs Fluid compute with elastic
+   concurrency, hung invocations accumulate on the instance instead of
+   completing, so the one thing a sick origin most needs from us — fewer,
+   slower requests — is the one thing a hang cannot deliver.
+
+   SIZED FROM THE SLOW SIDE, NOT THE TYPICAL ONE. The expensive read here is a
+   cold miss on picks_unified: ~9.5 MB of TOASTed jsonb detoasted and brotli'd
+   at the origin, ~476 KB on the wire. The historical worst measured on this
+   project is the old `slate_snapshot_lite` RPC at ~3.9 s (it rebuilt the
+   document; this read does not). 12 s is three times that, so a healthy-but-
+   loaded origin — which is what a Disk IO budget squeeze looks like — is never
+   clipped by it; what gets clipped is an origin that has stopped answering.
+   Both numbers sit far inside `maxDuration`, so the catch block below always
+   gets its turn to serve the last good copy. */
+const ORIGIN_TIMEOUT_MS = 12_000;
+/* AND A CEILING ON THE WHOLE LADDER, not just one rung. Two attempts plus the
+   jitter between them is ~24.6 s worst case; the budget holds the total near one
+   attempt-and-a-bit so a second attempt is only ever started if there is time to
+   finish it. A retry that is going to be abandoned mid-flight costs the origin a
+   request and buys the reader nothing. */
+const ORIGIN_BUDGET_MS = 22_000;
+
+/* Node's `AbortSignal.timeout` rejects with a DOMException whose message is
+   prose ("The operation was aborted due to timeout"). That text ends up in
+   `x-snap-err`, which page.tsx now READS to decide whether a direct origin read
+   could possibly help — so it has to be a fact, not a sentence. This is the
+   vocabulary: `origin timeout` and `origin unreachable`, alongside the
+   `snap <status>` the status-carrying failures already throw. */
+function originFailure(e: unknown): Error {
+  const name = (e as any)?.name || "";
+  if (name === "TimeoutError" || name === "AbortError") {
+    return new Error(`origin timeout after ${ORIGIN_TIMEOUT_MS}ms`);
+  }
+  const m = e instanceof Error ? e.message : String(e);
+  return new Error(`origin unreachable: ${m.slice(0, 80)}`);
+}
+
 async function supa(path: string, init?: RequestInit) {
   return fetch(`${SUPA}${path}`, {
     ...init,
@@ -416,6 +467,11 @@ async function supa(path: string, init?: RequestInit) {
       "Accept-Encoding": "br",
       ...(init?.headers || {}),
     },
+    /* EVERY read through this helper carries a deadline, including the ones
+       with no retry ladder around them (`rawVersion`, `cachedGame`). A caller
+       that is managing its own budget passes its own signal and keeps it —
+       see `supaRetry`, which shortens the deadline as its budget runs down. */
+    signal: init?.signal ?? AbortSignal.timeout(ORIGIN_TIMEOUT_MS),
     cache: "no-store", // the EDGE caches this response; the fetch itself must not
   });
 }
@@ -432,7 +488,12 @@ async function rawVersion(key: string): Promise<{ v: string; updated_at: string 
     `&select=updated_at,ga:payload->>generated_at,gu:payload->>generated_utc`,
   );
   if (!r.ok) throw new Error(`version ${r.status}`);
-  const rows = await r.json();
+  let rows: any;
+  try {
+    rows = await r.json();               // see fetchUnit: the deadline covers the body
+  } catch (e) {
+    throw originFailure(e);
+  }
   const row = (rows && rows[0]) || null;
   return { v: row ? (row.gu || row.ga || row.updated_at || "") : "", updated_at: row?.updated_at || null };
 }
@@ -512,14 +573,49 @@ const textOf = (bl: Blob): Uint8Array<ArrayBuffer> => {
    genuinely down origin fails fast instead of tripling the load on it, and 5xx
    only — a 4xx is an answer, and retrying an answer is just noise. */
 async function supaRetry(path: string, attempts = 2): Promise<Response> {
+  const deadline = Date.now() + ORIGIN_BUDGET_MS;
   let last: Response | null = null;
+  let lastErr: unknown = null;
   for (let i = 0; i < attempts; i++) {
-    if (i) await new Promise((r) => setTimeout(r, 150 + Math.random() * 450));
-    const r = await supa(path);
-    if (r.ok || r.status < 500) return r;
-    last = r;
+    if (i) {
+      if (Date.now() >= deadline) break;
+      await new Promise((r) => setTimeout(r, 150 + Math.random() * 450));
+    }
+    const left = deadline - Date.now();
+    if (left <= 0) break;
+    try {
+      const r = await supa(path, {
+        signal: AbortSignal.timeout(Math.min(ORIGIN_TIMEOUT_MS, left)),
+      });
+      if (r.ok || r.status < 500) return r;
+      last = r;
+      lastErr = null;
+    } catch (e) {
+      /* ═══ A THROWN READ IS A FAILURE TOO, AND USED TO BE UNREACHABLE ═══
+         Before the deadline above existed there was nothing to catch: a hung
+         fetch simply never resolved. Now that it can reject, the rejection has
+         to be handed DOWN the ladder rather than up and out — handing it up
+         would skip `lkg` entirely, which is the opposite of the point. The
+         whole reason to fail fast is to reach the last good copy while the
+         reader is still waiting. */
+      lastErr = e;
+      last = null;
+      /* AND A TIMEOUT IS THE ONE FAILURE NOT WORTH RETRYING. The retry above
+         exists for a specific mechanism: the origin's 5xx under concurrency is
+         simultaneous by construction, so spreading the attempts over a few
+         hundred milliseconds lets it serve them one at a time. Silence is not
+         that. We have already waited the full deadline; asking again buys a
+         second full deadline of the reader's time and of this instance's
+         occupancy, for a failure mode jitter cannot address. Break, and let the
+         catch in GET reach `lkg` — whose stale answer is edge-cached for 60 s,
+         so the wait is paid once per POP per minute rather than once per
+         reader. */
+      const nm = (e as any)?.name || "";
+      if (nm === "TimeoutError" || nm === "AbortError") break;
+    }
   }
-  return last as Response;
+  if (last) return last;
+  throw originFailure(lastErr);
 }
 
 /* ═══ THE LAST GOOD COPY, KEPT SO AN OUTAGE IS NOT A BLANK BOARD ═══
@@ -567,7 +663,17 @@ async function fetchUnit(key: string): Promise<Unit> {
     `/rest/v1/slate_snapshots?key=eq.${encodeURIComponent(key)}&select=payload`,
   );
   if (!r.ok) throw new Error(`snap ${r.status}`);
-  const rows = await r.json();
+  /* THE DEADLINE COVERS THE BODY, NOT JUST THE HEADERS. `AbortSignal.timeout`
+     stays armed while the response streams, so a origin that answers 200 and
+     then stalls mid-payload aborts HERE — which is the case worth catching,
+     because this is the 9.5 MB read. Normalised into the same vocabulary as
+     every other origin failure so `x-snap-err` stays machine-readable. */
+  let rows: any;
+  try {
+    rows = await r.json();
+  } catch (e) {
+    throw originFailure(e);
+  }
   const payload = rows && rows[0] ? rows[0].payload : null;
   const fullText = JSON.stringify(payload ?? null);
   let liteText = fullText;
@@ -651,7 +757,12 @@ function cachedGame(key: string, gameId: string, mv: string, netS: number) {
         body: JSON.stringify({ p_key: key, p_game_id: gameId }),
       });
       if (!r.ok) throw new Error(`game ${r.status}`);
-      const body = await r.text();
+      let body: string;
+      try {
+        body = await r.text();          // see fetchUnit: the deadline covers the body
+      } catch (e) {
+        throw originFailure(e);
+      }
       return body === "" ? "null" : body;
     },
     ["snap-game-v2", key, gameId, mv],
